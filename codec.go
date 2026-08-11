@@ -24,22 +24,25 @@ var ErrUnknownEncoding = errorfamily.NewRejection(
 )
 
 // ForEncoding returns the built-in [Codec] for the given [Encoding].
-// It resolves [EncodingJSON] → [JSONCodec] and [EncodingCBOR] → [CBORCodec].
+// It resolves [EncodingJSON] → [JSONCodec], [EncodingCBOR] → [CBORCodec],
+// and [EncodingRaw] → [RawCodec].
 //
-// For unknown encodings (including [EncodingRaw] and custom values like
-// "encrypted"), it returns [ErrUnknownEncoding]. Callers that need custom
-// encoding support should build their own dispatch table.
+// For unknown encodings (including custom values like "encrypted"), it returns
+// [ErrUnknownEncoding]. Callers that need custom encoding support should build
+// their own dispatch table.
 //
 // ForEncoding is the codec-level counterpart to [AutoDetect]: AutoDetect
 // infers the encoding from raw bytes, ForEncoding resolves a known encoding
 // stamp to its codec. Together they enable mixed-stream decoding — see
 // [event.DecodePayloadAuto].
 func ForEncoding(enc Encoding) (Codec, error) {
-	switch enc { //nolint:exhaustive // Raw has no codec
+	switch enc {
 	case EncodingJSON:
 		return JSONCodec{}, nil
 	case EncodingCBOR:
 		return CBORCodec{}, nil
+	case EncodingRaw:
+		return RawCodec{}, nil
 	default:
 		return nil, fmt.Errorf("%w: %q", ErrUnknownEncoding, enc)
 	}

@@ -67,15 +67,15 @@ func diagnoseOrError(data []byte) string {
 	return diag
 }
 
-// COSESign1String returns a human-readable diagnostic notation of a COSE_Sign1
+// COSESign1Diagnostic returns a human-readable diagnostic notation of a COSE_Sign1
 // message for debugging. It panics only if CBOR diagnosis itself fails, which
 // cannot happen for valid CBOR data.
-func COSESign1String(data []byte) string {
+func COSESign1Diagnostic(data []byte) string {
 	return diagnoseOrError(data)
 }
 
-// COSEEncrypt0String returns a human-readable diagnostic notation of a
+// COSEEncrypt0Diagnostic returns a human-readable diagnostic notation of a
 // COSE_Encrypt0 message for debugging.
-func COSEEncrypt0String(data []byte) string {
+func COSEEncrypt0Diagnostic(data []byte) string {
 	return diagnoseOrError(data)
 }

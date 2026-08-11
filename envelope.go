@@ -4,7 +4,7 @@ import "fmt"
 
 // envelopeMagic is the marker value that identifies envelope-wrapped data.
 // Its presence in the Magic field confirms the data is an envelope, not raw.
-const envelopeMagic = "cqrs"
+const envelopeMagic = "gcdc"
 
 // envelope wraps serialized data with its encoding format tag, making blind
 // stores self-describing (like events are with evt.Encoding()).

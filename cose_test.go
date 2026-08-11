@@ -209,7 +209,7 @@ func TestCOSESign1String(t *testing.T) {
 	data, err := codec.MarshalCOSESign1(msg)
 	g.Expect(err).ToNot(HaveOccurred())
 
-	diag := codec.COSESign1String(data)
+	diag := codec.COSESign1Diagnostic(data)
 	g.Expect(diag).To(ContainSubstring("h'"))
 }
 
@@ -224,6 +224,6 @@ func TestCOSEEncrypt0String(t *testing.T) {
 	data, err := codec.MarshalCOSEEncrypt0(msg)
 	g.Expect(err).ToNot(HaveOccurred())
 
-	diag := codec.COSEEncrypt0String(data)
+	diag := codec.COSEEncrypt0Diagnostic(data)
 	g.Expect(diag).To(ContainSubstring("h'"))
 }

@@ -35,7 +35,6 @@ func TestForEncoding_UnknownReturnsError(t *testing.T) {
 	t.Parallel()
 
 	cases := []Encoding{
-		EncodingRaw,
 		"encrypted",
 		"msgpack",
 		"",
@@ -52,6 +51,19 @@ func TestForEncoding_UnknownReturnsError(t *testing.T) {
 		if !errors.Is(err, ErrUnknownEncoding) {
 			t.Errorf("ForEncoding(%q) err = %v, want ErrUnknownEncoding", enc, err)
 		}
+	}
+}
+
+func TestForEncoding_Raw(t *testing.T) {
+	t.Parallel()
+
+	c, err := ForEncoding(EncodingRaw)
+	if err != nil {
+		t.Fatalf("ForEncoding(Raw): %v", err)
+	}
+
+	if c.Encoding() != EncodingRaw {
+		t.Errorf("Encoding() = %q, want %q", c.Encoding(), EncodingRaw)
 	}
 }
 

@@ -13,27 +13,15 @@
 | 🔴 `BROKEN`               | Present in code but not working / disabled / failing.        |
 | ⚪ `PLANNED`              | Designed or documented but **not yet implemented** in code.  |
 
-> A feature earns `FULLY_FUNCTIONAL` only when you can point to the code that
-> delivers it AND confirm it works. If you're unsure, it's `PARTIALLY_FUNCTIONAL`
-> at best, never round up.
-
-### ⚠️ Verification caveat (read first)
-
-This audit was performed on a machine with **Go 1.26.5**, but the source imports
-`encoding/json/v2` and `encoding/json/jsontext` (Go ≥1.27 standard library) and
-`go.mod` declares `go 1.26.5`. **`go build ./...` and `go test ./...` cannot run
-in this environment**, and the Go 1.27 toolchain was not fetchable from the
-proxy. The statuses below therefore reflect **code completeness + test presence**,
-not a green local test run. Each 🟢 row cites the tests that cover it; re-run
-the suite on Go ≥1.27 to convert these from "code-complete with tests" to
-"verified green". The two build blockers are tracked in `TODO_LIST.md`.
+> All statuses verified: `go test ./...` and `GOEXPERIMENT=jsonv2 go test ./...`
+> both pass with `-race` on Go 1.26.5.
 
 ## Codecs
 
 | Feature                                      | Status                | Notes                                                                                                          |
 | -------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `CBORCodec` — canonical CBOR (RFC 7049)      | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; round-trip, determinism, signing determinism, time, map/slice/struct/nested, dup-key rejection, smaller-than-JSON — `codec_test.go`, `property_test.go`, `codec_fuzz_test.go` |
-| `JSONCodec` — `encoding/json/v2`             | 🟢 `FULLY_FUNCTIONAL` | `json.go`; round-trip, map, invalid-JSON, nil, raw message — `codec_test.go`, `codec_fuzz_test.go`             |
+| `JSONCodec` — dual-build `encoding/json` v1/v2 | 🟢 `FULLY_FUNCTIONAL` | `json.go`; round-trip, map, invalid-JSON, nil, raw message — `codec_test.go`, `codec_fuzz_test.go`. v1 default, v2 opt-in via `GOEXPERIMENT=jsonv2` |
 | `CBORCompactCodec` — CoreDet (RFC 8949) + unknown-field rejection | 🟢 `FULLY_FUNCTIONAL` | `cbor_compact.go`; round-trip, rejects unknown fields, not-compatible-with-CBORCodec proven — `cbor_compact_test.go`, `codec_test.go` |
 | `RawCodec` — `[]byte` passthrough            | 🟢 `FULLY_FUNCTIONAL` | `raw.go`; round-trip, wrong-type/wrong-target errors, decode-is-copy — `codec_test.go`, `codec_fuzz_test.go`  |
 | `BufferEncoder` — zero-allocation encoding   | 🟢 `FULLY_FUNCTIONAL` | Implemented by all three non-raw codecs; `TestBufferEncoder_AllCodecs`, `BenchmarkBufferEncoder`               |
@@ -42,7 +30,7 @@ the suite on Go ≥1.27 to convert these from "code-complete with tests" to
 
 | Feature                                              | Status                | Notes                                                                       |
 | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| `ForEncoding` — encoding stamp → codec               | 🟢 `FULLY_FUNCTIONAL` | `codec.go`; JSON/CBOR resolve, unknown returns `ErrUnknownEncoding`, round-trips with `AutoDetect` — `resolve_test.go` |
+| `ForEncoding` — encoding stamp → codec (all 3 encodings) | 🟢 `FULLY_FUNCTIONAL` | `codec.go`; JSON/CBOR/Raw resolve, unknown returns `ErrUnknownEncoding`, round-trips with `AutoDetect` — `resolve_test.go` |
 | `AutoDetect` — infer encoding from raw bytes         | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; empty→raw, JSON/CBOR first-byte + trial decode — `autodetect_test.go`. Heuristic, not a security boundary |
 
 ## Shared CBOR infrastructure
@@ -83,23 +71,17 @@ the suite on Go ≥1.27 to convert these from "code-complete with tests" to
 | `COSE_Encrypt0` marshal/unmarshal                    | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; invalid-length rejection — `cose_test.go`                       |
 | `SigStructure` / `EncStructure0` builders            | 🟢 `FULLY_FUNCTIONAL` | `cose.go` — `cose_test.go`                                                  |
 | COSE header marshal/unmarshal + `NormalizeCOSEAlgorithm` | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; constants, protected header, algorithm normalization — `cose_test.go` |
-| `PrepareCOSESetup` (generic option-apply helper)    | 🟡 `PARTIALLY_FUNCTIONAL` | `cose.go:144`; correct thin helper, but **no direct in-repo test** — exercised only by sibling `signing`/`encryption` modules |
-| `COSESign1String` / `COSEEncrypt0String` diagnostics | 🟢 `FULLY_FUNCTIONAL` | `cose_helpers.go` — `cose_test.go`                                          |
+| `PrepareCOSESetup` (generic option-apply helper)    | 🟢 `FULLY_FUNCTIONAL` | `cose.go:144`; direct unit test verifying option-apply + protected-header output — `base64_json_test.go` |
+| `COSESign1Diagnostic` / `COSEEncrypt0Diagnostic`     | 🟢 `FULLY_FUNCTIONAL` | `cose_helpers.go` — `cose_test.go`                                          |
 
 ## JSON / base64 marshalling helpers
 
-> Internal helpers consumed by sibling modules' `[]byte`-wrapper types
-> (`encryption.Ciphertext`, `signing.Signature`, `event.EventID`, …).
+| Feature                                                                 | Status                | Notes                                                                 |
+| ----------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------- |
+| `MarshalBase64JSON` / `UnmarshalBase64JSON` / `AssignBase64JSON` / `MarshalBase64JSONWithModule` / `DecodeBase64String` / `WrapCOSEMarshal` | 🟢 `FULLY_FUNCTIONAL` | `base64_json.go`; 13 direct tests covering URL-safe/standard/invalid base64, marshal/unmarshal round-trip, error wrapping — `base64_json_test.go` |
 
-| Feature                                                                 | Status                    | Notes                                                                 |
-| ----------------------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------- |
-| `MarshalBase64JSON` / `UnmarshalBase64JSON` / `AssignBase64JSON` / `MarshalBase64JSONWithModule` / `DecodeBase64String` / `WrapCOSEMarshal` | 🟡 `PARTIALLY_FUNCTIONAL` | `base64_json.go`; code present and correct, but **no dedicated in-repo test** — only indirectly touched by `TestTranscodeToJSON_ByteSliceAsBase64`. Add direct unit tests. |
+## Dual-build infrastructure
 
----
-
-<!-- Guidance for the auditor:
-  - Source of truth is the CODE, not docs or commit messages. Open the file.
-  - One row per user-visible feature, not per function or endpoint.
-  - "PLANNED" is a claim that something is missing, verify there is truly no code.
-  - When a feature ships, remove it from TODO_LIST.md to avoid split brains.
--->
+| Feature                                              | Status                | Notes                                                                  |
+| ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------- |
+| Dual `encoding/json` v1+v2 build support             | 🟢 `FULLY_FUNCTIONAL` | `json_compat_v1.go` / `json_compat_v2.go`; contract test locks import split — `json_contract_test.go`. Both modes build+test+race green |

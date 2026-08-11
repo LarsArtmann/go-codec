@@ -9,9 +9,7 @@
 serialization layer for an event-sourcing/CQRS stack. It defines the `Codec`
 contract used by event stores, snapshots, event construction, signing, and
 encryption across sibling modules. It is published as an independent Go module
-but is designed to live alongside sibling packages (`event`, `signing`,
-`encryption`, `storage/pebble`, `kv`, `transport/http`, `stack`) — the README
-and doc comments cross-reference those modules via `../` relative paths.
+designed for consumption by `go-cqrs-lite` and other projects.
 
 It does NOT produce a binary. It is a library only: four codecs (CBOR canonical,
 CBOR compact, JSON, Raw) plus shared COSE structure helpers, transcoding,
@@ -26,20 +24,34 @@ root. There are no sub-packages.
 go-codec/
 ├── *.go               # all implementation, one package (codec)
 ├── *_test.go          # tests, fuzz, property, snapshot, benchmarks, examples
+├── json_compat_v*.go  # dual-build JSON compat layer (v1 default, v2 opt-in)
 ├── testdata/          # fuzz corpus + go-snaps golden snapshots
+├── flake.nix          # build, test, lint, devShell automation
 ├── go.mod / go.sum    # module metadata
-└── README.md          # user-facing docs (cross-references sibling modules)
+└── README.md          # user-facing docs
 ```
 
 ## Commands
 
-There is no flake.nix, Makefile, or justfile. Plain Go toolchain:
+Plain Go toolchain (Go 1.26+). The project supports both `encoding/json` v1
+(default) and v2 (opt-in via `GOEXPERIMENT=jsonv2`):
 
 ```bash
-go build ./...              # build
-go test ./... -race         # test (with race detector)
-golangci-lint run ./...     # lint
-go test -fuzz=Fuzz...       # fuzz a target (see codec_fuzz_test.go, transcode_fuzz_test.go)
+go build ./...                          # build (v1 JSON, default)
+GOEXPERIMENT=jsonv2 go build ./...      # build (v2 JSON)
+go test ./... -race                     # test with race detector (v1)
+GOEXPERIMENT=jsonv2 go test ./... -race # test with race detector (v2)
+golangci-lint run ./...                 # lint (v1)
+golangci-lint run --build-tags goexperiment.jsonv2 ./... # lint (v2)
+```
+
+With flake.nix (preferred in LarsArtmann projects):
+
+```bash
+nix build                              # build
+nix run .#test                         # test both JSON modes
+nix run .#test-race                    # race-test both modes
+nix run .#lint                         # lint both modes
 ```
 
 ## Architecture
@@ -48,6 +60,12 @@ go test -fuzz=Fuzz...       # fuzz a target (see codec_fuzz_test.go, transcode_f
   optional `BufferEncoder` interface adds zero-alloc `EncodeToBuffer`. `Encoding`
   is a string tag (`"json"`, `"cbor"`, `"raw"`) stamped on payloads so blind
   stores stay self-describing.
+- **Dual JSON build.** `json_compat_v1.go` (`//go:build !goexperiment.jsonv2`)
+  and `json_compat_v2.go` (`//go:build goexperiment.jsonv2`) provide the same
+  five helpers (`jsonMarshal`, `jsonMarshalDet`, `jsonUnmarshal`, `jsonMarshalBuf`,
+  `rawJSONValue`) backed by `encoding/json` v1 and v2 respectively. v1 is the
+  default; v2 is opt-in via `GOEXPERIMENT=jsonv2`. All source files call helpers,
+  never `json.*` directly.
 - **CBOR modes are process-wide singletons.** `canonicalEncMode`/`canonicalDecMode`
   (and the compact variants) are computed once via `sync.OnceValue`. Sibling
   modules MUST reuse the exported `CBOREncMode()`/`CBORDecMode()` instead of
@@ -79,10 +97,9 @@ go test -fuzz=Fuzz...       # fuzz a target (see codec_fuzz_test.go, transcode_f
 
 ## Gotchas
 
-- **Build requires Go ≥ 1.27.** Source imports `encoding/json/v2` and
-  `encoding/json/jsontext` (Go 1.27 stdlib). `go.mod` currently declares
-  `go 1.26.5` — it will not build on the declared version. This is the single
-  biggest "why won't it compile" surprise.
+- **Dual-build: never import `json.*` directly.** All JSON calls go through the
+  `json_compat_v*.go` helpers. goimports may corrupt v1 files to import v2 — the
+  contract test (`json_contract_test.go`) catches this. Always run both modes.
 - **`CBORCodec` ≠ `CBORCompactCodec` bytes.** Never assume data written by one
   round-trips through the other (different key sort + compact rejects unknown
   fields). Document per-store which codec owns the data.
@@ -98,17 +115,15 @@ go test -fuzz=Fuzz...       # fuzz a target (see codec_fuzz_test.go, transcode_f
 - **`TranscodeToJSON` is schema-free.** CBOR maps → JSON objects with
   non-deterministic key order (Go map iteration). `toarray` structs stay arrays
   (field names are lost). Not suitable for byte-deterministic uses.
-- **`snaps.Clean` returns `(bool, error)`.** It must be assigned to two values
-  (`_, _ = snaps.Clean(m)`); a single `_ =` is a compile error.
 - **`RawCodec` copies on Decode.** The target `*[]byte` receives a fresh copy so
   callers can't mutate the input buffer. Encode accepts only `[]byte` or
-  `jsontext.Value`.
+  `rawJSONValue`.
 
 ## Dependencies
 
 - `github.com/fxamacker/cbor/v2` — CBOR codec; canonical & core-deterministic modes.
 - `github.com/larsartmann/go-error-family` — categorized errors with stable codes.
-- `encoding/json/v2` — Go 1.27 stdlib JSON (deterministic marshal, case-insensitive decode).
+- `encoding/json` (v1, default) or `encoding/json/v2` (opt-in via `GOEXPERIMENT=jsonv2`).
 - Test-only: `onsi/gomega`, `pgregory.net/rapid`, `gkampitakis/go-snaps`.
 
 ## High-Value References

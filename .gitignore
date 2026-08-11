@@ -52,5 +52,5 @@ reports/
 vendor/
 go.work
 go.work.sum
-/v4
+/go-codec
 # <<< buildflow-managed (.gitignore) <<<

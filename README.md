@@ -231,8 +231,7 @@ Epoch values carry no timezone; decoded times reconstruct in `time.Local`, not t
 original location. Normalizing to UTC at encode time eliminates this ambiguity.
 
 **Wall-clock times** (recurring schedules, business hours) must NOT use `time.Time` —
-store wall time components + IANA timezone name instead. See
-[docs/TIMEZONE_HANDLING.md](../docs/TIMEZONE_HANDLING.md) for the full guide.
+store wall time components + IANA timezone name instead.
 
 ## CBOR → JSON Transcoding (`TranscodeToJSON`)
 
@@ -254,17 +253,33 @@ including structs encoded with the `cbor:",toarray"` tag — stay arrays (field
 names cannot be reconstructed). For schema-aware JSON output, use
 `event.DecodePayloadAuto[T]` with the concrete payload type.
 
-The `transport/http` package provides `CBORToJSONTransform`, a ready-made
-adapter that wraps `TranscodeToJSON` for `http.WithPayloadTransform` — including
-graceful fallback to the raw payload on decode failure, so SSE clients always
-receive data. See the
-[transport/http SSE docs](../transport/http/README.md)
-and recipe `2.14 CBOR→JSON for Browser SSE Clients` in the skill.
+The `transport/http` package (from the sibling CQRS stack) provides
+`CBORToJSONTransform`, a ready-made adapter that wraps `TranscodeToJSON` for
+`http.WithPayloadTransform` — including graceful fallback to the raw payload on
+decode failure, so SSE clients always receive data.
+
+## Dual JSON Support (v1 and v2)
+
+go-codec supports both `encoding/json` (v1, the default) and `encoding/json/v2`
+(opt-in). The library uses the [go-branded-id dual-build pattern](https://github.com/larsartmann/go-branded-id):
+build-tagged compat files select the JSON implementation at compile time.
+
+**Default (v1):** `go build ./...` — uses `encoding/json`, works on Go 1.23+.
+
+**Opt-in (v2):** `GOEXPERIMENT=jsonv2 go build ./...` — uses `encoding/json/v2`
+(Go 1.25+ with the experiment flag, or Go 1.27+ natively).
+
+Both modes are fully tested. Choose v2 if you need `json.Deterministic`,
+`MarshalWrite`, or other v2-specific features; otherwise v1 is the zero-config
+default.
 
 ## Related Modules
 
-- [**event**](../event/README.md) — `DecodePayload[T]` accepts a `Codec` to decode payloads
-- [**signing**](../signing/README.md) — CBOR's deterministic encoding makes signatures reproducible
-- [**encryption**](../encryption/README.md) — `encryption.NewCodec` wraps a codec with encryption
-- [**storage/pebble**](../storage/pebble/README.md) — Uses CBOR internally for its on-disk envelope format
-- [**kv**](../kv/README.md) — `WithTypedCodec` lets read models use CBOR
+This codec is part of an event-sourcing/CQRS stack. The sibling modules live in
+[go-cqrs-lite](https://github.com/larsartmann/go-cqrs-lite):
+
+- **event** — `DecodePayload[T]` accepts a `Codec` to decode payloads
+- **signing** — CBOR's deterministic encoding makes signatures reproducible
+- **encryption** — `encryption.NewCodec` wraps a codec with encryption
+- **storage/pebble** — Uses CBOR internally for its on-disk envelope format
+- **kv** — `WithTypedCodec` lets read models use CBOR

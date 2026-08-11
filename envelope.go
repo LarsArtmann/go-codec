@@ -1,9 +1,6 @@
 package codec
 
-import (
-	"encoding/json/v2"
-	"fmt"
-)
+import "fmt"
 
 // envelopeMagic is the marker value that identifies envelope-wrapped data.
 // Its presence in the Magic field confirms the data is an envelope, not raw.
@@ -29,7 +26,7 @@ func WrapEncode(v any, c Codec) ([]byte, error) {
 
 	env := envelope{Magic: envelopeMagic, Encoding: c.Encoding(), Data: inner}
 
-	out, err := json.Marshal(env, json.Deterministic(true))
+	out, err := jsonMarshalDet(env)
 	if err != nil {
 		return nil, fmt.Errorf("codec: marshal envelope: %w", err)
 	}
@@ -46,7 +43,7 @@ func WrapEncode(v any, c Codec) ([]byte, error) {
 // without a full clear-and-rebuild.
 func UnwrapDecode(data []byte, fallback Codec) (Codec, []byte) {
 	var env envelope
-	if err := json.Unmarshal(data, &env); err == nil &&
+	if err := jsonUnmarshal(data, &env); err == nil &&
 		env.Magic == envelopeMagic && len(env.Data) > 0 {
 		if c, err := ForEncoding(env.Encoding); err == nil {
 			return c, env.Data

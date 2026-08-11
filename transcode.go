@@ -1,9 +1,6 @@
 package codec
 
-import (
-	"encoding/json/v2"
-	"fmt"
-)
+import "fmt"
 
 // TranscodeToJSON converts a payload from its stamped encoding into JSON bytes.
 // It is the generic, schema-free bridge for consumers that must serve JSON to
@@ -45,7 +42,7 @@ func TranscodeToJSON(payload []byte, enc Encoding) ([]byte, error) {
 		return nil, fmt.Errorf("codec: decode CBOR for transcode: %w", err)
 	}
 
-	out, err := json.Marshal(v)
+	out, err := jsonMarshal(v)
 	if err != nil {
 		return nil, fmt.Errorf("codec: encode JSON for transcode: %w", err)
 	}

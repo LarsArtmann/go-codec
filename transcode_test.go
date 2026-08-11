@@ -1,7 +1,6 @@
 package codec
 
 import (
-	"encoding/json/v2"
 	"math"
 	"math/big"
 	"strings"
@@ -23,7 +22,7 @@ func TestTranscodeToJSON_CBOR_Map(t *testing.T) {
 	}
 
 	var got map[string]any
-	if err := json.Unmarshal(out, &got); err != nil {
+	if err := jsonUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
@@ -59,7 +58,7 @@ func TestTranscodeToJSON_CBOR_ToArrayStruct_StaysArray(t *testing.T) {
 	}
 
 	var got []any
-	if err := json.Unmarshal(out, &got); err != nil {
+	if err := jsonUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
@@ -138,7 +137,7 @@ func TestTranscodeToJSON_NestedAndScalars(t *testing.T) {
 	}
 
 	var got map[string]any
-	if err := json.Unmarshal(out, &got); err != nil {
+	if err := jsonUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
@@ -179,7 +178,7 @@ func TestTranscodeToJSON_CBORCompactCodec(t *testing.T) {
 	}
 
 	var got map[string]any
-	if err := json.Unmarshal(out, &got); err != nil {
+	if err := jsonUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
@@ -227,7 +226,7 @@ func TestTranscodeToJSON_LargeNumbers(t *testing.T) {
 			// generic-decode path (float64 vs decimal number); we only assert
 			// validity + key presence, since float64 loses precision above 2^53.
 			var got map[string]any
-			if err := json.Unmarshal(out, &got); err != nil {
+			if err := jsonUnmarshal(out, &got); err != nil {
 				t.Fatalf("invalid JSON: %v\nraw: %s", err, out)
 			}
 
@@ -283,7 +282,7 @@ func TestTranscodeToJSON_EmptyContainers(t *testing.T) {
 // TestTranscodeToJSON_MapKeysRoundTrip documents the key-ordering reality of
 // the generic transcode path (#23): CBOR canonical encoding sorts map keys on
 // the wire, but the generic decode produces a Go map[string]any whose keys are
-// then re-encoded by json.Marshal. Under encoding/json/v2 the output key order
+// then re-encoded by jsonMarshal. Under encoding/json the output key order
 // is NOT guaranteed to be sorted or stable across runs (Go map iteration is
 // randomized). So this test asserts key presence + values, not byte order.
 // Callers needing deterministic key order must use event.DecodePayloadAuto[T]
@@ -303,7 +302,7 @@ func TestTranscodeToJSON_MapKeysRoundTrip(t *testing.T) {
 	}
 
 	var got map[string]any
-	if err := json.Unmarshal(out, &got); err != nil {
+	if err := jsonUnmarshal(out, &got); err != nil {
 		t.Fatalf("invalid JSON: %v\nraw: %s", err, out)
 	}
 
@@ -339,7 +338,7 @@ func TestTranscodeToJSON_ByteSliceAsBase64(t *testing.T) {
 	}
 
 	var got map[string]any
-	if err := json.Unmarshal(out, &got); err != nil {
+	if err := jsonUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
@@ -387,7 +386,7 @@ func TestTranscodeToJSON_FloatSpecials(t *testing.T) {
 			// If it didn't error, the output must still be valid JSON
 			// (some json encoders emit null for these).
 			var probe any
-			if perr := json.Unmarshal(out, &probe); perr != nil {
+			if perr := jsonUnmarshal(out, &probe); perr != nil {
 				t.Errorf("produced invalid JSON for %s: %v\nraw: %s", tc.name, perr, out)
 			}
 		})
@@ -433,7 +432,7 @@ func TestTranscodeToJSON_CBORTag0(t *testing.T) {
 
 	// Tag 0 decodes to time.Time → JSON string "2026-07-27T00:00:00Z".
 	var got string
-	if err := json.Unmarshal(out, &got); err != nil {
+	if err := jsonUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\nraw: %s", err, out)
 	}
 

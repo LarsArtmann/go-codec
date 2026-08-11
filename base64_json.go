@@ -2,7 +2,6 @@ package codec
 
 import (
 	"encoding/base64"
-	"encoding/json/v2"
 
 	errorfamily "github.com/larsartmann/go-error-family"
 )
@@ -35,7 +34,7 @@ func DecodeBase64String(encoded string) ([]byte, error) {
 func MarshalBase64JSON(raw []byte) ([]byte, error) {
 	encoded := base64.URLEncoding.EncodeToString(raw)
 
-	return json.Marshal(encoded, json.Deterministic(true)) //nolint:wrapcheck // base64 encoding
+	return jsonMarshalDet(encoded) //nolint:wrapcheck // base64 encoding
 }
 
 // MarshalBase64JSONWithModule encodes raw bytes as base64 JSON and wraps any
@@ -59,7 +58,7 @@ func MarshalBase64JSONWithModule(raw []byte, module, noun string) ([]byte, error
 func UnmarshalBase64JSON(data []byte, module, noun string) ([]byte, error) {
 	var encoded string
 
-	err := json.Unmarshal(data, &encoded, json.MatchCaseInsensitiveNames(true))
+	err := jsonUnmarshal(data, &encoded)
 	if err != nil {
 		return nil, errorfamily.WrapInfrastructure(err,
 			module+".unmarshal_"+noun, "unmarshal "+noun+" string")

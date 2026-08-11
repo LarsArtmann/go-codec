@@ -2,7 +2,6 @@ package codec
 
 import (
 	"bytes"
-	"encoding/json/jsontext"
 	"testing"
 	"time"
 )
@@ -164,7 +163,7 @@ func TestJSONCodec_Encode_RawMessage(t *testing.T) {
 	t.Parallel()
 	c := JSONCodec{}
 
-	raw := jsontext.Value(`{"already":"json"}`)
+	raw := rawJSONValue(`{"already":"json"}`)
 	data, err := c.Encode(raw)
 	if err != nil {
 		t.Fatalf("Encode(RawMessage) error: %v", err)

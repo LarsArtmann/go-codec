@@ -1,7 +1,6 @@
 package codec_test
 
 import (
-	"encoding/json/v2"
 	"testing"
 
 	"github.com/larsartmann/go-codec"
@@ -44,7 +43,7 @@ func FuzzTranscodeToJSON(f *testing.F) {
 		// json.Marshal should always yield parseable JSON (numbers, strings,
 		// arrays, objects, bools, null). Unmarshal is the v2 validity probe.
 		var probe any
-		if err := json.Unmarshal(out, &probe); err != nil {
+		if err := testJSONUnmarshal(out, &probe); err != nil {
 			t.Fatalf("transcode produced invalid JSON: %q (err: %v)", out, err)
 		}
 	})

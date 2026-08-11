@@ -9,6 +9,6 @@ import (
 
 func TestMain(m *testing.M) {
 	code := m.Run()
-	_ = snaps.Clean(m) //art-dupl:accept per-module TestMain boilerplate
+	snaps.Clean(m) //art-dupl:accept per-module TestMain boilerplate
 	os.Exit(code)
 }

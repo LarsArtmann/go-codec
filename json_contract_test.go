@@ -1,4 +1,4 @@
-package codec
+package codec_test
 
 import (
 	"os"

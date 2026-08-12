@@ -7,8 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-_No changes since v0.1.0. Post-tag commits (`ef1f4f4`, `5352889`, `ba73a7e`) are
-CI workflow and documentation only — no library code changes._
+### Security
+
+- `normalizeForJSON` (`json_compat_v1.go`) now enforces a `maxNormalizeDepth`
+  (100) recursion cap, returning an error instead of recursing indefinitely.
+  Closes a stack-exhaustion DoS vector from adversarial deeply-nested CBOR.
+  Affects v1 JSON mode only; v2 handles `map[interface{}]interface{}` natively.
+- `AutoDetect` (`autodetect.go`) now skips trial-decode for payloads over
+  `maxAutoDetectSize` (1 MiB), returning `EncodingRaw` for oversized ambiguous
+  input. First-byte heuristic remains O(1) for any size.
+
+### Added
+
+- `SizeResult` struct (`size.go`): `Size` now returns `SizeResult{JSON, CBOR}`
+  instead of positional `(int, int)`. More readable at call sites.
+- `GetBuffer` / `PutBuffer` (`pool.go`): `sync.Pool[*bytes.Buffer]` helper for
+  `BufferEncoder` hot paths — reduces allocation pressure.
+- `TestNormalizeForJSON`: table-driven test covering nil, scalar, map, nested,
+  int-keyed maps, empty containers, and depth-cap boundary conditions.
+- `TestNormalizeForJSON_DepthCap` / `TestNormalizeForJSON_AtMaxDepth`: verify
+  the recursion cap rejects >100 depth and accepts exactly 100.
+- `FuzzNormalizeForJSON`: fuzz target exercising the normalizer with random
+  CBOR-decoded structures.
+- `BenchmarkNormalizeForJSON` / `BenchmarkJSONCodec_MarshalUnmarshal`:
+  benchmarks comparing v1 vs v2 JSON performance. v2 shows 35-40% lower
+  latency and ~50% fewer allocations.
+- `export_test.go`: standard Go pattern exposing `CanonicalEncMode`,
+  `CanonicalDecMode`, `JSONUnmarshal`, `EnvelopeMagic`, `Envelope`,
+  `RawJSONValue` to the external test package.
+- `CODEOWNERS`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`,
+  `.github/PULL_REQUEST_TEMPLATE.md`: repo hygiene files.
+- `testpackage` linter re-enabled: 10 test files migrated from `package codec`
+  to `package codec_test` (white-box access via `export_test.go`).
+- `paralleltest` linter re-enabled: all 19 previously-unparallelized test
+  functions now call `t.Parallel()`.
+
+### Changed
+
+- `makezero` config reverted to `always: true` with targeted `//nolint` on the
+  one legitimate false positive (`raw.go:46` copy pattern).
+- `goconst` and `tagliatelle` re-enabled for `_test.go` files: extracted shared
+  test fixture constants (`testdata_test.go`, `testdata_ext_test.go`).
+- CI lint job now runs as a v1/v2 matrix; `gitleaks` secret-scan job added.
+- README Go version corrected from `"Go 1.23+"` to `"Go 1.26.5+"`.
+- `doc.go`: added explicit one-way contract note for `TranscodeToJSON`.
+- `CONTRIBUTING.md`: added snapshot-update dual-mode flow and test conventions.
 
 ## [0.1.0] - 2026-08-12
 

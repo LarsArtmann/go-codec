@@ -16,7 +16,7 @@ func ExampleJSONCodec() {
 		Name string `json:"name"`
 	}
 
-	data, err := c.Encode(User{Name: "Alice"})
+	data, err := c.Encode(User{Name: testName})
 	if err != nil {
 		fmt.Println("error:", err)
 
@@ -45,7 +45,7 @@ func ExampleCBORCodec() {
 		Name string
 	}
 
-	data, err := c.Encode(User{Name: "Alice"})
+	data, err := c.Encode(User{Name: testName})
 	if err != nil {
 		fmt.Println("error:", err)
 
@@ -104,7 +104,7 @@ func ExampleCBORCompactCodec() {
 		Email string
 	}
 
-	data, _ := c.Encode(UserCreated{Name: "Alice", Email: "alice@example.com"})
+	data, _ := c.Encode(UserCreated{Name: testName, Email: testEmail})
 
 	var result UserCreated
 
@@ -201,8 +201,8 @@ func ExampleNewCBOREncoder() {
 	var buf bytes.Buffer
 
 	enc := codec.NewCBOREncoder(&buf)
-	_ = enc.Encode(Event{Type: "user.created", Data: "alice"})
-	_ = enc.Encode(Event{Type: "user.created", Data: "bob"})
+	_ = enc.Encode(Event{Type: testEventType, Data: testUserName})
+	_ = enc.Encode(Event{Type: testEventType, Data: "bob"})
 
 	// Decode the stream
 	dec := codec.NewCBORDecoder(&buf)
@@ -234,12 +234,12 @@ func ExampleDiagnose() {
 		Email string
 	}
 
-	data, _ := c.Encode(User{Name: "Alice", Email: "alice@example.com"})
+	data, _ := c.Encode(User{Name: testName, Email: testEmail})
 
 	diag, _ := codec.Diagnose(data)
 
 	// Diagnostic notation is a map-like representation
-	fmt.Println(strings.Contains(diag, "Alice"))
+	fmt.Println(strings.Contains(diag, testName))
 
 	// Output:
 	// true

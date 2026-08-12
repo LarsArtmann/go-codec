@@ -43,7 +43,7 @@ func (RawCodec) Decode(data []byte, v any) error {
 		)
 	}
 
-	cp := make([]byte, len(data))
+	cp := make([]byte, len(data)) //nolint:makezero // intentional: allocate exact size then fill via copy
 	copy(cp, data)
 	*p = cp
 

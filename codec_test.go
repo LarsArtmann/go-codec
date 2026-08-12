@@ -1,31 +1,33 @@
-package codec
+package codec_test
 
 import (
 	"bytes"
 	"testing"
 	"time"
+
+	"github.com/larsartmann/go-codec"
 )
 
 func TestJSONCodec_Encoding(t *testing.T) {
 	t.Parallel()
 
-	c := JSONCodec{}
-	if got := c.Encoding(); got != EncodingJSON {
-		t.Errorf("Encoding() = %q, want %q", got, EncodingJSON)
+	c := codec.JSONCodec{}
+	if got := c.Encoding(); got != codec.EncodingJSON {
+		t.Errorf("codec.Encoding() = %q, want %q", got, codec.EncodingJSON)
 	}
 }
 
 func TestJSONCodec_RoundTrip(t *testing.T) {
 	t.Parallel()
 
-	c := JSONCodec{}
+	c := codec.JSONCodec{}
 
 	type payload struct {
 		Name string `json:"name"`
 		Age  int    `json:"age"`
 	}
 
-	original := payload{Name: "Alice", Age: 30}
+	original := payload{Name: testName, Age: 30}
 
 	data, err := c.Encode(original)
 	if err != nil {
@@ -47,9 +49,9 @@ func TestJSONCodec_RoundTrip(t *testing.T) {
 func TestJSONCodec_Encode_Map(t *testing.T) {
 	t.Parallel()
 
-	c := JSONCodec{}
+	c := codec.JSONCodec{}
 
-	m := map[string]any{"key": "value", "num": float64(42)}
+	m := map[string]any{testMapKey: testMapVal, "num": float64(42)}
 
 	data, err := c.Encode(m)
 	if err != nil {
@@ -63,15 +65,15 @@ func TestJSONCodec_Encode_Map(t *testing.T) {
 		t.Fatalf("Decode() error: %v", err)
 	}
 
-	if result["key"] != "value" {
-		t.Errorf("got key=%v, want value", result["key"])
+	if result[testMapKey] != testMapVal {
+		t.Errorf("got key=%v, want value", result[testMapKey])
 	}
 }
 
 func TestJSONCodec_Decode_InvalidJSON(t *testing.T) {
 	t.Parallel()
 
-	c := JSONCodec{}
+	c := codec.JSONCodec{}
 
 	var v any
 
@@ -84,16 +86,16 @@ func TestJSONCodec_Decode_InvalidJSON(t *testing.T) {
 func TestRawCodec_Encoding(t *testing.T) {
 	t.Parallel()
 
-	c := RawCodec{}
-	if got := c.Encoding(); got != EncodingRaw {
-		t.Errorf("Encoding() = %q, want %q", got, EncodingRaw)
+	c := codec.RawCodec{}
+	if got := c.Encoding(); got != codec.EncodingRaw {
+		t.Errorf("codec.Encoding() = %q, want %q", got, codec.EncodingRaw)
 	}
 }
 
 func TestRawCodec_RoundTrip(t *testing.T) {
 	t.Parallel()
 
-	c := RawCodec{}
+	c := codec.RawCodec{}
 
 	original := []byte("hello raw bytes")
 
@@ -117,7 +119,7 @@ func TestRawCodec_RoundTrip(t *testing.T) {
 func TestRawCodec_Encode_WrongType(t *testing.T) {
 	t.Parallel()
 
-	c := RawCodec{}
+	c := codec.RawCodec{}
 
 	_, err := c.Encode("not bytes")
 	if err == nil {
@@ -128,7 +130,7 @@ func TestRawCodec_Encode_WrongType(t *testing.T) {
 func TestRawCodec_Decode_WrongTarget(t *testing.T) {
 	t.Parallel()
 
-	c := RawCodec{}
+	c := codec.RawCodec{}
 
 	err := c.Decode([]byte("data"), "not a pointer to []byte")
 	if err == nil {
@@ -139,7 +141,7 @@ func TestRawCodec_Decode_WrongTarget(t *testing.T) {
 func TestRawCodec_Decode_IsCopy(t *testing.T) {
 	t.Parallel()
 
-	c := RawCodec{}
+	c := codec.RawCodec{}
 
 	original := []byte{1, 2, 3}
 	data, _ := c.Encode(original)
@@ -158,10 +160,10 @@ func TestRawCodec_Decode_IsCopy(t *testing.T) {
 func TestInterfaceCompliance(t *testing.T) {
 	t.Parallel()
 
-	codecs := map[string]Codec{
-		"CBOR": CBORCodec{},
-		"JSON": JSONCodec{},
-		"Raw":  RawCodec{},
+	codecs := map[string]codec.Codec{
+		testCBOR: codec.CBORCodec{},
+		testJSON: codec.JSONCodec{},
+		"Raw":    codec.RawCodec{},
 	}
 
 	for name, c := range codecs {
@@ -170,7 +172,7 @@ func TestInterfaceCompliance(t *testing.T) {
 
 			enc := c.Encoding()
 			if enc == "" {
-				t.Error("Encoding() should not be empty")
+				t.Error("codec.Encoding() should not be empty")
 			}
 		})
 	}
@@ -179,9 +181,9 @@ func TestInterfaceCompliance(t *testing.T) {
 func TestJSONCodec_Encode_RawMessage(t *testing.T) {
 	t.Parallel()
 
-	c := JSONCodec{}
+	c := codec.JSONCodec{}
 
-	raw := rawJSONValue(`{"already":"json"}`)
+	raw := codec.RawJSONValue(`{"already":"json"}`)
 
 	data, err := c.Encode(raw)
 	if err != nil {
@@ -196,7 +198,7 @@ func TestJSONCodec_Encode_RawMessage(t *testing.T) {
 func TestJSONCodec_Encode_Nil(t *testing.T) {
 	t.Parallel()
 
-	c := JSONCodec{}
+	c := codec.JSONCodec{}
 
 	data, err := c.Encode(nil)
 	if err != nil {
@@ -211,23 +213,23 @@ func TestJSONCodec_Encode_Nil(t *testing.T) {
 func TestCBORCodec_Encoding(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
-	if got := c.Encoding(); got != EncodingCBOR {
-		t.Errorf("Encoding() = %q, want %q", got, EncodingCBOR)
+	c := codec.CBORCodec{}
+	if got := c.Encoding(); got != codec.EncodingCBOR {
+		t.Errorf("codec.Encoding() = %q, want %q", got, codec.EncodingCBOR)
 	}
 }
 
 func TestCBORCodec_RoundTrip(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	type payload struct {
 		Name string `json:"name"`
 		Age  int    `json:"age"`
 	}
 
-	original := payload{Name: "Alice", Age: 30}
+	original := payload{Name: testName, Age: 30}
 
 	data, err := c.Encode(original)
 	if err != nil {
@@ -249,9 +251,9 @@ func TestCBORCodec_RoundTrip(t *testing.T) {
 func TestCBORCodec_Encode_Map(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
-	m := map[string]any{"key": "value", "num": uint64(42)}
+	m := map[string]any{testMapKey: testMapVal, "num": uint64(42)}
 
 	data, err := c.Encode(m)
 	if err != nil {
@@ -265,15 +267,15 @@ func TestCBORCodec_Encode_Map(t *testing.T) {
 		t.Fatalf("Decode() error: %v", err)
 	}
 
-	if result["key"] != "value" {
-		t.Errorf("got key=%v, want value", result["key"])
+	if result[testMapKey] != testMapVal {
+		t.Errorf("got key=%v, want value", result[testMapKey])
 	}
 }
 
 func TestCBORCodec_Decode_InvalidCBOR(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	var v any
 
@@ -286,7 +288,7 @@ func TestCBORCodec_Decode_InvalidCBOR(t *testing.T) {
 func TestCBORCodec_Encode_Nil(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	data, err := c.Encode(nil)
 	if err != nil {
@@ -306,7 +308,7 @@ func TestCBORCodec_Encode_Nil(t *testing.T) {
 func TestCBORCodec_Encode_Deterministic(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	payload := map[string]string{"b": "2", "a": "1", "c": "3"}
 
@@ -330,7 +332,7 @@ func TestCBORCodec_Encode_Deterministic(t *testing.T) {
 func TestCBORCodec_Decode_EmptyData(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	var v map[string]any
 
@@ -343,7 +345,7 @@ func TestCBORCodec_Decode_EmptyData(t *testing.T) {
 func TestCBORCodec_RoundTrip_Time(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	now := time.Date(2024, 6, 11, 9, 0, 0, 0, time.UTC)
 
@@ -367,7 +369,7 @@ func TestCBORCodec_RoundTrip_Time(t *testing.T) {
 func TestCBORCodec_RoundTrip_TimeSubSecondPrecision(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	original := time.Date(2026, 7, 17, 14, 30, 45, 123456789, time.UTC)
 
@@ -401,15 +403,15 @@ func TestCBORCodec_RoundTrip_TimeSubSecondPrecision(t *testing.T) {
 func TestCBORCodec_RoundTrip_TimeInPayloadStruct(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	type eventPayload struct {
 		Name      string    `json:"name"`
-		CreatedAt time.Time `json:"created_at"`
+		CreatedAt time.Time `json:"createdAt"`
 	}
 
 	original := eventPayload{
-		Name:      "test",
+		Name:      testValue,
 		CreatedAt: time.Date(2026, 7, 17, 14, 30, 45, 987654321, time.UTC),
 	}
 
@@ -445,7 +447,7 @@ func TestCBORCodec_RoundTrip_TimeInPayloadStruct(t *testing.T) {
 func TestCBORCompactCodec_RoundTrip_TimeSubSecondPrecision(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCompactCodec{}
+	c := codec.CBORCompactCodec{}
 
 	original := time.Date(2026, 7, 17, 14, 30, 45, 123456789, time.UTC)
 
@@ -477,7 +479,7 @@ func TestCBORCompactCodec_RoundTrip_TimeSubSecondPrecision(t *testing.T) {
 func TestCBORCodec_RoundTrip_TimeInstantFromNonUTCLocation(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
@@ -512,7 +514,7 @@ func TestCBORCodec_RoundTrip_TimeInstantFromNonUTCLocation(t *testing.T) {
 func TestCBORCodec_RoundTrip_ByteSlice(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	type payload struct {
 		Data []byte `json:"data"`
@@ -541,17 +543,17 @@ func TestCBORCodec_SmallerThanJSON(t *testing.T) {
 	t.Parallel()
 
 	payload := map[string]string{
-		"name":  "Alice",
-		"email": "alice@example.com",
-		"city":  "Berlin",
+		testField:  testName,
+		testFieldE: testEmail,
+		"city":     "Berlin",
 	}
 
-	cborData, err := CBORCodec{}.Encode(payload)
+	cborData, err := codec.CBORCodec{}.Encode(payload)
 	if err != nil {
 		t.Fatalf("CBOR Encode: %v", err)
 	}
 
-	jsonData, err := JSONCodec{}.Encode(payload)
+	jsonData, err := codec.JSONCodec{}.Encode(payload)
 	if err != nil {
 		t.Fatalf("JSON Encode: %v", err)
 	}
@@ -568,9 +570,9 @@ func TestCBORCodec_SmallerThanJSON(t *testing.T) {
 func TestCBORCodec_RoundTrip_Slice(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
-	original := []string{"alpha", "beta", "gamma"}
+	original := []string{testAlpha, testBeta, testGamma}
 
 	data, err := c.Encode(original)
 	if err != nil {
@@ -598,7 +600,7 @@ func TestCBORCodec_RoundTrip_Slice(t *testing.T) {
 func TestCBORCodec_RoundTrip_NestedStruct(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	type Address struct {
 		City    string `json:"city"`
@@ -611,7 +613,7 @@ func TestCBORCodec_RoundTrip_NestedStruct(t *testing.T) {
 	}
 
 	original := Person{
-		Name:    "Alice",
+		Name:    testName,
 		Address: Address{City: "Berlin", Country: "DE"},
 	}
 
@@ -635,14 +637,14 @@ func TestCBORCodec_RoundTrip_NestedStruct(t *testing.T) {
 func TestCBORCodec_StructTags(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	type tagged struct {
 		Name string `cbor:"name" json:"name"`
 		Age  int    `cbor:"age"  json:"age"`
 	}
 
-	original := tagged{Name: "Bob", Age: 25}
+	original := tagged{Name: testBob, Age: 25}
 
 	data, err := c.Encode(original)
 	if err != nil {
@@ -664,13 +666,13 @@ func TestCBORCodec_StructTags(t *testing.T) {
 func TestCBORCodec_SigningDeterminism(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	payload := map[string]any{
-		"user":    "alice",
+		"user":    testUserName,
 		"action":  "login",
 		"success": true,
-		"count":   uint64(42),
+		testCount: uint64(42),
 	}
 
 	encoded1, err := c.Encode(payload)
@@ -699,7 +701,7 @@ func TestCBORCodec_SigningDeterminism(t *testing.T) {
 func TestJSONCodec_Decode_EmptyData(t *testing.T) {
 	t.Parallel()
 
-	c := JSONCodec{}
+	c := codec.JSONCodec{}
 
 	var v map[string]any
 
@@ -712,7 +714,7 @@ func TestJSONCodec_Decode_EmptyData(t *testing.T) {
 func TestCBORCodec_Decode_IgnoresUnknownFields(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
 	type target struct {
 		Name string `json:"name"`
@@ -723,7 +725,7 @@ func TestCBORCodec_Decode_IgnoresUnknownFields(t *testing.T) {
 		Extra string `json:"extra"`
 	}
 
-	withExtra := extra{Name: "Alice", Extra: "surprise"}
+	withExtra := extra{Name: testName, Extra: "surprise"}
 
 	data, err := c.Encode(withExtra)
 	if err != nil {
@@ -737,17 +739,17 @@ func TestCBORCodec_Decode_IgnoresUnknownFields(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if got.Name != "Alice" {
-		t.Fatalf("got %q, want %q", got.Name, "Alice")
+	if got.Name != testName {
+		t.Fatalf("got %q, want %q", got.Name, testName)
 	}
 }
 
 func TestCBORCodec_Decode_RejectsDuplicateKeys(t *testing.T) {
 	t.Parallel()
 
-	c := CBORCodec{}
+	c := codec.CBORCodec{}
 
-	dup := map[string]any{"key": "v1", "key2": "v2"}
+	dup := map[string]any{testMapKey: "v1", "key2": "v2"}
 
 	data, err := c.Encode(dup)
 	if err != nil {
@@ -768,24 +770,24 @@ func TestBufferEncoder_AllCodecs(t *testing.T) {
 		Age  int
 	}
 
-	original := payload{Name: "Alice", Age: 30}
+	original := payload{Name: testName, Age: 30}
 
 	codecs := []struct {
 		name string
-		c    Codec
+		c    codec.Codec
 	}{
-		{"JSON", JSONCodec{}},
-		{"CBOR", CBORCodec{}},
-		{"CBORCompact", CBORCompactCodec{}},
+		{testJSON, codec.JSONCodec{}},
+		{testCBOR, codec.CBORCodec{}},
+		{"CBORCompact", codec.CBORCompactCodec{}},
 	}
 
 	for _, tc := range codecs {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			bufEncoder, ok := tc.c.(BufferEncoder)
+			bufEncoder, ok := tc.c.(codec.BufferEncoder)
 			if !ok {
-				t.Fatalf("%s does not implement BufferEncoder", tc.name)
+				t.Fatalf("%s does not implement codec.BufferEncoder", tc.name)
 			}
 
 			buf := &bytes.Buffer{}

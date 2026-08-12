@@ -49,6 +49,12 @@
 // The transport/http package provides CBORToJSONTransform, a ready-made
 // adapter that wraps TranscodeToJSON for use with WithPayloadTransform.
 //
+// TranscodeToJSON is a one-way operation: CBOR → JSON. There is intentionally
+// no TranscodeToCBOR because the reverse direction cannot reconstruct CBOR
+// type information (map key order, toarray positions, keyasint integers) from
+// JSON without the original Go type. To produce CBOR, decode into the concrete
+// type and encode with CBORCodec directly.
+//
 // # CBOR Compact Encoding (toarray)
 //
 // For maximum payload size reduction (~30-40%), add the cbor:",toarray" struct

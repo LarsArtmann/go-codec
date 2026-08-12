@@ -51,11 +51,11 @@ func FuzzCBORCodec_Roundtrip(f *testing.F) {
 	c := codec.CBORCodec{}
 
 	seeds := []any{
-		map[string]any{"name": "Alice", "age": uint64(30)},
+		map[string]any{testField: testName, "age": uint64(30)},
 		map[string]any{},
 		nil,
 		[]any{},
-		"hello",
+		testGreeting,
 		uint64(42),
 		true,
 	}
@@ -147,18 +147,18 @@ func FuzzCBORCodec_Determinism(f *testing.F) {
 		// Build maps in two different insertion orders; both must encode
 		// to the same byte sequence (canonical form sorts map keys).
 		original := map[string]any{
-			"alpha":  uint64(1),
-			"beta":   "hello",
-			"gamma":  true,
-			"delta":  []any{uint64(1), uint64(2), uint64(3)},
-			"nested": map[string]any{"k": "v"},
+			"alpha":    uint64(1),
+			"beta":     testGreeting,
+			"gamma":    true,
+			"delta":    []any{uint64(1), uint64(2), uint64(3)},
+			testNested: map[string]any{"k": "v"},
 		}
 		reordered := map[string]any{
-			"delta":  []any{uint64(1), uint64(2), uint64(3)},
-			"alpha":  uint64(1),
-			"nested": map[string]any{"k": "v"},
-			"gamma":  true,
-			"beta":   "hello",
+			"delta":    []any{uint64(1), uint64(2), uint64(3)},
+			"alpha":    uint64(1),
+			testNested: map[string]any{"k": "v"},
+			"gamma":    true,
+			"beta":     testGreeting,
 		}
 
 		encodedOrig, err := c.Encode(original)
@@ -246,7 +246,7 @@ func FuzzCBORCodec_TypedRoundtrip(f *testing.F) {
 	c := codec.CBORCodec{}
 
 	seeds := []record{
-		{Name: "Alice", Age: 30},
+		{Name: testName, Age: 30},
 		{Name: "", Age: 0},
 		{Name: "Bob", Age: 255},
 	}
@@ -298,10 +298,10 @@ func FuzzCBORCodec_CanonicalFidelity(f *testing.F) {
 	c := codec.CBORCodec{}
 
 	seeds := []any{
-		map[string]any{"name": "Alice", "age": uint64(30)},
+		map[string]any{testField: testName, "age": uint64(30)},
 		map[string]any{},
 		[]any{uint64(1), uint64(2), uint64(3)},
-		"hello",
+		testGreeting,
 		uint64(42),
 		true,
 	}

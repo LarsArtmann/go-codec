@@ -93,6 +93,9 @@ nix run .#lint                         # lint both modes
   `pgregory.net/rapid` for property tests; `gkampitakis/go-snaps` for golden
   snapshots (output under `testdata/golden/`); native fuzz targets; godoc
   `Example*` functions (also run as tests). `TestMain` calls `snaps.Clean`.
+  Most tests use `package codec_test` (black-box); a few use `package codec`
+  (white-box, `//nolint:testpackage`) for unexported helpers via `export_test.go`.
+  All test functions call `t.Parallel()`. Shared fixtures in `testdata*_test.go`.
 - **Naming:** codecs are value types (`CBORCodec{}`), constructed zero-valued.
 
 ## Gotchas
@@ -110,8 +113,9 @@ nix run .#lint                         # lint both modes
   and integer keys become part of the bytes; reordering fields or renumbering
   keys breaks existing stored data and invalidates signatures.
 - **`AutoDetect` is a heuristic, not a security boundary.** It inspects the
-  leading byte and falls back to trial decode. Never use it to skip encoding
-  validation — always pair with the matched codec's `Decode`.
+  leading byte and falls back to trial decode (skipped for payloads >1 MiB via
+  `maxAutoDetectSize`). Never use it to skip encoding validation — always pair
+  with the matched codec's `Decode`.
 - **`TranscodeToJSON` is schema-free.** CBOR maps → JSON objects with
   non-deterministic key order (Go map iteration). `toarray` structs stay arrays
   (field names are lost). Not suitable for byte-deterministic uses.

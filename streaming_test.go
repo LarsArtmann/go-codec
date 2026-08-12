@@ -1,8 +1,10 @@
-package codec
+package codec_test
 
 import (
 	"bytes"
 	"testing"
+
+	"github.com/larsartmann/go-codec"
 )
 
 func TestStreaming_CBOR(t *testing.T) {
@@ -10,9 +12,9 @@ func TestStreaming_CBOR(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	enc := NewCBOREncoder(&buf)
+	enc := codec.NewCBOREncoder(&buf)
 	if enc == nil {
-		t.Fatal("NewCBOREncoder returned nil")
+		t.Fatal("codec.NewCBOREncoder returned nil")
 	}
 
 	type payload struct {
@@ -20,13 +22,13 @@ func TestStreaming_CBOR(t *testing.T) {
 		Age  int
 	}
 
-	if err := enc.Encode(payload{Name: "Alice", Age: 30}); err != nil {
+	if err := enc.Encode(payload{Name: testName, Age: 30}); err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
 
-	dec := NewCBORDecoder(&buf)
+	dec := codec.NewCBORDecoder(&buf)
 	if dec == nil {
-		t.Fatal("NewCBORDecoder returned nil")
+		t.Fatal("codec.NewCBORDecoder returned nil")
 	}
 
 	var got payload
@@ -34,7 +36,7 @@ func TestStreaming_CBOR(t *testing.T) {
 		t.Fatalf("Decode: %v", err)
 	}
 
-	if got.Name != "Alice" || got.Age != 30 {
+	if got.Name != testName || got.Age != 30 {
 		t.Fatalf("round-trip mismatch: %+v", got)
 	}
 }
@@ -44,14 +46,14 @@ func TestStreaming_CBOREncoderMultiple(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	enc := NewCBOREncoder(&buf)
+	enc := codec.NewCBOREncoder(&buf)
 
 	type item struct{ ID int }
 
 	_ = enc.Encode(item{ID: 1})
 	_ = enc.Encode(item{ID: 2})
 
-	dec := NewCBORDecoder(&buf)
+	dec := codec.NewCBORDecoder(&buf)
 
 	var first, second item
 
@@ -66,17 +68,17 @@ func TestStreaming_CBOREncoderMultiple(t *testing.T) {
 func TestCanonicalEncMode(t *testing.T) {
 	t.Parallel()
 
-	mode := canonicalEncMode()
+	mode := codec.CanonicalEncMode()
 	if mode == nil {
-		t.Fatal("canonicalEncMode should not be nil")
+		t.Fatal("codec.CanonicalEncMode should not be nil")
 	}
 }
 
 func TestCanonicalDecMode(t *testing.T) {
 	t.Parallel()
 
-	mode := canonicalDecMode()
+	mode := codec.CanonicalDecMode()
 	if mode == nil {
-		t.Fatal("canonicalDecMode should not be nil")
+		t.Fatal("codec.CanonicalDecMode should not be nil")
 	}
 }

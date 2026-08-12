@@ -1,7 +1,9 @@
-package codec
+package codec_test
 
 import (
 	"testing"
+
+	"github.com/larsartmann/go-codec"
 )
 
 func TestWrapEncode_JSON_RoundTrip(t *testing.T) {
@@ -12,15 +14,15 @@ func TestWrapEncode_JSON_RoundTrip(t *testing.T) {
 		Email string `json:"email"`
 	}
 
-	original := user{Name: "Alice", Email: "alice@example.com"}
+	original := user{Name: testName, Email: testEmail}
 
-	wrapped, err := WrapEncode(original, JSONCodec{})
+	wrapped, err := codec.WrapEncode(original, codec.JSONCodec{})
 	if err != nil {
-		t.Fatalf("WrapEncode: %v", err)
+		t.Fatalf("codec.WrapEncode: %v", err)
 	}
 
-	c, inner := UnwrapDecode(wrapped, CBORCodec{})
-	if c.Encoding() != EncodingJSON {
+	c, inner := codec.UnwrapDecode(wrapped, codec.CBORCodec{})
+	if c.Encoding() != codec.EncodingJSON {
 		t.Fatalf("expected json codec, got %s", c.Encoding())
 	}
 
@@ -44,13 +46,13 @@ func TestWrapEncode_CBOR_RoundTrip(t *testing.T) {
 
 	original := item{SKU: "WIDGET-001", Price: 4999}
 
-	wrapped, err := WrapEncode(original, CBORCodec{})
+	wrapped, err := codec.WrapEncode(original, codec.CBORCodec{})
 	if err != nil {
-		t.Fatalf("WrapEncode: %v", err)
+		t.Fatalf("codec.WrapEncode: %v", err)
 	}
 
-	c, inner := UnwrapDecode(wrapped, JSONCodec{})
-	if c.Encoding() != EncodingCBOR {
+	c, inner := codec.UnwrapDecode(wrapped, codec.JSONCodec{})
+	if c.Encoding() != codec.EncodingCBOR {
 		t.Fatalf("expected cbor codec, got %s", c.Encoding())
 	}
 
@@ -69,10 +71,10 @@ func TestUnwrapDecode_BackwardCompat_RawJSON(t *testing.T) {
 
 	// Simulate old unenveloped JSON data.
 	rawJSON := []byte(`{"name":"Bob","email":"bob@example.com"}`)
-	fallback := JSONCodec{}
+	fallback := codec.JSONCodec{}
 
-	c, inner := UnwrapDecode(rawJSON, fallback)
-	if c.Encoding() != EncodingJSON {
+	c, inner := codec.UnwrapDecode(rawJSON, fallback)
+	if c.Encoding() != codec.EncodingJSON {
 		t.Fatalf("expected fallback json codec, got %s", c.Encoding())
 	}
 
@@ -90,8 +92,8 @@ func TestUnwrapDecode_BackwardCompat_RawJSON(t *testing.T) {
 		t.Fatalf("decode: %v", err)
 	}
 
-	if decoded.Name != "Bob" {
-		t.Fatalf("got name %q, want %q", decoded.Name, "Bob")
+	if decoded.Name != testBob {
+		t.Fatalf("got name %q, want %q", decoded.Name, testBob)
 	}
 }
 
@@ -104,14 +106,14 @@ func TestUnwrapDecode_BackwardCompat_RawCBOR(t *testing.T) {
 
 	original := item{SKU: "CBOR-RAW"}
 
-	rawCBOR, err := (CBORCodec{}).Encode(original)
+	rawCBOR, err := (codec.CBORCodec{}).Encode(original)
 	if err != nil {
 		t.Fatalf("encode raw cbor: %v", err)
 	}
 
-	// Old CBOR data without envelope — should fall back to provided codec.
-	c, inner := UnwrapDecode(rawCBOR, CBORCodec{})
-	if c.Encoding() != EncodingCBOR {
+	// Old CBOR data without codec.Envelope — should fall back to provided codec.
+	c, inner := codec.UnwrapDecode(rawCBOR, codec.CBORCodec{})
+	if c.Encoding() != codec.EncodingCBOR {
 		t.Fatalf("expected fallback cbor codec, got %s", c.Encoding())
 	}
 
@@ -125,10 +127,10 @@ func TestUnwrapDecode_NonJSONData(t *testing.T) {
 
 	// Random non-JSON bytes should fall back gracefully.
 	weird := []byte{0x00, 0x01, 0x02, 0xFF}
-	fallback := JSONCodec{}
+	fallback := codec.JSONCodec{}
 
-	c, inner := UnwrapDecode(weird, fallback)
-	if c.Encoding() != EncodingJSON {
+	c, inner := codec.UnwrapDecode(weird, fallback)
+	if c.Encoding() != codec.EncodingJSON {
 		t.Fatalf("expected fallback codec")
 	}
 
@@ -140,23 +142,23 @@ func TestUnwrapDecode_NonJSONData(t *testing.T) {
 func TestWrapEncode_EnvelopeStructure(t *testing.T) {
 	t.Parallel()
 
-	wrapped, err := WrapEncode(map[string]string{"k": "v"}, JSONCodec{})
+	wrapped, err := codec.WrapEncode(map[string]string{"k": "v"}, codec.JSONCodec{})
 	if err != nil {
-		t.Fatalf("WrapEncode: %v", err)
+		t.Fatalf("codec.WrapEncode: %v", err)
 	}
 
-	// The envelope should always be JSON, even for CBOR inner data.
-	var env envelope
-	if err := (JSONCodec{}).Decode(wrapped, &env); err != nil {
-		t.Fatalf("envelope should be JSON-decodable: %v", err)
+	// The codec.Envelope should always be JSON, even for CBOR inner data.
+	var env codec.Envelope
+	if err := (codec.JSONCodec{}).Decode(wrapped, &env); err != nil {
+		t.Fatalf("codec.Envelope should be JSON-decodable: %v", err)
 	}
 
-	if env.Magic != envelopeMagic {
-		t.Fatalf("magic = %q, want %q", env.Magic, envelopeMagic)
+	if env.Magic != codec.EnvelopeMagic {
+		t.Fatalf("magic = %q, want %q", env.Magic, codec.EnvelopeMagic)
 	}
 
-	if env.Encoding != EncodingJSON {
-		t.Fatalf("encoding = %s, want %s", env.Encoding, EncodingJSON)
+	if env.Encoding != codec.EncodingJSON {
+		t.Fatalf("encoding = %s, want %s", env.Encoding, codec.EncodingJSON)
 	}
 
 	if len(env.Data) == 0 {
@@ -174,10 +176,10 @@ func TestWrapEncode_Deterministic(t *testing.T) {
 
 	val := pair{A: "1", B: "2"}
 
-	a, _ := WrapEncode(val, JSONCodec{})
-	b, _ := WrapEncode(val, JSONCodec{})
+	a, _ := codec.WrapEncode(val, codec.JSONCodec{})
+	b, _ := codec.WrapEncode(val, codec.JSONCodec{})
 
 	if string(a) != string(b) {
-		t.Fatalf("envelope encoding is not deterministic:\n%q\n%q", a, b)
+		t.Fatalf("codec.Envelope encoding is not deterministic:\n%q\n%q", a, b)
 	}
 }

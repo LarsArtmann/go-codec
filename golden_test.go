@@ -25,9 +25,11 @@ func matchGolden(t *testing.T, name string, got []byte) {
 }
 
 func TestGolden_JSONCodec_Encode(t *testing.T) {
+	t.Parallel()
+
 	c := codec.JSONCodec{}
 
-	payload := goldenPayload{Email: "alice@example.com", Name: "Alice", Age: 30}
+	payload := goldenPayload{Email: testEmail, Name: testName, Age: 30}
 
 	got, err := c.Encode(payload)
 	if err != nil {
@@ -38,9 +40,11 @@ func TestGolden_JSONCodec_Encode(t *testing.T) {
 }
 
 func TestGolden_CBORCodec_Encode(t *testing.T) {
+	t.Parallel()
+
 	c := codec.CBORCodec{}
 
-	payload := goldenPayload{Email: "alice@example.com", Name: "Alice", Age: 30}
+	payload := goldenPayload{Email: testEmail, Name: testName, Age: 30}
 
 	got, err := c.Encode(payload)
 	if err != nil {
@@ -52,6 +56,8 @@ func TestGolden_CBORCodec_Encode(t *testing.T) {
 }
 
 func TestGolden_RawCodec_Passthrough(t *testing.T) {
+	t.Parallel()
+
 	c := codec.RawCodec{}
 
 	input := []byte(`{"raw":true}`)

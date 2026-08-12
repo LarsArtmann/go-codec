@@ -1,18 +1,20 @@
-package codec
+package codec_test
 
 import (
 	"testing"
+
+	"github.com/larsartmann/go-codec"
 )
 
 func TestAutoDetect_Empty(t *testing.T) {
 	t.Parallel()
 
-	if got := AutoDetect(nil); got != EncodingRaw {
-		t.Errorf("AutoDetect(nil) = %q, want %q", got, EncodingRaw)
+	if got := codec.AutoDetect(nil); got != codec.EncodingRaw {
+		t.Errorf("codec.AutoDetect(nil) = %q, want %q", got, codec.EncodingRaw)
 	}
 
-	if got := AutoDetect([]byte{}); got != EncodingRaw {
-		t.Errorf("AutoDetect([]byte{}) = %q, want %q", got, EncodingRaw)
+	if got := codec.AutoDetect([]byte{}); got != codec.EncodingRaw {
+		t.Errorf("codec.AutoDetect([]byte{}) = %q, want %q", got, codec.EncodingRaw)
 	}
 }
 
@@ -30,9 +32,9 @@ func TestAutoDetect_JSON(t *testing.T) {
 	}
 
 	for _, data := range cases {
-		got := AutoDetect(data)
-		if got != EncodingJSON {
-			t.Errorf("AutoDetect(%q) = %q, want %q", data, got, EncodingJSON)
+		got := codec.AutoDetect(data)
+		if got != codec.EncodingJSON {
+			t.Errorf("codec.AutoDetect(%q) = %q, want %q", data, got, codec.EncodingJSON)
 		}
 	}
 }
@@ -46,23 +48,23 @@ func TestAutoDetect_CBOR(t *testing.T) {
 		Email string
 	}
 
-	cborData, err := CBORCodec{}.Encode(user{Name: "Alice", Email: "a@b.c"})
+	cborData, err := codec.CBORCodec{}.Encode(user{Name: testName, Email: "a@b.c"})
 	if err != nil {
 		t.Fatalf("CBOR Encode: %v", err)
 	}
 
-	if got := AutoDetect(cborData); got != EncodingCBOR {
-		t.Errorf("AutoDetect(cborMap) = %q, want %q", got, EncodingCBOR)
+	if got := codec.AutoDetect(cborData); got != codec.EncodingCBOR {
+		t.Errorf("codec.AutoDetect(cborMap) = %q, want %q", got, codec.EncodingCBOR)
 	}
 
 	// CBOR array
-	arrData, err := CBORCodec{}.Encode([3]int{1, 2, 3})
+	arrData, err := codec.CBORCodec{}.Encode([3]int{1, 2, 3})
 	if err != nil {
 		t.Fatalf("CBOR Encode array: %v", err)
 	}
 
-	if got := AutoDetect(arrData); got != EncodingCBOR {
-		t.Errorf("AutoDetect(cborArray) = %q, want %q", got, EncodingCBOR)
+	if got := codec.AutoDetect(arrData); got != codec.EncodingCBOR {
+		t.Errorf("codec.AutoDetect(cborArray) = %q, want %q", got, codec.EncodingCBOR)
 	}
 }
 
@@ -79,8 +81,8 @@ func TestAutoDetect_HighBytesAreCBOR(t *testing.T) {
 	}
 
 	for _, data := range cases {
-		if got := AutoDetect(data); got != EncodingCBOR {
-			t.Errorf("AutoDetect(%v) = %q, want %q (first byte >= 0x80)", data, got, EncodingCBOR)
+		if got := codec.AutoDetect(data); got != codec.EncodingCBOR {
+			t.Errorf("codec.AutoDetect(%v) = %q, want %q (first byte >= 0x80)", data, got, codec.EncodingCBOR)
 		}
 	}
 }
@@ -91,8 +93,8 @@ func TestAutoDetect_GenuinelyUnknownIsRaw(t *testing.T) {
 	// 0x1f is below 0x80, not a JSON structural start, not a valid JSON
 	// token start, and not valid standalone CBOR → AutoDetect returns Raw.
 	data := []byte{0x1f}
-	if got := AutoDetect(data); got != EncodingRaw {
-		t.Errorf("AutoDetect(%v) = %q, want %q", data, got, EncodingRaw)
+	if got := codec.AutoDetect(data); got != codec.EncodingRaw {
+		t.Errorf("codec.AutoDetect(%v) = %q, want %q", data, got, codec.EncodingRaw)
 	}
 }
 
@@ -104,7 +106,9 @@ func TestSize(t *testing.T) {
 		Email string
 	}
 
-	jsonSize, cborSize := Size(user{Name: "Alice", Email: "alice@example.com"})
+	s := codec.Size(user{Name: testName, Email: testEmail})
+	jsonSize, cborSize := s.JSON, s.CBOR
+
 	if jsonSize <= 0 {
 		t.Errorf("jsonSize = %d, want > 0", jsonSize)
 	}
@@ -123,7 +127,9 @@ func TestSize_EncodeError(t *testing.T) {
 	t.Parallel()
 
 	// chan cannot be encoded by either codec
-	jsonSize, cborSize := Size(make(chan int))
+	s := codec.Size(make(chan int))
+	jsonSize, cborSize := s.JSON, s.CBOR
+
 	if jsonSize != -1 {
 		t.Errorf("jsonSize = %d, want -1 for unencodable value", jsonSize)
 	}

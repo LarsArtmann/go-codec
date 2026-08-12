@@ -1,12 +1,15 @@
-package codec
+package codec_test
 
 import (
 	"testing"
 
+	"github.com/larsartmann/go-codec"
 	"github.com/onsi/gomega"
 )
 
 func TestCBORCompactCodecRoundTrip(t *testing.T) {
+	t.Parallel()
+
 	g := gomega.NewWithT(t)
 
 	type payload struct {
@@ -14,23 +17,25 @@ func TestCBORCompactCodecRoundTrip(t *testing.T) {
 		Version int    `json:"version"`
 	}
 
-	codec := CBORCompactCodec{}
-	g.Expect(codec.Encoding()).To(gomega.Equal(EncodingCBOR))
+	c := codec.CBORCompactCodec{}
+	g.Expect(c.Encoding()).To(gomega.Equal(codec.EncodingCBOR))
 
-	original := payload{Name: "user.created", Version: 3}
+	original := payload{Name: testEventType, Version: 3}
 
-	data, err := codec.Encode(original)
+	data, err := c.Encode(original)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(data).NotTo(gomega.BeEmpty())
 
 	var decoded payload
 
-	err = codec.Decode(data, &decoded)
+	err = c.Decode(data, &decoded)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(decoded).To(gomega.Equal(original))
 }
 
 func TestCBORCompactCodecRejectsUnknownFields(t *testing.T) {
+	t.Parallel()
+
 	g := gomega.NewWithT(t)
 
 	type v1 struct {
@@ -42,18 +47,20 @@ func TestCBORCompactCodecRejectsUnknownFields(t *testing.T) {
 		NewField string `json:"newField"`
 	}
 
-	codec := CBORCompactCodec{}
+	c := codec.CBORCompactCodec{}
 
-	data, err := codec.Encode(v2{Name: "test", NewField: "extra"})
+	data, err := c.Encode(v2{Name: testValue, NewField: "extra"})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	var decoded v1
 
-	err = codec.Decode(data, &decoded)
+	err = c.Decode(data, &decoded)
 	g.Expect(err).To(gomega.HaveOccurred(), "should reject unknown field 'new_field'")
 }
 
 func TestCBORCompactCodecNotCompatibleWithCBORCodec(t *testing.T) {
+	t.Parallel()
+
 	g := gomega.NewWithT(t)
 
 	// The two codecs use different sort orders — output bytes should differ.
@@ -62,10 +69,10 @@ func TestCBORCompactCodecNotCompatibleWithCBORCodec(t *testing.T) {
 		A string `json:"a"`
 	}
 
-	standard, err := CBORCodec{}.Encode(payload{A: "1", B: "2"})
+	standard, err := codec.CBORCodec{}.Encode(payload{A: "1", B: "2"})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	compact, err := CBORCompactCodec{}.Encode(payload{A: "1", B: "2"})
+	compact, err := codec.CBORCompactCodec{}.Encode(payload{A: "1", B: "2"})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	// CoreDet uses SortBytewiseLexical, Canonical uses SortLengthFirst.
@@ -76,10 +83,10 @@ func TestCBORCompactCodecNotCompatibleWithCBORCodec(t *testing.T) {
 		Charlie string `json:"charlie"`
 	}
 
-	stdLong, err := CBORCodec{}.Encode(longPayload{Alpha: "a", Bravo: "b", Charlie: "c"})
+	stdLong, err := codec.CBORCodec{}.Encode(longPayload{Alpha: "a", Bravo: "b", Charlie: "c"})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	cptLong, err := CBORCompactCodec{}.Encode(longPayload{Alpha: "a", Bravo: "b", Charlie: "c"})
+	cptLong, err := codec.CBORCompactCodec{}.Encode(longPayload{Alpha: "a", Bravo: "b", Charlie: "c"})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	// They might or might not differ depending on key lengths.
@@ -92,24 +99,28 @@ func TestCBORCompactCodecNotCompatibleWithCBORCodec(t *testing.T) {
 }
 
 func TestDiagnose(t *testing.T) {
+	t.Parallel()
+
 	g := gomega.NewWithT(t)
 
 	type payload struct {
 		Name string `json:"name"`
 	}
 
-	data, err := CBORCodec{}.Encode(payload{Name: "test"})
+	data, err := codec.CBORCodec{}.Encode(payload{Name: testValue})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	diag, err := Diagnose(data)
+	diag, err := codec.Diagnose(data)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(diag).To(gomega.ContainSubstring("name"))
-	g.Expect(diag).To(gomega.ContainSubstring("test"))
+	g.Expect(diag).To(gomega.ContainSubstring(testField))
+	g.Expect(diag).To(gomega.ContainSubstring(testValue))
 }
 
 func TestDiagnoseInvalidCBOR(t *testing.T) {
+	t.Parallel()
+
 	g := gomega.NewWithT(t)
 
-	_, err := Diagnose([]byte{0xff, 0xff})
+	_, err := codec.Diagnose([]byte{0xff, 0xff})
 	g.Expect(err).To(gomega.HaveOccurred())
 }

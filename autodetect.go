@@ -4,6 +4,12 @@ package codec
 // (arrays 0x80-0x9f, maps 0xa0-0xbf). These never start valid JSON.
 const cborMinMajorType byte = 0x80
 
+// maxAutoDetectSize bounds the size of trial-decode input. The first-byte
+// heuristic above is O(1) and runs on any size, but trial JSON/CBOR decoding
+// of oversized payloads is a DoS vector. Payloads larger than this that reach
+// the trial-decode fallback return EncodingRaw.
+const maxAutoDetectSize = 1 << 20 // 1 MiB
+
 // AutoDetect inspects raw payload bytes and returns the most likely [Encoding].
 // It distinguishes JSON from CBOR by examining the structural first byte:
 //
@@ -40,6 +46,10 @@ func AutoDetect(data []byte) Encoding {
 	// JSON keywords and numbers (ASCII letters/digits/signs). These overlap
 	// with CBOR major types 0-3, so try JSON decode first.
 	if isJSONStart(first) {
+		if len(data) > maxAutoDetectSize {
+			return EncodingRaw
+		}
+
 		var v any
 		if (JSONCodec{}).Decode(data, &v) == nil {
 			return EncodingJSON
@@ -49,6 +59,10 @@ func AutoDetect(data []byte) Encoding {
 	}
 
 	// Remaining bytes are either CBOR scalars or unrecognised.
+	if len(data) > maxAutoDetectSize {
+		return EncodingRaw
+	}
+
 	var v any
 	if err := (CBORCodec{}).Decode(data, &v); err == nil {
 		return EncodingCBOR

@@ -107,6 +107,7 @@ linters:
         - tagliatelle
         - testableexamples
         - testifylint
+        - testpackage
         - thelper
         - tparallel
         - unconvert
@@ -168,7 +169,7 @@ linters:
                 - github.com/fxamacker/cbor/v2\.(Enc|Dec)Mode
                 - github.com/larsartmann/go-codec\.Codec
         makezero:
-            always: false
+            always: true
         mnd:
             ignored-numbers:
                 - "0"
@@ -229,9 +230,6 @@ linters:
               linters:
                 - errcheck
                 - err113
-                - goconst
-                - paralleltest
-                - tagliatelle
                 - varnamelen
                 - wrapcheck
             - path: _test\.go

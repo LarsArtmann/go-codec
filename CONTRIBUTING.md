@@ -54,7 +54,24 @@ output format, update the snapshots:
 
 ```bash
 UPDATE_SNAPSHOTS=true go test ./...
+UPDATE_SNAPSHOTS=true GOEXPERIMENT=jsonv2 go test ./...
 ```
+
+Stale snapshots are automatically cleaned by `snaps.Clean(m)` in `TestMain`.
+
+## Test Conventions
+
+- **External tests preferred**: most test files use `package codec_test` (black-box).
+  A few files (`normalize_test.go`, `export_test.go`, `testdata_test.go`) use
+  `package codec` (white-box) for testing unexported helpers — these carry
+  `//nolint:testpackage`.
+- **Parallel by default**: all top-level test functions call `t.Parallel()`.
+  Subtests that are safe for parallel execution should too.
+- **Shared fixtures**: test constants live in `testdata_ext_test.go` (external)
+  and `testdata_test.go` (internal). Reuse existing constants instead of
+  duplicating string literals.
+- **Both JSON modes**: always test in both v1 and v2 modes. CI runs both
+  automatically.
 
 ## Reporting Issues
 

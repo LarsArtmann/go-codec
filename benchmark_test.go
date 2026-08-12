@@ -11,7 +11,7 @@ func BenchmarkJSONCodec_Encode(b *testing.B) {
 	b.ReportAllocs()
 
 	c := codec.JSONCodec{}
-	payload := map[string]string{"name": "Alice", "email": "alice@example.com"}
+	payload := map[string]string{testField: testName, testFieldE: testEmail}
 
 	b.ResetTimer()
 
@@ -27,7 +27,7 @@ func BenchmarkJSONCodec_Decode(b *testing.B) {
 	b.ReportAllocs()
 
 	c := codec.JSONCodec{}
-	data, _ := c.Encode(map[string]string{"name": "Alice", "email": "alice@example.com"})
+	data, _ := c.Encode(map[string]string{testField: testName, testFieldE: testEmail})
 
 	b.ResetTimer()
 
@@ -43,7 +43,7 @@ func BenchmarkCBORCodec_Encode(b *testing.B) {
 	b.ReportAllocs()
 
 	c := codec.CBORCodec{}
-	payload := map[string]string{"name": "Alice", "email": "alice@example.com"}
+	payload := map[string]string{testField: testName, testFieldE: testEmail}
 
 	b.ResetTimer()
 
@@ -59,7 +59,7 @@ func BenchmarkCBORCodec_Decode(b *testing.B) {
 	b.ReportAllocs()
 
 	c := codec.CBORCodec{}
-	data, _ := c.Encode(map[string]string{"name": "Alice", "email": "alice@example.com"})
+	data, _ := c.Encode(map[string]string{testField: testName, testFieldE: testEmail})
 
 	b.ResetTimer()
 
@@ -76,7 +76,7 @@ func BenchmarkCodecComparison_Encode(b *testing.B) {
 
 	jsonCodec := codec.JSONCodec{}
 	cborCodec := codec.CBORCodec{}
-	payload := map[string]string{"name": "Alice", "email": "alice@example.com"}
+	payload := map[string]string{testField: testName, testFieldE: testEmail}
 
 	b.Run("JSON", func(b *testing.B) {
 		b.ReportAllocs()
@@ -108,7 +108,7 @@ func BenchmarkCodecComparison_Decode(b *testing.B) {
 
 	jsonCodec := codec.JSONCodec{}
 	cborCodec := codec.CBORCodec{}
-	payload := map[string]string{"name": "Alice", "email": "alice@example.com"}
+	payload := map[string]string{testField: testName, testFieldE: testEmail}
 
 	jsonData, _ := jsonCodec.Encode(payload)
 	cborData, _ := cborCodec.Encode(payload)
@@ -178,7 +178,7 @@ func BenchmarkCBORCompact_vs_Canon_Size(b *testing.B) {
 		Active  bool
 	}
 
-	payload := eventPayload{Name: "Alice", Email: "alice@example.com", Version: 42, Active: true}
+	payload := eventPayload{Name: testName, Email: testEmail, Version: 42, Active: true}
 
 	canonical := codec.CBORCodec{}
 	compact := codec.CBORCompactCodec{}

@@ -264,7 +264,7 @@ go-codec supports both `encoding/json` (v1, the default) and `encoding/json/v2`
 (opt-in). The library uses the [go-branded-id dual-build pattern](https://github.com/larsartmann/go-branded-id):
 build-tagged compat files select the JSON implementation at compile time.
 
-**Default (v1):** `go build ./...` — uses `encoding/json`, works on Go 1.23+.
+**Default (v1):** `go build ./...` — uses `encoding/json`, works on Go 1.26.5+.
 
 **Opt-in (v2):** `GOEXPERIMENT=jsonv2 go build ./...` — uses `encoding/json/v2`
 (Go 1.25+ with the experiment flag, or Go 1.27+ natively).

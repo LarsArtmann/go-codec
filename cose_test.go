@@ -9,6 +9,8 @@ import (
 )
 
 func TestCOSEConstants(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	g.Expect(codec.COSEHeaderAlg).To(Equal(int64(1)))
@@ -21,6 +23,8 @@ func TestCOSEConstants(t *testing.T) {
 }
 
 func TestMarshalCOSEProtectedHeader(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	headers := map[int64]any{
@@ -38,6 +42,8 @@ func TestMarshalCOSEProtectedHeader(t *testing.T) {
 }
 
 func TestMarshalUnmarshalCOSESign1(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	protected, err := codec.MarshalCOSEProtectedHeader(map[int64]any{
@@ -67,6 +73,8 @@ func TestMarshalUnmarshalCOSESign1(t *testing.T) {
 }
 
 func TestMarshalUnmarshalCOSESign1DetachedPayload(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	msg := codec.COSESign1{
@@ -86,6 +94,8 @@ func TestMarshalUnmarshalCOSESign1DetachedPayload(t *testing.T) {
 }
 
 func TestMarshalUnmarshalCOSEEncrypt0(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	protected, err := codec.MarshalCOSEProtectedHeader(map[int64]any{
@@ -113,6 +123,8 @@ func TestMarshalUnmarshalCOSEEncrypt0(t *testing.T) {
 }
 
 func TestCOSESigStructure(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	protected, err := codec.MarshalCOSEProtectedHeader(map[int64]any{
@@ -149,6 +161,8 @@ func TestCOSESigStructure(t *testing.T) {
 }
 
 func TestCOSEEncStructure0(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	protected, err := codec.MarshalCOSEProtectedHeader(map[int64]any{
@@ -178,6 +192,8 @@ func TestCOSEEncStructure0(t *testing.T) {
 }
 
 func TestUnmarshalCOSESign1InvalidLength(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	// A 3-element array is not a valid COSE_Sign1.
@@ -189,6 +205,8 @@ func TestUnmarshalCOSESign1InvalidLength(t *testing.T) {
 }
 
 func TestUnmarshalCOSEEncrypt0InvalidLength(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	data, err := codec.CBOREncMode().Marshal([]any{[]byte{}, map[int64]any{}, []byte{}, []byte{}})
@@ -199,6 +217,8 @@ func TestUnmarshalCOSEEncrypt0InvalidLength(t *testing.T) {
 }
 
 func TestCOSESign1String(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	msg := codec.COSESign1{
@@ -214,6 +234,8 @@ func TestCOSESign1String(t *testing.T) {
 }
 
 func TestCOSEEncrypt0String(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 
 	msg := codec.COSEEncrypt0{

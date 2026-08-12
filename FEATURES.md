@@ -15,6 +15,14 @@
 
 > All statuses verified by running `go test ./...` and
 > `GOEXPERIMENT=jsonv2 go test ./...` with `-race` (both JSON modes green).
+> Test coverage: **82.4%** (v1) / **81.9%** (v2) of statements.
+
+## Performance
+
+| Benchmark | v1 (ns/op) | v2 (ns/op) | v1 allocs | v2 allocs |
+| --- | --- | --- | --- | --- |
+| `BenchmarkNormalizeForJSON` | 1562 | 932 (-40%) | 19 | 9 (-53%) |
+| `BenchmarkJSONCodec_MarshalUnmarshal` | 937 | 614 (-35%) | 8 | 3 (-63%) |
 
 ## Codecs
 
@@ -31,7 +39,20 @@
 | Feature                                              | Status                | Notes                                                                       |
 | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
 | `ForEncoding` — encoding stamp → codec (all 3 encodings) | 🟢 `FULLY_FUNCTIONAL` | `codec.go`; JSON/CBOR/Raw resolve, unknown returns `ErrUnknownEncoding`, round-trips with `AutoDetect` — `resolve_test.go` |
-| `AutoDetect` — infer encoding from raw bytes         | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; empty→raw, JSON/CBOR first-byte + trial decode — `autodetect_test.go`. Heuristic, not a security boundary |
+| `AutoDetect` — infer encoding from raw bytes         | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; empty→raw, JSON/CBOR first-byte + trial decode, 1 MiB size guard on trial-decode — `autodetect_test.go`. Heuristic, not a security boundary |
+
+## Security hardening
+
+| Feature                                          | Status                | Notes                                                                  |
+| ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
+| `normalizeForJSON` depth cap (`maxDepth=100`)   | 🟢 `FULLY_FUNCTIONAL` | `json_compat_v1.go`; prevents stack-exhaustion DoS from adversarial CBOR. Tests + fuzz — `normalize_test.go`, `normalize_fuzz_test.go` |
+| `AutoDetect` size guard (`maxAutoDetectSize=1MiB`) | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; trial-decode skipped for oversized ambiguous input |
+
+## Buffer management
+
+| Feature                                          | Status                | Notes                                                                  |
+| ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
+| `GetBuffer` / `PutBuffer` — `sync.Pool` helper  | 🟢 `FULLY_FUNCTIONAL` | `pool.go`; reusable `*bytes.Buffer` for `BufferEncoder` hot paths     |
 
 ## Shared CBOR infrastructure
 
@@ -39,7 +60,7 @@
 | ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
 | `CBOREncMode` / `CBORDecMode` — exported modes  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; sibling modules reuse these for byte-identical output — `streaming_test.go` |
 | `Diagnose` — CBOR extended diagnostic notation  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; valid + invalid-CBOR cases — `cbor_compact_test.go`        |
-| `Size` — JSON vs CBOR byte-size comparison       | 🟢 `FULLY_FUNCTIONAL` | `size.go`; normal + encode-error paths — `autodetect_test.go`         |
+| `Size` — JSON vs CBOR byte-size comparison       | 🟢 `FULLY_FUNCTIONAL` | `size.go`; returns `SizeResult{JSON, CBOR}` struct; normal + encode-error paths — `autodetect_test.go`         |
 | `toarray` / `keyasint` / `omitzero` tag support | 🟢 `FULLY_FUNCTIONAL` | Via fxamacker/cbor; struct tags + godoc examples — `codec_test.go`, `example_test.go` |
 
 ## Cross-format transcoding

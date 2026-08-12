@@ -1,38 +1,40 @@
-package codec
+package codec_test
 
 import (
 	"math"
 	"math/big"
 	"strings"
 	"testing"
+
+	"github.com/larsartmann/go-codec"
 )
 
 func TestTranscodeToJSON_CBOR_Map(t *testing.T) {
 	t.Parallel()
 
-	in := map[string]any{"name": "alice", "count": 42.0}
+	in := map[string]any{testField: testUserName, testCount: 42.0}
 
-	cborData, err := (CBORCodec{}).Encode(in)
+	cborData, err := (codec.CBORCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode CBOR: %v", err)
 	}
 
-	out, err := TranscodeToJSON(cborData, EncodingCBOR)
+	out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 	if err != nil {
 		t.Fatalf("transcode: %v", err)
 	}
 
 	var got map[string]any
-	if err := jsonUnmarshal(out, &got); err != nil {
+	if err := codec.JSONUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
-	if got["name"] != "alice" {
-		t.Errorf("name = %v, want alice", got["name"])
+	if got[testField] != testUserName {
+		t.Errorf("name = %v, want alice", got[testField])
 	}
 
-	if got["count"] != float64(42) {
-		t.Errorf("count = %v, want 42", got["count"])
+	if got[testCount] != float64(42) {
+		t.Errorf("count = %v, want 42", got[testCount])
 	}
 }
 
@@ -48,18 +50,18 @@ func TestTranscodeToJSON_CBOR_ToArrayStruct_StaysArray(t *testing.T) {
 		Email string
 	}
 
-	cborData, err := (CBORCodec{}).Encode(user{Name: "alice", Email: "a@b.com"})
+	cborData, err := (codec.CBORCodec{}).Encode(user{Name: testUserName, Email: "a@b.com"})
 	if err != nil {
 		t.Fatalf("encode: %v", err)
 	}
 
-	out, err := TranscodeToJSON(cborData, EncodingCBOR)
+	out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 	if err != nil {
 		t.Fatalf("transcode: %v", err)
 	}
 
 	var got []any
-	if err := jsonUnmarshal(out, &got); err != nil {
+	if err := codec.JSONUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
@@ -67,7 +69,7 @@ func TestTranscodeToJSON_CBOR_ToArrayStruct_StaysArray(t *testing.T) {
 		t.Fatalf("len = %d, want 2; json: %s", len(got), out)
 	}
 
-	if got[0] != "alice" || got[1] != "a@b.com" {
+	if got[0] != testUserName || got[1] != "a@b.com" {
 		t.Errorf("got = %v, want [alice a@b.com]", got)
 	}
 }
@@ -77,7 +79,7 @@ func TestTranscodeToJSON_JSON_Passthrough(t *testing.T) {
 
 	payload := []byte(`{"already":"json"}`)
 
-	out, err := TranscodeToJSON(payload, EncodingJSON)
+	out, err := codec.TranscodeToJSON(payload, codec.EncodingJSON)
 	if err != nil {
 		t.Fatalf("transcode: %v", err)
 	}
@@ -92,7 +94,7 @@ func TestTranscodeToJSON_Raw_Passthrough(t *testing.T) {
 
 	payload := []byte(`{"maybe":"json-or-not"}`)
 
-	out, err := TranscodeToJSON(payload, EncodingRaw)
+	out, err := codec.TranscodeToJSON(payload, codec.EncodingRaw)
 	if err != nil {
 		t.Fatalf("transcode: %v", err)
 	}
@@ -108,7 +110,7 @@ func TestTranscodeToJSON_InvalidCBOR_Error(t *testing.T) {
 	// 0xa1 = CBOR map of 1 pair, but the trailing key/value are garbage.
 	badCBOR := []byte{0xa1, 0xff, 0xff}
 
-	_, err := TranscodeToJSON(badCBOR, EncodingCBOR)
+	_, err := codec.TranscodeToJSON(badCBOR, codec.EncodingCBOR)
 	if err == nil {
 		t.Fatal("expected error for invalid CBOR, got nil")
 	}
@@ -122,29 +124,29 @@ func TestTranscodeToJSON_NestedAndScalars(t *testing.T) {
 	t.Parallel()
 
 	in := map[string]any{
-		"nested": map[string]any{"deep": []any{1, "two", true}},
-		"flag":   true,
-		"none":   nil,
+		testNested: map[string]any{"deep": []any{1, "two", true}},
+		"flag":     true,
+		"none":     nil,
 	}
 
-	cborData, err := (CBORCodec{}).Encode(in)
+	cborData, err := (codec.CBORCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode: %v", err)
 	}
 
-	out, err := TranscodeToJSON(cborData, EncodingCBOR)
+	out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 	if err != nil {
 		t.Fatalf("transcode: %v", err)
 	}
 
 	var got map[string]any
-	if err := jsonUnmarshal(out, &got); err != nil {
+	if err := codec.JSONUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
-	nested, ok := got["nested"].(map[string]any)
+	nested, ok := got[testNested].(map[string]any)
 	if !ok {
-		t.Fatalf("nested not a map: %T", got["nested"])
+		t.Fatalf("nested not a map: %T", got[testNested])
 	}
 
 	deep, ok := nested["deep"].([]any)
@@ -167,29 +169,29 @@ func TestTranscodeToJSON_CBORCompactCodec(t *testing.T) {
 	// CBORCompactCodec reports EncodingCBOR too (ADR-CODEC). Its wire format
 	// must be decodable by the canonical decoder TranscodeToJSON uses, so the
 	// two CBOR variants share one transcode path.
-	in := map[string]any{"name": "compact", "count": 7.0}
+	in := map[string]any{testField: "compact", testCount: 7.0}
 
-	cborData, err := (CBORCompactCodec{}).Encode(in)
+	cborData, err := (codec.CBORCompactCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode compact CBOR: %v", err)
 	}
 
-	out, err := TranscodeToJSON(cborData, EncodingCBOR)
+	out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 	if err != nil {
 		t.Fatalf("transcode: %v", err)
 	}
 
 	var got map[string]any
-	if err := jsonUnmarshal(out, &got); err != nil {
+	if err := codec.JSONUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
-	if got["name"] != "compact" {
-		t.Errorf("name = %v, want compact", got["name"])
+	if got[testField] != "compact" {
+		t.Errorf("name = %v, want compact", got[testField])
 	}
 
-	if got["count"] != float64(7) {
-		t.Errorf("count = %v, want 7", got["count"])
+	if got[testCount] != float64(7) {
+		t.Errorf("count = %v, want 7", got[testCount])
 	}
 }
 
@@ -214,12 +216,12 @@ func TestTranscodeToJSON_LargeNumbers(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			cborData, err := (CBORCodec{}).Encode(map[string]any{"n": tc.val})
+			cborData, err := (codec.CBORCodec{}).Encode(map[string]any{"n": tc.val})
 			if err != nil {
 				t.Fatalf("encode: %v", err)
 			}
 
-			out, err := TranscodeToJSON(cborData, EncodingCBOR)
+			out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 			if err != nil {
 				t.Fatalf("transcode: %v", err)
 			}
@@ -228,7 +230,7 @@ func TestTranscodeToJSON_LargeNumbers(t *testing.T) {
 			// generic-decode path (float64 vs decimal number); we only assert
 			// validity + key presence, since float64 loses precision above 2^53.
 			var got map[string]any
-			if err := jsonUnmarshal(out, &got); err != nil {
+			if err := codec.JSONUnmarshal(out, &got); err != nil {
 				t.Fatalf("invalid JSON: %v\nraw: %s", err, out)
 			}
 
@@ -247,12 +249,12 @@ func TestTranscodeToJSON_EmptyContainers(t *testing.T) {
 	t.Run("empty_map", func(t *testing.T) {
 		t.Parallel()
 
-		cborData, err := (CBORCodec{}).Encode(map[string]any{})
+		cborData, err := (codec.CBORCodec{}).Encode(map[string]any{})
 		if err != nil {
 			t.Fatalf("encode: %v", err)
 		}
 
-		out, err := TranscodeToJSON(cborData, EncodingCBOR)
+		out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 		if err != nil {
 			t.Fatalf("transcode: %v", err)
 		}
@@ -265,12 +267,12 @@ func TestTranscodeToJSON_EmptyContainers(t *testing.T) {
 	t.Run("empty_array", func(t *testing.T) {
 		t.Parallel()
 
-		cborData, err := (CBORCodec{}).Encode([]any{})
+		cborData, err := (codec.CBORCodec{}).Encode([]any{})
 		if err != nil {
 			t.Fatalf("encode: %v", err)
 		}
 
-		out, err := TranscodeToJSON(cborData, EncodingCBOR)
+		out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 		if err != nil {
 			t.Fatalf("transcode: %v", err)
 		}
@@ -294,18 +296,18 @@ func TestTranscodeToJSON_MapKeysRoundTrip(t *testing.T) {
 
 	in := map[string]any{"zebra": 1, "apple": 2, "mango": 3}
 
-	cborData, err := (CBORCodec{}).Encode(in)
+	cborData, err := (codec.CBORCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode: %v", err)
 	}
 
-	out, err := TranscodeToJSON(cborData, EncodingCBOR)
+	out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 	if err != nil {
 		t.Fatalf("transcode: %v", err)
 	}
 
 	var got map[string]any
-	if err := jsonUnmarshal(out, &got); err != nil {
+	if err := codec.JSONUnmarshal(out, &got); err != nil {
 		t.Fatalf("invalid JSON: %v\nraw: %s", err, out)
 	}
 
@@ -332,18 +334,18 @@ func TestTranscodeToJSON_ByteSliceAsBase64(t *testing.T) {
 
 	in := map[string]any{"data": []byte("hello world")}
 
-	cborData, err := (CBORCodec{}).Encode(in)
+	cborData, err := (codec.CBORCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode: %v", err)
 	}
 
-	out, err := TranscodeToJSON(cborData, EncodingCBOR)
+	out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 	if err != nil {
 		t.Fatalf("transcode: %v", err)
 	}
 
 	var got map[string]any
-	if err := jsonUnmarshal(out, &got); err != nil {
+	if err := codec.JSONUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
@@ -377,12 +379,12 @@ func TestTranscodeToJSON_FloatSpecials(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			cborData, err := (CBORCodec{}).Encode(map[string]any{"v": tc.val})
+			cborData, err := (codec.CBORCodec{}).Encode(map[string]any{"v": tc.val})
 			if err != nil {
 				t.Fatalf("encode: %v", err)
 			}
 
-			out, err := TranscodeToJSON(cborData, EncodingCBOR)
+			out, err := codec.TranscodeToJSON(cborData, codec.EncodingCBOR)
 			if err != nil {
 				// Error is acceptable: JSON cannot represent NaN/Inf.
 				return
@@ -391,7 +393,7 @@ func TestTranscodeToJSON_FloatSpecials(t *testing.T) {
 			// If it didn't error, the output must still be valid JSON
 			// (some json encoders emit null for these).
 			var probe any
-			if perr := jsonUnmarshal(out, &probe); perr != nil {
+			if perr := codec.JSONUnmarshal(out, &probe); perr != nil {
 				t.Errorf("produced invalid JSON for %s: %v\nraw: %s", tc.name, perr, out)
 			}
 		})
@@ -409,7 +411,7 @@ func TestTranscodeToJSON_DuplicateMapKeys(t *testing.T) {
 	// 0x61 0x61 = str("a"), 0x02 = int(2).
 	dupKeys := []byte{0xa2, 0x61, 0x61, 0x01, 0x61, 0x61, 0x02}
 
-	_, err := TranscodeToJSON(dupKeys, EncodingCBOR)
+	_, err := codec.TranscodeToJSON(dupKeys, codec.EncodingCBOR)
 	if err == nil {
 		t.Fatal("expected error for duplicate map keys, got nil")
 	}
@@ -430,14 +432,14 @@ func TestTranscodeToJSON_CBORTag0(t *testing.T) {
 	tagged := append([]byte{0xc0, 0x74},
 		[]byte("2026-07-27T00:00:00Z")...)
 
-	out, err := TranscodeToJSON(tagged, EncodingCBOR)
+	out, err := codec.TranscodeToJSON(tagged, codec.EncodingCBOR)
 	if err != nil {
 		t.Fatalf("transcode tag 0: %v", err)
 	}
 
 	// Tag 0 decodes to time.Time → JSON string "2026-07-27T00:00:00Z".
 	var got string
-	if err := jsonUnmarshal(out, &got); err != nil {
+	if err := codec.JSONUnmarshal(out, &got); err != nil {
 		t.Fatalf("decode JSON: %v\nraw: %s", err, out)
 	}
 

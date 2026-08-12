@@ -1,9 +1,11 @@
-package codec
+package codec_test
 
 import (
 	"bytes"
 	"errors"
 	"testing"
+
+	"github.com/larsartmann/go-codec"
 )
 
 func TestDecodeBase64String_URLSafe(t *testing.T) {
@@ -13,9 +15,9 @@ func TestDecodeBase64String_URLSafe(t *testing.T) {
 	raw := []byte{0xff, 0x00, 0xfe}
 	encoded := "_wD-" // base64.URLEncoding
 
-	got, err := DecodeBase64String(encoded)
+	got, err := codec.DecodeBase64String(encoded)
 	if err != nil {
-		t.Fatalf("DecodeBase64String: %v", err)
+		t.Fatalf("codec.DecodeBase64String: %v", err)
 	}
 
 	if !bytes.Equal(got, raw) {
@@ -30,9 +32,9 @@ func TestDecodeBase64String_StandardFallback(t *testing.T) {
 	raw := []byte{0xfb, 0xff, 0xbf}
 	encoded := "+/+/" // base64.StdEncoding (has +)
 
-	got, err := DecodeBase64String(encoded)
+	got, err := codec.DecodeBase64String(encoded)
 	if err != nil {
-		t.Fatalf("DecodeBase64String: %v", err)
+		t.Fatalf("codec.DecodeBase64String: %v", err)
 	}
 
 	if !bytes.Equal(got, raw) {
@@ -43,7 +45,7 @@ func TestDecodeBase64String_StandardFallback(t *testing.T) {
 func TestDecodeBase64String_Invalid(t *testing.T) {
 	t.Parallel()
 
-	_, err := DecodeBase64String("!!!not-base64!!!")
+	_, err := codec.DecodeBase64String("!!!not-base64!!!")
 	if err == nil {
 		t.Fatal("expected error for invalid base64")
 	}
@@ -54,9 +56,9 @@ func TestMarshalBase64JSON(t *testing.T) {
 
 	raw := []byte{0x01, 0x02, 0x03}
 
-	got, err := MarshalBase64JSON(raw)
+	got, err := codec.MarshalBase64JSON(raw)
 	if err != nil {
-		t.Fatalf("MarshalBase64JSON: %v", err)
+		t.Fatalf("codec.MarshalBase64JSON: %v", err)
 	}
 
 	// Should be a quoted base64 URL-safe string
@@ -70,9 +72,9 @@ func TestMarshalBase64JSONWithModule(t *testing.T) {
 
 	raw := []byte{0x01, 0x02}
 
-	got, err := MarshalBase64JSONWithModule(raw, "test", "data")
+	got, err := codec.MarshalBase64JSONWithModule(raw, "test", "data")
 	if err != nil {
-		t.Fatalf("MarshalBase64JSONWithModule: %v", err)
+		t.Fatalf("codec.MarshalBase64JSONWithModule: %v", err)
 	}
 
 	if string(got) != `"AQI="` {
@@ -83,9 +85,9 @@ func TestMarshalBase64JSONWithModule(t *testing.T) {
 func TestUnmarshalBase64JSON(t *testing.T) {
 	t.Parallel()
 
-	decoded, err := UnmarshalBase64JSON([]byte(`"AQID"`), "test", "data")
+	decoded, err := codec.UnmarshalBase64JSON([]byte(`"AQID"`), "test", "data")
 	if err != nil {
-		t.Fatalf("UnmarshalBase64JSON: %v", err)
+		t.Fatalf("codec.UnmarshalBase64JSON: %v", err)
 	}
 
 	want := []byte{0x01, 0x02, 0x03}
@@ -97,7 +99,7 @@ func TestUnmarshalBase64JSON(t *testing.T) {
 func TestUnmarshalBase64JSON_InvalidJSON(t *testing.T) {
 	t.Parallel()
 
-	_, err := UnmarshalBase64JSON([]byte(`not-json`), "test", "data")
+	_, err := codec.UnmarshalBase64JSON([]byte(`not-json`), "test", "data")
 	if err == nil {
 		t.Fatal("expected error for invalid JSON")
 	}
@@ -106,7 +108,7 @@ func TestUnmarshalBase64JSON_InvalidJSON(t *testing.T) {
 func TestUnmarshalBase64JSON_InvalidBase64(t *testing.T) {
 	t.Parallel()
 
-	_, err := UnmarshalBase64JSON([]byte(`"!!!invalid!!!"`), "test", "data")
+	_, err := codec.UnmarshalBase64JSON([]byte(`"!!!invalid!!!"`), "test", "data")
 	if err == nil {
 		t.Fatal("expected error for invalid base64")
 	}
@@ -117,9 +119,9 @@ func TestAssignBase64JSON(t *testing.T) {
 
 	var target []byte
 
-	err := AssignBase64JSON([]byte(`"AQID"`), "test", "data", &target)
+	err := codec.AssignBase64JSON([]byte(`"AQID"`), "test", "data", &target)
 	if err != nil {
-		t.Fatalf("AssignBase64JSON: %v", err)
+		t.Fatalf("codec.AssignBase64JSON: %v", err)
 	}
 
 	want := []byte{0x01, 0x02, 0x03}
@@ -131,7 +133,7 @@ func TestAssignBase64JSON(t *testing.T) {
 func TestWrapCOSEMarshal_NilError(t *testing.T) {
 	t.Parallel()
 
-	_, err := WrapCOSEMarshal(nil, errors.New("marshal failed"), "test", "msg")
+	_, err := codec.WrapCOSEMarshal(nil, errors.New("marshal failed"), "test", "msg")
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -142,9 +144,9 @@ func TestWrapCOSEMarshal_Success(t *testing.T) {
 
 	data := []byte{0x01}
 
-	got, err := WrapCOSEMarshal(data, nil, "test", "msg")
+	got, err := codec.WrapCOSEMarshal(data, nil, "test", "msg")
 	if err != nil {
-		t.Fatalf("WrapCOSEMarshal: %v", err)
+		t.Fatalf("codec.WrapCOSEMarshal: %v", err)
 	}
 
 	if !bytes.Equal(got, data) {
@@ -165,9 +167,9 @@ func TestPrepareCOSESetup(t *testing.T) {
 		func(c *config) { c.KID = kid },
 	}
 
-	protected, err := PrepareCOSESetup(&config{}, opts, COSEAlgAES256GCM)
+	protected, err := codec.PrepareCOSESetup(&config{}, opts, codec.COSEAlgAES256GCM)
 	if err != nil {
-		t.Fatalf("PrepareCOSESetup: %v", err)
+		t.Fatalf("codec.PrepareCOSESetup: %v", err)
 	}
 
 	if len(protected) == 0 {
@@ -175,21 +177,21 @@ func TestPrepareCOSESetup(t *testing.T) {
 	}
 
 	// The protected header should decode to {1: 3} (alg=AES256GCM)
-	headers, err := UnmarshalCOSEProtectedHeader(protected)
+	headers, err := codec.UnmarshalCOSEProtectedHeader(protected)
 	if err != nil {
-		t.Fatalf("UnmarshalCOSEProtectedHeader: %v", err)
+		t.Fatalf("codec.UnmarshalCOSEProtectedHeader: %v", err)
 	}
 
-	if alg, ok := headers[COSEHeaderAlg]; !ok {
+	if alg, ok := headers[codec.COSEHeaderAlg]; !ok {
 		t.Fatal("missing alg in protected header")
 	} else {
-		normalized, err := NormalizeCOSEAlgorithm(alg)
+		normalized, err := codec.NormalizeCOSEAlgorithm(alg)
 		if err != nil {
-			t.Fatalf("NormalizeCOSEAlgorithm: %v", err)
+			t.Fatalf("codec.NormalizeCOSEAlgorithm: %v", err)
 		}
 
-		if normalized != COSEAlgAES256GCM {
-			t.Errorf("alg = %d, want %d", normalized, COSEAlgAES256GCM)
+		if normalized != codec.COSEAlgAES256GCM {
+			t.Errorf("alg = %d, want %d", normalized, codec.COSEAlgAES256GCM)
 		}
 	}
 }

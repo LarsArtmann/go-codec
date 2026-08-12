@@ -18,6 +18,13 @@
 | -- | --------------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------------------ |
 | 1  | Verify `go-cqrs-lite` consumes `go-codec@v0.1.0` (downstream adoption proof) | 🔴 `TODO` | Med    | 15min  | No consumer has been wired to the published module yet.                        |
 | 2  | Create GitHub Release for `v0.1.0` (`gh release create v0.1.0`)             | 🔵 `BLOCKED` | Med | 5min  | Tag exists; awaiting user decision on tag strategy (keep at `3f8ac9d` or cut `v0.1.1`). |
+| 3  | Investigate and fix stale gopls/golangci-lint diagnostics                   | 🔵 `BLOCKED` | Critical | M | CLI passes; LSP cache/config mismatch. See status report 2026-08-12.         |
+| 4  | Re-run coverage and update `FEATURES.md` figures                            | 🔴 `TODO` | High   | S      | New tests added; coverage numbers likely stale.                                |
+| 5  | Add README telemetry section and `ExampleObserveCodec` / `ExampleAutoDetectDebug` | 🔴 `TODO` | High   | S      | End-user discoverability for the new observability APIs.                         |
+| 6  | Add concurrent stress test for `ObservableCodec` + `CodecMetrics`           | 🔴 `TODO` | High   | S      | Lock in the goroutine-safety claim.                                              |
+| 7  | Document `MetricsHook` panic policy                                       | 🔴 `TODO` | High   | S      | Decide and encode whether panics are recovered.                                |
+| 8  | Document `AutoDetectDebug.Detail` as human-readable / unstable              | 🔴 `TODO` | Medium | S      | Code should branch on `Reason`, not parse `Detail`.                              |
+| 9  | Add property/fuzz tests for `AutoDetect` ↔ `AutoDetectDebug` consistency    | 🔴 `TODO` | Medium | S      | Rapid/fuzz random payloads to lock in delegation.                                |
 
 ## Completed in this session (logged in CHANGELOG [Unreleased])
 

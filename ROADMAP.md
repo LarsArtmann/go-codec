@@ -65,12 +65,16 @@ Raw ideas:
 `Size` compares JSON vs CBOR sizes today; transcoding and autodetection already
 exist. There is room to make codec behavior more measurable.
 
-Raw ideas:
+Completed:
 
-- Encode/decode counters and last-result metrics hooks for stores that want
-  per-codec telemetry
-- A "why was this detected as X?" debug mode for `AutoDetect` to aid triage of
-  mixed-encoding streams
+- Per-codec telemetry hooks via the `ObservableCodec` decorator
+  (`ObserveCodec`, `CodecMetrics`, `MetricsSnapshot`, `MetricsHook`)
+- Explainable `AutoDetect` triage via `AutoDetectDebug`, `AutoDetectResult`, and
+  `DetectionReason`
+
+Remaining raw ideas:
+
+- (none — theme is complete for now)
 
 ### 5. Ecosystem & public presence
 

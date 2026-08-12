@@ -4,7 +4,8 @@ package codec
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 )
@@ -63,7 +64,7 @@ func jsonMarshalBuf(v any, buf *bytes.Buffer) error {
 
 // rawJSONValue is a JSON byte slice that passes through marshalling unchanged.
 // In v1 it aliases json.RawMessage.
-type rawJSONValue = json.RawMessage
+type rawJSONValue = jsontext.Value
 
 // maxNormalizeDepth bounds the recursion depth of normalizeForJSON to prevent
 // stack exhaustion from adversarial deeply-nested CBOR structures.

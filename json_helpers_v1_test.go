@@ -2,7 +2,7 @@
 
 package codec_test
 
-import "encoding/json"
+import "encoding/json/v2"
 
 // Test helpers backed by encoding/json (v1). The companion
 // json_helpers_v2_test.go (build-tagged goexperiment.jsonv2) provides the

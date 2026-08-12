@@ -77,7 +77,11 @@ func AutoDetectDebug(data []byte) AutoDetectResult {
 		return AutoDetectResult{
 			Encoding: EncodingCBOR,
 			Reason:   DetectionReasonCBORMajorType,
-			Detail:   fmt.Sprintf("first byte 0x%02x >= 0x%02x identifies CBOR major type 4-7", first, cborMinMajorType),
+			Detail: fmt.Sprintf(
+				"first byte 0x%02x >= 0x%02x identifies CBOR major type 4-7",
+				first,
+				cborMinMajorType,
+			),
 		}
 	}
 
@@ -98,7 +102,11 @@ func AutoDetectDebug(data []byte) AutoDetectResult {
 			return AutoDetectResult{
 				Encoding: EncodingRaw,
 				Reason:   DetectionReasonOversized,
-				Detail:   fmt.Sprintf("ambiguous JSON start but payload length %d exceeds maxAutoDetectSize %d", len(data), maxAutoDetectSize),
+				Detail: fmt.Sprintf(
+					"ambiguous JSON start but payload length %d exceeds maxAutoDetectSize %d",
+					len(data),
+					maxAutoDetectSize,
+				),
 			}
 		}
 
@@ -108,7 +116,10 @@ func AutoDetectDebug(data []byte) AutoDetectResult {
 			return AutoDetectResult{
 				Encoding: EncodingJSON,
 				Reason:   DetectionReasonJSONTrialDecode,
-				Detail:   fmt.Sprintf("first byte %q is a JSON scalar/keyword start and JSON trial decode succeeded", first),
+				Detail: fmt.Sprintf(
+					"first byte %q is a JSON scalar/keyword start and JSON trial decode succeeded",
+					first,
+				),
 			}
 		}
 

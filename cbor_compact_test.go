@@ -24,6 +24,7 @@ func TestCBORCompactCodecRoundTrip(t *testing.T) {
 	g.Expect(data).NotTo(gomega.BeEmpty())
 
 	var decoded payload
+
 	err = codec.Decode(data, &decoded)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(decoded).To(gomega.Equal(original))
@@ -35,6 +36,7 @@ func TestCBORCompactCodecRejectsUnknownFields(t *testing.T) {
 	type v1 struct {
 		Name string `json:"name"`
 	}
+
 	type v2 struct {
 		Name     string `json:"name"`
 		NewField string `json:"newField"`
@@ -46,6 +48,7 @@ func TestCBORCompactCodecRejectsUnknownFields(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	var decoded v1
+
 	err = codec.Decode(data, &decoded)
 	g.Expect(err).To(gomega.HaveOccurred(), "should reject unknown field 'new_field'")
 }
@@ -83,6 +86,7 @@ func TestCBORCompactCodecNotCompatibleWithCBORCodec(t *testing.T) {
 	// The important property is both are valid CBOR that round-trip correctly.
 	_ = standard
 	_ = compact
+
 	g.Expect(stdLong).NotTo(gomega.BeEmpty())
 	g.Expect(cptLong).NotTo(gomega.BeEmpty())
 }

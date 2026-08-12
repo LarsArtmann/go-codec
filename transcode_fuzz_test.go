@@ -23,6 +23,7 @@ func FuzzTranscodeToJSON(f *testing.F) {
 		t.Parallel()
 
 		enc := codec.Encoding(encStr)
+
 		out, err := codec.TranscodeToJSON(payload, enc)
 		if err != nil {
 			// On error, the contract is that callers fall back to the raw

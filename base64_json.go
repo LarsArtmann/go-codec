@@ -34,7 +34,7 @@ func DecodeBase64String(encoded string) ([]byte, error) {
 func MarshalBase64JSON(raw []byte) ([]byte, error) {
 	encoded := base64.URLEncoding.EncodeToString(raw)
 
-	return jsonMarshalDet(encoded) //nolint:wrapcheck // base64 encoding
+	return jsonMarshalDet(encoded)
 }
 
 // MarshalBase64JSONWithModule encodes raw bytes as base64 JSON and wraps any

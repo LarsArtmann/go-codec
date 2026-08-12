@@ -107,6 +107,7 @@ func ExampleCBORCompactCodec() {
 	data, _ := c.Encode(UserCreated{Name: "Alice", Email: "alice@example.com"})
 
 	var result UserCreated
+
 	_ = c.Decode(data, &result)
 
 	fmt.Println(result.Name, result.Email)
@@ -148,6 +149,7 @@ func ExampleCBORCodec_toarray() {
 		float64(len(mapData)-len(arrayData))/float64(len(mapData))*100)
 
 	var decoded PaymentProcessed
+
 	_ = c.Decode(arrayData, &decoded)
 	fmt.Println(decoded.PaymentID, decoded.AmountCents)
 
@@ -206,11 +208,13 @@ func ExampleNewCBOREncoder() {
 	dec := codec.NewCBORDecoder(&buf)
 
 	var events []Event
+
 	for {
 		var evt Event
 		if err := dec.Decode(&evt); err != nil {
 			break
 		}
+
 		events = append(events, evt)
 	}
 
@@ -259,6 +263,7 @@ func ExampleCBOREncMode() {
 	}
 
 	var decoded Snapshot
+
 	_ = codec.CBORDecMode().Unmarshal(data, &decoded)
 
 	fmt.Printf("%s/%d (%d bytes)\n", decoded.State, decoded.N, len(data))
@@ -299,6 +304,7 @@ func ExampleCBORCodec_keyasint() {
 	fmt.Printf("keyasint: %d bytes, string keys: %d bytes\n", len(data), len(stringData))
 
 	var decoded Claims
+
 	_ = c.Decode(data, &decoded)
 	fmt.Println(decoded.Iss)
 

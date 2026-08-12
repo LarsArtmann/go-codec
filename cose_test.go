@@ -4,9 +4,8 @@ import (
 	"testing"
 
 	"github.com/fxamacker/cbor/v2"
-	. "github.com/onsi/gomega"
-
 	"github.com/larsartmann/go-codec"
+	. "github.com/onsi/gomega"
 )
 
 func TestCOSEConstants(t *testing.T) {
@@ -129,7 +128,8 @@ func TestCOSESigStructure(t *testing.T) {
 	if err := cbor.Unmarshal(data, &arr); err != nil {
 		g.Expect(err).ToNot(HaveOccurred())
 	}
-	g.Expect(len(arr)).To(Equal(4))
+
+	g.Expect(arr).To(HaveLen(4))
 
 	var context string
 	g.Expect(cbor.Unmarshal(arr[0], &context)).To(Succeed())
@@ -162,7 +162,7 @@ func TestCOSEEncStructure0(t *testing.T) {
 
 	var arr []cbor.RawMessage
 	g.Expect(cbor.Unmarshal(data, &arr)).To(Succeed())
-	g.Expect(len(arr)).To(Equal(3))
+	g.Expect(arr).To(HaveLen(3))
 
 	var context string
 	g.Expect(cbor.Unmarshal(arr[0], &context)).To(Succeed())

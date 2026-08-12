@@ -81,6 +81,7 @@ func BenchmarkCodecComparison_Encode(b *testing.B) {
 	b.Run("JSON", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
+
 		for b.Loop() {
 			_, err := jsonCodec.Encode(payload)
 			if err != nil {
@@ -92,6 +93,7 @@ func BenchmarkCodecComparison_Encode(b *testing.B) {
 	b.Run("CBOR", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
+
 		for b.Loop() {
 			_, err := cborCodec.Encode(payload)
 			if err != nil {
@@ -114,6 +116,7 @@ func BenchmarkCodecComparison_Decode(b *testing.B) {
 	b.Run("JSON", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
+
 		for b.Loop() {
 			var result map[string]string
 			if err := jsonCodec.Decode(jsonData, &result); err != nil {
@@ -125,6 +128,7 @@ func BenchmarkCodecComparison_Decode(b *testing.B) {
 	b.Run("CBOR", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
+
 		for b.Loop() {
 			var result map[string]string
 			if err := cborCodec.Decode(cborData, &result); err != nil {
@@ -173,6 +177,7 @@ func BenchmarkCBORCompact_vs_Canon_Size(b *testing.B) {
 		Version int
 		Active  bool
 	}
+
 	payload := eventPayload{Name: "Alice", Email: "alice@example.com", Version: 42, Active: true}
 
 	canonical := codec.CBORCodec{}
@@ -199,6 +204,7 @@ func BenchmarkCBORCompact_vs_Canon_Size(b *testing.B) {
 		b.Run(tc.name+"/Encode", func(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
+
 			for b.Loop() {
 				_, err := tc.c.Encode(payload)
 				if err != nil {
@@ -294,6 +300,7 @@ func BenchmarkRealisticPayload_Encode(b *testing.B) {
 		b.Run(tc.name, func(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
+
 			for b.Loop() {
 				_, err := tc.c.Encode(tc.v)
 				if err != nil {
@@ -327,6 +334,7 @@ func BenchmarkRealisticPayload_Decode(b *testing.B) {
 	b.Run("JSON", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
+
 		for b.Loop() {
 			var result realisticOrder
 			if err := jsonCodec.Decode(jsonData, &result); err != nil {
@@ -338,6 +346,7 @@ func BenchmarkRealisticPayload_Decode(b *testing.B) {
 	b.Run("CBOR", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
+
 		for b.Loop() {
 			var result realisticOrder
 			if err := cborCodec.Decode(cborData, &result); err != nil {
@@ -349,6 +358,7 @@ func BenchmarkRealisticPayload_Decode(b *testing.B) {
 	b.Run("CBOR_compact_toarray", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
+
 		for b.Loop() {
 			var result realisticOrderArray
 			if err := compactCodec.Decode(compactData, &result); err != nil {
@@ -373,10 +383,13 @@ func BenchmarkBufferEncoder(b *testing.B) {
 	for _, tc := range codecs {
 		b.Run(tc.name, func(b *testing.B) {
 			buf := &bytes.Buffer{}
+
 			b.ReportAllocs()
 			b.ResetTimer()
+
 			for b.Loop() {
 				buf.Reset()
+
 				if err := tc.c.EncodeToBuffer(order, buf); err != nil {
 					b.Fatal(err)
 				}

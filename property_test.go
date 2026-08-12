@@ -3,10 +3,9 @@ package codec_test
 import (
 	"testing"
 
+	"github.com/larsartmann/go-codec"
 	"github.com/onsi/gomega"
 	"pgregory.net/rapid"
-
-	"github.com/larsartmann/go-codec"
 )
 
 type roundtripPayload struct {

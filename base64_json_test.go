@@ -53,6 +53,7 @@ func TestMarshalBase64JSON(t *testing.T) {
 	t.Parallel()
 
 	raw := []byte{0x01, 0x02, 0x03}
+
 	got, err := MarshalBase64JSON(raw)
 	if err != nil {
 		t.Fatalf("MarshalBase64JSON: %v", err)
@@ -68,6 +69,7 @@ func TestMarshalBase64JSONWithModule(t *testing.T) {
 	t.Parallel()
 
 	raw := []byte{0x01, 0x02}
+
 	got, err := MarshalBase64JSONWithModule(raw, "test", "data")
 	if err != nil {
 		t.Fatalf("MarshalBase64JSONWithModule: %v", err)
@@ -114,6 +116,7 @@ func TestAssignBase64JSON(t *testing.T) {
 	t.Parallel()
 
 	var target []byte
+
 	err := AssignBase64JSON([]byte(`"AQID"`), "test", "data", &target)
 	if err != nil {
 		t.Fatalf("AssignBase64JSON: %v", err)
@@ -138,6 +141,7 @@ func TestWrapCOSEMarshal_Success(t *testing.T) {
 	t.Parallel()
 
 	data := []byte{0x01}
+
 	got, err := WrapCOSEMarshal(data, nil, "test", "msg")
 	if err != nil {
 		t.Fatalf("WrapCOSEMarshal: %v", err)
@@ -183,6 +187,7 @@ func TestPrepareCOSESetup(t *testing.T) {
 		if err != nil {
 			t.Fatalf("NormalizeCOSEAlgorithm: %v", err)
 		}
+
 		if normalized != COSEAlgAES256GCM {
 			t.Errorf("alg = %d, want %d", normalized, COSEAlgAES256GCM)
 		}

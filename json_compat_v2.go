@@ -4,8 +4,8 @@ package codec
 
 import (
 	"bytes"
-	"encoding/json/v2"
 	"encoding/json/jsontext"
+	"encoding/json/v2"
 )
 
 // This file provides JSON helpers backed by encoding/json/v2, activated when

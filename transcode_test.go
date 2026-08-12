@@ -11,6 +11,7 @@ func TestTranscodeToJSON_CBOR_Map(t *testing.T) {
 	t.Parallel()
 
 	in := map[string]any{"name": "alice", "count": 42.0}
+
 	cborData, err := (CBORCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode CBOR: %v", err)
@@ -167,6 +168,7 @@ func TestTranscodeToJSON_CBORCompactCodec(t *testing.T) {
 	// must be decodable by the canonical decoder TranscodeToJSON uses, so the
 	// two CBOR variants share one transcode path.
 	in := map[string]any{"name": "compact", "count": 7.0}
+
 	cborData, err := (CBORCompactCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode compact CBOR: %v", err)
@@ -291,6 +293,7 @@ func TestTranscodeToJSON_MapKeysRoundTrip(t *testing.T) {
 	t.Parallel()
 
 	in := map[string]any{"zebra": 1, "apple": 2, "mango": 3}
+
 	cborData, err := (CBORCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode: %v", err)
@@ -314,6 +317,7 @@ func TestTranscodeToJSON_MapKeysRoundTrip(t *testing.T) {
 
 			continue
 		}
+
 		if gotV != wantV {
 			t.Errorf("key %q = %v, want %v", k, gotV, wantV)
 		}
@@ -327,6 +331,7 @@ func TestTranscodeToJSON_ByteSliceAsBase64(t *testing.T) {
 	t.Parallel()
 
 	in := map[string]any{"data": []byte("hello world")}
+
 	cborData, err := (CBORCodec{}).Encode(in)
 	if err != nil {
 		t.Fatalf("encode: %v", err)

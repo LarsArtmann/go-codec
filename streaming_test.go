@@ -9,6 +9,7 @@ func TestStreaming_CBOR(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
+
 	enc := NewCBOREncoder(&buf)
 	if enc == nil {
 		t.Fatal("NewCBOREncoder returned nil")
@@ -42,6 +43,7 @@ func TestStreaming_CBOREncoderMultiple(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
+
 	enc := NewCBOREncoder(&buf)
 
 	type item struct{ ID int }
@@ -52,6 +54,7 @@ func TestStreaming_CBOREncoderMultiple(t *testing.T) {
 	dec := NewCBORDecoder(&buf)
 
 	var first, second item
+
 	_ = dec.Decode(&first)
 	_ = dec.Decode(&second)
 

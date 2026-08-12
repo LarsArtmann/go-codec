@@ -11,6 +11,7 @@ func TestWrapEncode_JSON_RoundTrip(t *testing.T) {
 		Name  string `json:"name"`
 		Email string `json:"email"`
 	}
+
 	original := user{Name: "Alice", Email: "alice@example.com"}
 
 	wrapped, err := WrapEncode(original, JSONCodec{})
@@ -27,6 +28,7 @@ func TestWrapEncode_JSON_RoundTrip(t *testing.T) {
 	if err := c.Decode(inner, &decoded); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
+
 	if decoded != original {
 		t.Fatalf("got %+v, want %+v", decoded, original)
 	}
@@ -39,6 +41,7 @@ func TestWrapEncode_CBOR_RoundTrip(t *testing.T) {
 		SKU   string `json:"sku"`
 		Price int    `json:"price"`
 	}
+
 	original := item{SKU: "WIDGET-001", Price: 4999}
 
 	wrapped, err := WrapEncode(original, CBORCodec{})
@@ -55,6 +58,7 @@ func TestWrapEncode_CBOR_RoundTrip(t *testing.T) {
 	if err := c.Decode(inner, &decoded); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
+
 	if decoded != original {
 		t.Fatalf("got %+v, want %+v", decoded, original)
 	}
@@ -71,6 +75,7 @@ func TestUnwrapDecode_BackwardCompat_RawJSON(t *testing.T) {
 	if c.Encoding() != EncodingJSON {
 		t.Fatalf("expected fallback json codec, got %s", c.Encoding())
 	}
+
 	if string(inner) != string(rawJSON) {
 		t.Fatalf("inner data should be unchanged for raw data")
 	}
@@ -79,10 +84,12 @@ func TestUnwrapDecode_BackwardCompat_RawJSON(t *testing.T) {
 		Name  string `json:"name"`
 		Email string `json:"email"`
 	}
+
 	var decoded user
 	if err := c.Decode(inner, &decoded); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
+
 	if decoded.Name != "Bob" {
 		t.Fatalf("got name %q, want %q", decoded.Name, "Bob")
 	}
@@ -94,6 +101,7 @@ func TestUnwrapDecode_BackwardCompat_RawCBOR(t *testing.T) {
 	type item struct {
 		SKU string `json:"sku"`
 	}
+
 	original := item{SKU: "CBOR-RAW"}
 
 	rawCBOR, err := (CBORCodec{}).Encode(original)
@@ -106,6 +114,7 @@ func TestUnwrapDecode_BackwardCompat_RawCBOR(t *testing.T) {
 	if c.Encoding() != EncodingCBOR {
 		t.Fatalf("expected fallback cbor codec, got %s", c.Encoding())
 	}
+
 	if string(inner) != string(rawCBOR) {
 		t.Fatalf("inner data should be unchanged for raw data")
 	}
@@ -122,6 +131,7 @@ func TestUnwrapDecode_NonJSONData(t *testing.T) {
 	if c.Encoding() != EncodingJSON {
 		t.Fatalf("expected fallback codec")
 	}
+
 	if string(inner) != string(weird) {
 		t.Fatalf("data should be unchanged")
 	}
@@ -140,12 +150,15 @@ func TestWrapEncode_EnvelopeStructure(t *testing.T) {
 	if err := (JSONCodec{}).Decode(wrapped, &env); err != nil {
 		t.Fatalf("envelope should be JSON-decodable: %v", err)
 	}
+
 	if env.Magic != envelopeMagic {
 		t.Fatalf("magic = %q, want %q", env.Magic, envelopeMagic)
 	}
+
 	if env.Encoding != EncodingJSON {
 		t.Fatalf("encoding = %s, want %s", env.Encoding, EncodingJSON)
 	}
+
 	if len(env.Data) == 0 {
 		t.Fatal("inner data should not be empty")
 	}
@@ -158,6 +171,7 @@ func TestWrapEncode_Deterministic(t *testing.T) {
 		A string `json:"a"`
 		B string `json:"b"`
 	}
+
 	val := pair{A: "1", B: "2"}
 
 	a, _ := WrapEncode(val, JSONCodec{})

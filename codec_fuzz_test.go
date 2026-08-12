@@ -7,7 +7,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/fxamacker/cbor/v2"
-
 	"github.com/larsartmann/go-codec"
 )
 
@@ -140,6 +139,7 @@ func FuzzCBORCodec_Determinism(f *testing.F) {
 		if err != nil {
 			f.Fatalf("seed encode: %v", err)
 		}
+
 		f.Add(b)
 	}
 

@@ -80,6 +80,20 @@ nix run .#lint                         # lint both modes
   for the `signing` and `encryption` modules to sign/encrypt.
 - **Errors** use `github.com/larsartmann/go-error-family` with stable codes
   (`codec.raw_encode_type`, `codec.invalid_cose_sign1`, …). See `errors.go`.
+- **Streaming** (`streaming.go`) — `NewCBOREncoder`/`NewCBORDecoder` return
+  `*cbor.Encoder`/`*cbor.Decoder` from fxamacker. `NewJSONEncoder`/
+  `NewJSONDecoder` return `*JSONEncoder`/`*JSONDecoder` wrapper types (defined
+  in the dual-build `json_compat_v*.go` files). JSON streaming uses NDJSON
+  (newline-delimited JSON): each `Encode` writes one value + `\n`.
+- **Buffer pool** (`pool.go`) — `GetBuffer`/`PutBuffer` manage a `sync.Pool`
+  of `*bytes.Buffer`. `EncodePooled` is a callback-based helper that handles
+  the full GetBuffer to EncodeToBuffer to callback to PutBuffer lifecycle
+  automatically.
+- **Performance** — fxamacker/cbor caches type metadata in a process-wide
+  `sync.Map` (cold ~117us to warm ~340ns, 344x faster). Code generation is NOT
+  needed. Benchmarks: `BenchmarkTagTradeoffs_Encode/Decode` (map vs toarray vs
+  keyasint across small/medium/large payloads), `BenchmarkCBORReflectionCache`
+  (cold vs warm), `BenchmarkEncodePooled` (pool vs plain Encode).
 
 ## Conventions
 

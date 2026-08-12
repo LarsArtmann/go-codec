@@ -90,6 +90,56 @@
 //	    _ = be.EncodeToBuffer(payload, buf)
 //	}
 //
+// For even simpler pool-backed encoding, use [EncodePooled], which manages a
+// sync.Pool-backed buffer automatically via a callback:
+//
+//	err := codec.EncodePooled(cborCodec, event, func(data []byte) error {
+//	    _, werr := store.Write(data)
+//	    return werr
+//	})
+//
+// # Streaming
+//
+// For large event batches, streaming encoders/decoders avoid materializing the
+// full byte slice in memory. Both CBOR and JSON are supported:
+//
+//	enc := codec.NewCBOREncoder(w)  // or codec.NewJSONEncoder(w)
+//	_ = enc.Encode(event1)
+//	_ = enc.Encode(event2)
+//
+//	dec := codec.NewCBORDecoder(r)  // or codec.NewJSONDecoder(r)
+//	for {
+//	    var evt Event
+//	    if err := dec.Decode(&evt); err != nil { break }
+//	    events = append(events, evt)
+//	}
+//
+// JSON streaming uses newline-delimited JSON (NDJSON / JSON Lines): each Encode
+// call writes one JSON value followed by a newline, and Decode reads one value
+// at a time, skipping whitespace between values.
+//
+// # Performance
+//
+// fxamacker/cbor caches type metadata in a process-wide sync.Map keyed by
+// reflect.Type. The first encode/decode of each type pays a one-time reflection
+// cost (~100µs); subsequent operations reuse the cached metadata (~300ns for a
+// 7-field struct). Code generation is NOT needed for typical use cases — the
+// cache handles it. Use [EncodePooled] or [BufferEncoder] to eliminate
+// allocation overhead on hot paths.
+//
+// The toarray and keyasint struct tags reduce payload size by eliminating
+// field-name strings. Measured tradeoffs across payload shapes:
+//
+//	Payload      map (bytes)   toarray (bytes)   keyasint (bytes)
+//	small (3)    56            43 (-23%)          46 (-18%)
+//	medium (7)   218           156 (-28%)         168 (-23%)
+//	large (12)   270           159 (-41%)         171 (-37%)
+//
+// toarray produces the smallest payloads but encodes field order as positional
+// (reordering fields breaks stored data). keyasint is slightly larger but
+// preserves field identity via stable integer keys (safer for schema evolution).
+// Run BenchmarkTagTradeoffs_Encode / BenchmarkTagTradeoffs_Decode for details.
+//
 // # CBOR Compact Struct Tags
 //
 // fxamacker/cbor supports two struct tags for further payload optimization:

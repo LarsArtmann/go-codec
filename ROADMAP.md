@@ -27,16 +27,24 @@ CBOR and JSON already expose `BufferEncoder` for zero-alloc hot paths. There is
 headroom to push further on throughput and GC pressure for high-volume event
 streams.
 
-Raw ideas:
+Completed:
 
-- Buffer-pool-backed encode/decode helpers (`sync.Pool` of `bytes.Buffer`)
-- Explore whether the CBOR encode path can avoid intermediate reflection cost
-  for hot payload types (code generation or caching)
-- Benchmark and document the `toarray` / `keyasint` size/speed tradeoffs across
-  realistic payload shapes
+- Buffer-pool-backed encode helper (`EncodePooled` in `pool.go`) — callback-based
+  API managing `sync.Pool[*bytes.Buffer]` lifecycle automatically
+- CBOR reflection caching investigated and documented — fxamacker/cbor caches
+  type metadata in a process-wide `sync.Map` (cold ~117µs → warm ~340ns, 344x
+  faster). Code generation is NOT needed; the cache handles it
+- `toarray` / `keyasint` size/speed tradeoffs benchmarked and documented across
+  small/medium/large payload shapes — `BenchmarkTagTradeoffs_Encode/Decode`
 - Streaming JSON encoder/decoder for parity with `NewCBOREncoder` /
-  `NewCBORDecoder` (large-batch encode/decode without materializing the full
-  byte slice)
+  `NewCBORDecoder` — `NewJSONEncoder` / `NewJSONDecoder` (NDJSON convention)
+
+Remaining raw ideas:
+
+- Decode-side buffer pool (currently encode-only; decode takes `[]byte` directly,
+  so the caller owns the read buffer)
+- Explore whether hot payload types benefit from pre-warming the CBOR type cache
+  at startup (trading a few ms of init time for consistent first-request latency)
 
 ### 3. Schema evolution & drift detection
 

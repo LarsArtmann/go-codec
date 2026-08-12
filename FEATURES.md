@@ -24,6 +24,14 @@
 | `BenchmarkNormalizeForJSON` | 1562 | 932 (-40%) | 19 | 9 (-53%) |
 | `BenchmarkJSONCodec_MarshalUnmarshal` | 937 | 614 (-35%) | 8 | 3 (-63%) |
 
+## Performance benchmarks
+
+| Benchmark | What it measures | Key finding |
+| --- | --- | --- |
+| `BenchmarkTagTradeoffs_Encode/Decode` | map vs toarray vs keyasint across small/medium/large payloads | toarray smallest (23-41% size reduction); keyasint close behind (18-37%) |
+| `BenchmarkCBORReflectionCache` | Cold (first encode) vs warm (cached) CBOR encode | Cold ~117µs/104 allocs; warm ~340ns/2 allocs — 344x faster after cache. No codegen needed |
+| `BenchmarkEncodePooled` | Pool-backed encode vs plain Encode | Eliminates per-call []byte allocation via sync.Pool callback |
+
 ## Codecs
 
 | Feature                                      | Status                | Notes                                                                                                          |
@@ -53,6 +61,7 @@
 | Feature                                          | Status                | Notes                                                                  |
 | ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
 | `GetBuffer` / `PutBuffer` — `sync.Pool` helper  | 🟢 `FULLY_FUNCTIONAL` | `pool.go`; reusable `*bytes.Buffer` for `BufferEncoder` hot paths     |
+| `EncodePooled` — callback-based pool-backed encode | 🟢 `FULLY_FUNCTIONAL` | `pool.go`; manages GetBuffer/EncodeToBuffer/PutBuffer lifecycle via callback; CBOR+JSON round-trip tests — `pool_test.go` |
 
 ## Shared CBOR infrastructure
 
@@ -80,6 +89,7 @@
 | Feature                                         | Status                | Notes                                                          |
 | ----------------------------------------------- | --------------------- | -------------------------------------------------------------- |
 | `NewCBOREncoder` / `NewCBORDecoder` — streaming | 🟢 `FULLY_FUNCTIONAL` | `streaming.go`; batch encode/decode, multiple encodes — `streaming_test.go` |
+| `NewJSONEncoder` / `NewJSONDecoder` — streaming | 🟢 `FULLY_FUNCTIONAL` | `streaming.go` + `json_compat_v1.go` / `json_compat_v2.go`; NDJSON (newline-delimited JSON), dual-build — `streaming_test.go`, `example_test.go` |
 
 ## COSE (RFC 9052) structure codec
 

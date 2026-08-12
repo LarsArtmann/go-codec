@@ -82,3 +82,109 @@ func TestCanonicalDecMode(t *testing.T) {
 		t.Fatal("codec.CanonicalDecMode should not be nil")
 	}
 }
+
+func TestStreaming_JSON(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	enc := codec.NewJSONEncoder(&buf)
+	if enc == nil {
+		t.Fatal("codec.NewJSONEncoder returned nil")
+	}
+
+	type payload struct {
+		Name string
+		Age  int
+	}
+
+	if err := enc.Encode(payload{Name: testName, Age: 30}); err != nil {
+		t.Fatalf("Encode: %v", err)
+	}
+
+	dec := codec.NewJSONDecoder(&buf)
+	if dec == nil {
+		t.Fatal("codec.NewJSONDecoder returned nil")
+	}
+
+	var got payload
+	if err := dec.Decode(&got); err != nil {
+		t.Fatalf("Decode: %v", err)
+	}
+
+	if got.Name != testName || got.Age != 30 {
+		t.Fatalf("round-trip mismatch: %+v", got)
+	}
+}
+
+func TestStreaming_JSONEncoderMultiple(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	enc := codec.NewJSONEncoder(&buf)
+
+	type item struct{ ID int }
+
+	_ = enc.Encode(item{ID: 1})
+	_ = enc.Encode(item{ID: 2})
+
+	dec := codec.NewJSONDecoder(&buf)
+
+	var first, second item
+
+	_ = dec.Decode(&first)
+	_ = dec.Decode(&second)
+
+	if first.ID != 1 || second.ID != 2 {
+		t.Fatalf("expected 1,2 got %d,%d", first.ID, second.ID)
+	}
+}
+
+func TestStreaming_JSONNewlineDelimited(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	enc := codec.NewJSONEncoder(&buf)
+
+	type event struct {
+		Type string
+		Data string
+	}
+
+	events := []event{
+		{Type: "created", Data: testGreeting},
+		{Type: "updated", Data: testUserName},
+		{Type: "deleted", Data: testBob},
+	}
+
+	for _, e := range events {
+		if err := enc.Encode(e); err != nil {
+			t.Fatalf("Encode: %v", err)
+		}
+	}
+
+	dec := codec.NewJSONDecoder(&buf)
+
+	var got []event
+
+	for {
+		var e event
+		if err := dec.Decode(&e); err != nil {
+			break
+		}
+
+		got = append(got, e)
+	}
+
+	if len(got) != len(events) {
+		t.Fatalf("expected %d events, got %d", len(events), len(got))
+	}
+
+	for i, e := range got {
+		if e.Type != events[i].Type || e.Data != events[i].Data {
+			t.Fatalf("event %d mismatch: got %+v, want %+v", i, e, events[i])
+		}
+	}
+}

@@ -19,6 +19,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `EncodePooled` (`pool.go`): callback-based pool-backed encode helper that
+  manages `GetBuffer`/`EncodeToBuffer`/`PutBuffer` lifecycle automatically.
+  Eliminates per-call `[]byte` allocation in hot paths where the caller
+  processes encoded bytes immediately (e.g., writing to a store).
+- `NewJSONEncoder` / `NewJSONDecoder` (`streaming.go`): streaming JSON
+  encoder/decoder for parity with `NewCBOREncoder` / `NewCBORDecoder`. Uses
+  NDJSON (newline-delimited JSON): each `Encode` writes one JSON value followed
+  by a newline; `Decode` reads one value at a time. Dual-build (v1 wraps
+  `json.Encoder`/`json.Decoder`; v2 wraps `json.MarshalWrite`/`json.UnmarshalRead`).
+- `BenchmarkTagTradeoffs_Encode` / `BenchmarkTagTradeoffs_Decode`: comprehensive
+  benchmarks comparing map (default), `toarray`, and `keyasint` CBOR encoding
+  across small (3-field), medium (7-field), and large (12-field) payload shapes.
+  Includes size comparison logging.
+- `BenchmarkCBORReflectionCache`: benchmark measuring cold (first encode) vs
+  warm (cached) CBOR performance. Documents that fxamacker/cbor's internal
+  `sync.Map` cache eliminates the need for code generation.
+- `BenchmarkEncodePooled`: benchmark comparing pool-backed encode vs plain
+  `Encode` across JSON, CBOR, and CBOR compact codecs.
+- `pool_test.go`: tests for `GetBuffer`, `PutBuffer`, and `EncodePooled`
+  (reset, nil-safety, capacity retention, CBOR/JSON round-trip, callback error,
+  buffer-stale-after-return).
+- Streaming JSON tests: `TestStreaming_JSON`, `TestStreaming_JSONEncoderMultiple`,
+  `TestStreaming_JSONNewlineDelimited` — `streaming_test.go`.
+- `ExampleNewJSONEncoder`: godoc example for NDJSON streaming — `example_test.go`.
 - `SizeResult` struct (`size.go`): `Size` now returns `SizeResult{JSON, CBOR}`
   instead of positional `(int, int)`. More readable at call sites.
 - `GetBuffer` / `PutBuffer` (`pool.go`): `sync.Pool[*bytes.Buffer]` helper for

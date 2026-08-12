@@ -224,6 +224,42 @@ func ExampleNewCBOREncoder() {
 	// 2 events decoded from stream
 }
 
+// ExampleNewJSONEncoder demonstrates streaming JSON encoding for large
+// event batches using newline-delimited JSON (NDJSON). Each Encode call
+// writes one JSON value followed by a newline, enabling incremental
+// consumption on the reader side.
+func ExampleNewJSONEncoder() {
+	type Event struct {
+		Type string
+		Data string
+	}
+
+	var buf bytes.Buffer
+
+	enc := codec.NewJSONEncoder(&buf)
+	_ = enc.Encode(Event{Type: testEventType, Data: testUserName})
+	_ = enc.Encode(Event{Type: testEventType, Data: "bob"})
+
+	// Decode the NDJSON stream
+	dec := codec.NewJSONDecoder(&buf)
+
+	var events []Event
+
+	for {
+		var evt Event
+		if err := dec.Decode(&evt); err != nil {
+			break
+		}
+
+		events = append(events, evt)
+	}
+
+	fmt.Printf("%d events decoded from JSON stream\n", len(events))
+
+	// Output:
+	// 2 events decoded from JSON stream
+}
+
 // ExampleDiagnose converts CBOR bytes to human-readable diagnostic notation.
 // Useful for debugging corrupt events or inspecting raw CBOR payloads.
 func ExampleDiagnose() {

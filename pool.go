@@ -2,6 +2,7 @@ package codec
 
 import (
 	"bytes"
+	"fmt"
 	"sync"
 )
 
@@ -34,4 +35,30 @@ func PutBuffer(b *bytes.Buffer) {
 	}
 
 	bufferPool.Put(b)
+}
+
+// EncodePooled encodes v using a pooled *bytes.Buffer and passes the encoded
+// bytes to fn. The buffer is returned to the pool after fn returns, so fn must
+// not retain references to the byte slice after returning — if it needs to keep
+// the bytes, it must copy them.
+//
+// This eliminates the per-call []byte allocation of [Codec.Encode] in hot paths
+// where the caller processes the encoded bytes immediately (e.g., writing to a
+// store, sending over the wire). For callers that need to keep the bytes, use
+// [Codec.Encode] instead.
+//
+//	cbor := codec.CBORCodec{}
+//	err := codec.EncodePooled(cbor, event, func(data []byte) error {
+//	    _, werr := store.Write(data)
+//	    return werr
+//	})
+func EncodePooled(enc BufferEncoder, v any, fn func([]byte) error) error {
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
+	if err := enc.EncodeToBuffer(v, buf); err != nil {
+		return fmt.Errorf("codec: pooled encode failed: %w", err)
+	}
+
+	return fn(buf.Bytes())
 }

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 )
 
 // This file provides JSON helpers backed by encoding/json (v1). The companion
@@ -119,4 +120,45 @@ func normalizeForJSONDepth(v any, depth int) (any, error) {
 	default:
 		return v, nil
 	}
+}
+
+// JSONEncoder streams JSON values to an [io.Writer]. Each call to [JSONEncoder.Encode]
+// writes one JSON value followed by a newline (NDJSON / JSON Lines convention),
+// enabling a reader to consume values incrementally from the stream.
+//
+// In the v1 build (default), this wraps [json.Encoder].
+type JSONEncoder struct {
+	enc *json.Encoder
+}
+
+func newJSONEncoder(w io.Writer) *JSONEncoder {
+	return &JSONEncoder{enc: json.NewEncoder(w)}
+}
+
+// Encode writes the JSON encoding of v followed by a newline to the stream.
+func (e *JSONEncoder) Encode(v any) error {
+	normalized, err := normalizeForJSON(v)
+	if err != nil {
+		return err
+	}
+
+	return e.enc.Encode(normalized) //nolint:wrapcheck // thin wrapper
+}
+
+// JSONDecoder reads JSON values from an [io.Reader]. Each call to
+// [JSONDecoder.Decode] reads one JSON value from the stream, skipping
+// whitespace and newlines between values.
+//
+// In the v1 build (default), this wraps [json.Decoder].
+type JSONDecoder struct {
+	dec *json.Decoder
+}
+
+func newJSONDecoder(r io.Reader) *JSONDecoder {
+	return &JSONDecoder{dec: json.NewDecoder(r)}
+}
+
+// Decode reads the next JSON value from the stream into v.
+func (d *JSONDecoder) Decode(v any) error {
+	return d.dec.Decode(v) //nolint:wrapcheck // thin wrapper
 }

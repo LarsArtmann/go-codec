@@ -23,4 +23,6 @@ const (
 	testNested    = "nested"
 	testJSON      = "json"
 	testCBOR      = "cbor"
+	testOrderID   = "01HQ3TS7HNW3K4PR9XJ8Z2V5MS"
+	testCustID    = "01HQ3TR9JNW3K4PR9XJ8Z2V5NS"
 )

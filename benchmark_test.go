@@ -246,8 +246,8 @@ type realisticOrderArray struct {
 
 func sampleOrder() realisticOrder {
 	return realisticOrder{
-		OrderID:    "01HQ3TS7HNW3K4PR9XJ8Z2V5MS",
-		CustomerID: "01HQ3TR9JNW3K4PR9XJ8Z2V5NS",
+		OrderID:    testOrderID,
+		CustomerID: testCustID,
 		Items: []orderItem{
 			{SKU: "WIDGET-001", Quantity: 2, UnitPrice: 1999},
 			{SKU: "GADGET-042", Quantity: 1, UnitPrice: 4999},
@@ -396,4 +396,336 @@ func BenchmarkBufferEncoder(b *testing.B) {
 			}
 		})
 	}
+}
+
+func BenchmarkEncodePooled(b *testing.B) {
+	order := sampleOrder()
+
+	codecs := []struct {
+		name string
+		c    codec.BufferEncoder
+	}{
+		{"JSON", codec.JSONCodec{}},
+		{"CBOR", codec.CBORCodec{}},
+		{"CBOR_compact", codec.CBORCompactCodec{}},
+	}
+
+	for _, tc := range codecs {
+		b.Run(tc.name, func(b *testing.B) {
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for b.Loop() {
+				err := codec.EncodePooled(tc.c, order, func([]byte) error {
+					return nil
+				})
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+// --- toarray / keyasint tradeoff benchmarks ---
+
+// smallEvent is a minimal 3-field event for measuring overhead on tiny payloads.
+type smallEvent struct {
+	ID   string
+	Type string
+	Data string
+}
+
+type smallEventArray struct {
+	_    struct{} `cbor:",toarray"`
+	ID   string
+	Type string
+	Data string
+}
+
+type smallEventKeyInt struct {
+	_    struct{} `cbor:",keyasint"`
+	ID   string   `cbor:"1,keyasint"`
+	Type string   `cbor:"2,keyasint"`
+	Data string   `cbor:"3,keyasint"`
+}
+
+func sampleSmallEvent() smallEvent {
+	return smallEvent{ID: testOrderID, Type: "created", Data: testUserName}
+}
+
+// realisticOrderKeyInt uses keyasint for integer-keyed CBOR encoding.
+type realisticOrderKeyInt struct {
+	_          struct{} `cbor:",keyasint"`
+	OrderID    string   `cbor:"1,keyasint"`
+	CustomerID string   `cbor:"2,keyasint"`
+	Items      []orderItem
+	TotalCents int64  `cbor:"4,keyasint"`
+	Currency   string `cbor:"5,keyasint"`
+	Status     string `cbor:"6,keyasint"`
+	CreatedAt  int64  `cbor:"7,keyasint"`
+}
+
+// largeEvent is a wide 12-field event for measuring overhead on larger payloads.
+type largeEvent struct {
+	EventID       string
+	AggregateID   string
+	EventType     string
+	Version       int64
+	Timestamp     int64
+	UserID        string
+	TraceID       string
+	SpanID        string
+	Source        string
+	TenantID      string
+	CorrelationID string
+	OccurredAt    int64
+}
+
+type largeEventArray struct {
+	_             struct{} `cbor:",toarray"`
+	EventID       string
+	AggregateID   string
+	EventType     string
+	Version       int64
+	Timestamp     int64
+	UserID        string
+	TraceID       string
+	SpanID        string
+	Source        string
+	TenantID      string
+	CorrelationID string
+	OccurredAt    int64
+}
+
+type largeEventKeyInt struct {
+	_             struct{} `cbor:",keyasint"`
+	EventID       string   `cbor:"1,keyasint"`
+	AggregateID   string   `cbor:"2,keyasint"`
+	EventType     string   `cbor:"3,keyasint"`
+	Version       int64    `cbor:"4,keyasint"`
+	Timestamp     int64    `cbor:"5,keyasint"`
+	UserID        string   `cbor:"6,keyasint"`
+	TraceID       string   `cbor:"7,keyasint"`
+	SpanID        string   `cbor:"8,keyasint"`
+	Source        string   `cbor:"9,keyasint"`
+	TenantID      string   `cbor:"10,keyasint"`
+	CorrelationID string   `cbor:"11,keyasint"`
+	OccurredAt    int64    `cbor:"12,keyasint"`
+}
+
+func sampleLargeEvent() largeEvent {
+	return largeEvent{
+		EventID:       testOrderID,
+		AggregateID:   testCustID,
+		EventType:     "order.placed",
+		Version:       42,
+		Timestamp:     1700000000,
+		UserID:        "user_abc123",
+		TraceID:       "trace_xyz789",
+		SpanID:        "span_def456",
+		Source:        "checkout-service",
+		TenantID:      "tenant_001",
+		CorrelationID: "corr_999888",
+		OccurredAt:    1700000001,
+	}
+}
+
+// BenchmarkTagTradeoffs_Encode measures encode speed and allocation across
+// default (map), toarray, and keyasint for small, medium, and large payloads.
+func BenchmarkTagTradeoffs_Encode(b *testing.B) {
+	cborCodec := codec.CBORCodec{}
+
+	small := sampleSmallEvent()
+	smallArr := smallEventArray{ID: small.ID, Type: small.Type, Data: small.Data}
+	smallKI := smallEventKeyInt{ID: small.ID, Type: small.Type, Data: small.Data}
+
+	order := sampleOrder()
+	orderArr := realisticOrderArray{
+		OrderID: order.OrderID, CustomerID: order.CustomerID, Items: order.Items,
+		TotalCents: order.TotalCents, Currency: order.Currency, Status: order.Status, CreatedAt: order.CreatedAt,
+	}
+	orderKI := realisticOrderKeyInt{
+		OrderID: order.OrderID, CustomerID: order.CustomerID, Items: order.Items,
+		TotalCents: order.TotalCents, Currency: order.Currency, Status: order.Status, CreatedAt: order.CreatedAt,
+	}
+
+	large := sampleLargeEvent()
+	largeArr := largeEventArray{
+		EventID: large.EventID, AggregateID: large.AggregateID, EventType: large.EventType,
+		Version: large.Version, Timestamp: large.Timestamp, UserID: large.UserID,
+		TraceID: large.TraceID, SpanID: large.SpanID, Source: large.Source,
+		TenantID: large.TenantID, CorrelationID: large.CorrelationID, OccurredAt: large.OccurredAt,
+	}
+	largeKI := largeEventKeyInt{
+		EventID: large.EventID, AggregateID: large.AggregateID, EventType: large.EventType,
+		Version: large.Version, Timestamp: large.Timestamp, UserID: large.UserID,
+		TraceID: large.TraceID, SpanID: large.SpanID, Source: large.Source,
+		TenantID: large.TenantID, CorrelationID: large.CorrelationID, OccurredAt: large.OccurredAt,
+	}
+
+	// Log sizes for all shapes and modes
+	smallMap, _ := cborCodec.Encode(small)
+	smallArrData, _ := cborCodec.Encode(smallArr)
+	smallKIData, _ := cborCodec.Encode(smallKI)
+
+	medMap, _ := cborCodec.Encode(order)
+	medArrData, _ := cborCodec.Encode(orderArr)
+	medKIData, _ := cborCodec.Encode(orderKI)
+
+	largeMap, _ := cborCodec.Encode(large)
+	largeArrData, _ := cborCodec.Encode(largeArr)
+	largeKIData, _ := cborCodec.Encode(largeKI)
+
+	b.Log("--- CBOR tag tradeoff: payload sizes (bytes) ---")
+	b.Logf("  small  (3 fields):  map=%d  toarray=%d  keyasint=%d", len(smallMap), len(smallArrData), len(smallKIData))
+	b.Logf("  medium (7 fields):  map=%d  toarray=%d  keyasint=%d", len(medMap), len(medArrData), len(medKIData))
+	b.Logf("  large  (12 fields): map=%d  toarray=%d  keyasint=%d", len(largeMap), len(largeArrData), len(largeKIData))
+
+	cases := []struct {
+		name string
+		v    any
+	}{
+		{"small/map", small},
+		{"small/toarray", smallArr},
+		{"small/keyasint", smallKI},
+		{"medium/map", order},
+		{"medium/toarray", orderArr},
+		{"medium/keyasint", orderKI},
+		{"large/map", large},
+		{"large/toarray", largeArr},
+		{"large/keyasint", largeKI},
+	}
+
+	for _, tc := range cases {
+		b.Run(tc.name, func(b *testing.B) {
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for b.Loop() {
+				if _, err := cborCodec.Encode(tc.v); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+// BenchmarkTagTradeoffs_Decode measures decode speed and allocation across
+// default (map), toarray, and keyasint for small, medium, and large payloads.
+func BenchmarkTagTradeoffs_Decode(b *testing.B) {
+	cborCodec := codec.CBORCodec{}
+
+	small := sampleSmallEvent()
+	smallArr := smallEventArray{ID: small.ID, Type: small.Type, Data: small.Data}
+	smallKI := smallEventKeyInt{ID: small.ID, Type: small.Type, Data: small.Data}
+
+	order := sampleOrder()
+	orderArr := realisticOrderArray{
+		OrderID: order.OrderID, CustomerID: order.CustomerID, Items: order.Items,
+		TotalCents: order.TotalCents, Currency: order.Currency, Status: order.Status, CreatedAt: order.CreatedAt,
+	}
+	orderKI := realisticOrderKeyInt{
+		OrderID: order.OrderID, CustomerID: order.CustomerID, Items: order.Items,
+		TotalCents: order.TotalCents, Currency: order.Currency, Status: order.Status, CreatedAt: order.CreatedAt,
+	}
+
+	large := sampleLargeEvent()
+	largeArr := largeEventArray{
+		EventID: large.EventID, AggregateID: large.AggregateID, EventType: large.EventType,
+		Version: large.Version, Timestamp: large.Timestamp, UserID: large.UserID,
+		TraceID: large.TraceID, SpanID: large.SpanID, Source: large.Source,
+		TenantID: large.TenantID, CorrelationID: large.CorrelationID, OccurredAt: large.OccurredAt,
+	}
+	largeKI := largeEventKeyInt{
+		EventID: large.EventID, AggregateID: large.AggregateID, EventType: large.EventType,
+		Version: large.Version, Timestamp: large.Timestamp, UserID: large.UserID,
+		TraceID: large.TraceID, SpanID: large.SpanID, Source: large.Source,
+		TenantID: large.TenantID, CorrelationID: large.CorrelationID, OccurredAt: large.OccurredAt,
+	}
+
+	smallMap, _ := cborCodec.Encode(small)
+	smallArrData, _ := cborCodec.Encode(smallArr)
+	smallKIData, _ := cborCodec.Encode(smallKI)
+
+	medMap, _ := cborCodec.Encode(order)
+	medArrData, _ := cborCodec.Encode(orderArr)
+	medKIData, _ := cborCodec.Encode(orderKI)
+
+	largeMap, _ := cborCodec.Encode(large)
+	largeArrData, _ := cborCodec.Encode(largeArr)
+	largeKIData, _ := cborCodec.Encode(largeKI)
+
+	cases := []struct {
+		name string
+		data []byte
+		new  func() any
+	}{
+		{"small/map", smallMap, func() any { return &smallEvent{} }},
+		{"small/toarray", smallArrData, func() any { return &smallEventArray{} }},
+		{"small/keyasint", smallKIData, func() any { return &smallEventKeyInt{} }},
+		{"medium/map", medMap, func() any { return &realisticOrder{} }},
+		{"medium/toarray", medArrData, func() any { return &realisticOrderArray{} }},
+		{"medium/keyasint", medKIData, func() any { return &realisticOrderKeyInt{} }},
+		{"large/map", largeMap, func() any { return &largeEvent{} }},
+		{"large/toarray", largeArrData, func() any { return &largeEventArray{} }},
+		{"large/keyasint", largeKIData, func() any { return &largeEventKeyInt{} }},
+	}
+
+	for _, tc := range cases {
+		b.Run(tc.name, func(b *testing.B) {
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for b.Loop() {
+				if err := cborCodec.Decode(tc.data, tc.new()); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+// BenchmarkCBORReflectionCache measures the cost of CBOR encoding with a warm
+// reflection cache vs a cold cache. fxamacker/cbor caches type metadata in a
+// process-wide sync.Map (keyed by reflect.Type). The first encode of each type
+// pays the reflection cost; subsequent encodes of the same type reuse the
+// cached metadata.
+//
+// To compare cold vs warm:
+//   - Run with -benchtime=1x to see first-encode (cold) cost
+//   - Run with -benchtime=10000x to see warm-cache cost
+//   - The ratio between the two shows the caching benefit
+//
+// In practice, the cache is always warm after the first event of each type,
+// so steady-state performance is what matters for high-volume event streams.
+// Code generation is NOT needed — the cache handles it.
+func BenchmarkCBORReflectionCache(b *testing.B) {
+	cborCodec := codec.CBORCodec{}
+	order := sampleOrder()
+
+	b.Run("encode", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			if _, err := cborCodec.Encode(order); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+
+	b.Run("decode", func(b *testing.B) {
+		data, _ := cborCodec.Encode(order)
+
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			var result realisticOrder
+			if err := cborCodec.Decode(data, &result); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
 }

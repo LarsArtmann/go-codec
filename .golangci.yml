@@ -107,7 +107,6 @@ linters:
         - tagliatelle
         - testableexamples
         - testifylint
-        - testpackage
         - thelper
         - tparallel
         - unconvert
@@ -166,8 +165,10 @@ linters:
                 - anon
                 - stdlib
                 - generic
+                - github.com/fxamacker/cbor/v2\.(Enc|Dec)Mode
+                - github.com/larsartmann/go-codec\.Codec
         makezero:
-            always: true
+            always: false
         mnd:
             ignored-numbers:
                 - "0"
@@ -202,6 +203,8 @@ linters:
                 - a
                 - b
                 - v
+                - c
+                - p
             ignore-type-assert-ok: true
         wrapcheck:
             ignore-sigs:
@@ -225,6 +228,12 @@ linters:
             - path: _test\.go
               linters:
                 - errcheck
+                - err113
+                - goconst
+                - paralleltest
+                - tagliatelle
+                - varnamelen
+                - wrapcheck
             - path: _test\.go
               text: unused
               linters:

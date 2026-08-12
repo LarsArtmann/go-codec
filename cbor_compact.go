@@ -35,7 +35,7 @@ var _ Codec = CBORCompactCodec{}
 // compactEncMode and compactDecMode use sync.OnceValue for the same reason
 // as canonicalEncMode/canonicalDecMode in cbor.go — the options are hardcoded
 // valid constants, so mode creation cannot fail.
-var compactEncMode = sync.OnceValue(func() cbor.EncMode {
+var compactEncMode = sync.OnceValue(func() cbor.EncMode { //nolint:gochecknoglobals // process-wide singleton
 	opts := cbor.CoreDetEncOptions()
 	opts.Time = cbor.TimeUnixDynamic
 
@@ -47,7 +47,7 @@ var compactEncMode = sync.OnceValue(func() cbor.EncMode {
 	return mode
 })
 
-var compactDecMode = sync.OnceValue(func() cbor.DecMode {
+var compactDecMode = sync.OnceValue(func() cbor.DecMode { //nolint:gochecknoglobals // process-wide singleton
 	opts := cbor.DecOptions{ //nolint:exhaustruct // only strict-mode fields needed
 		DupMapKey:         cbor.DupMapKeyEnforcedAPF,
 		ExtraReturnErrors: cbor.ExtraDecErrorUnknownField,

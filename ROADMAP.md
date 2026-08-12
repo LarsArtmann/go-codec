@@ -18,7 +18,8 @@ Raw ideas:
 - Protocol Buffers / FlatBuffers adapter for schema-first stacks
 - A first-class `Codec` registration/dispatch table so users can plug custom
   encodings (e.g. `"encrypted"`, proprietary) into `ForEncoding` instead of
-  building their own switch
+  building their own switch. `ForEncoding` already dispatches the three built-in
+  encodings (JSON, CBOR, Raw); the open part is user-registration of custom codecs
 
 ### 2. Performance & allocation discipline
 
@@ -70,7 +71,9 @@ Things we are deliberately NOT pursuing and why:
 - **Event storage / persistence.** Stores, snapshots, and projections are sibling
   modules. `go-codec` stays a pure serialization layer.
 - **A custom JSON implementation.** We use the Go standard library
-  (`encoding/json/v2`) for correctness and interop; we do not reimplement JSON.
+  (`encoding/json` v1 by default, `encoding/json/v2` opt-in via
+  `GOEXPERIMENT=jsonv2`) for correctness and interop; we do not reimplement
+  JSON.
 - **A security boundary in `AutoDetect`.** Format sniffing is for diagnostics
   and tooling only — it will never gate validation.
 

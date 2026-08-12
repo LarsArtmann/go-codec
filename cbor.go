@@ -24,7 +24,7 @@ var _ Codec = CBORCodec{}
 // hardcoded valid constants from fxamacker/cbor, so EncMode() cannot fail
 // in practice — mirroring the library's own `var defaultEncMode, _ = ...`.
 // If this ever panics, it means a dependency upgrade broke option semantics.
-var canonicalEncMode = sync.OnceValue(func() cbor.EncMode {
+var canonicalEncMode = sync.OnceValue(func() cbor.EncMode { //nolint:gochecknoglobals // process-wide singleton
 	opts := cbor.CanonicalEncOptions()
 	opts.Time = cbor.TimeUnixDynamic
 
@@ -38,7 +38,7 @@ var canonicalEncMode = sync.OnceValue(func() cbor.EncMode {
 
 // canonicalDecMode is computed once via sync.OnceValue. DupMapKeyEnforcedAPF
 // is a valid constant, so DecMode() cannot fail.
-var canonicalDecMode = sync.OnceValue(func() cbor.DecMode {
+var canonicalDecMode = sync.OnceValue(func() cbor.DecMode { //nolint:gochecknoglobals // process-wide singleton
 	//nolint:exhaustruct // only DupMapKey is intentional; all other fields use library defaults
 	opts := cbor.DecOptions{DupMapKey: cbor.DupMapKeyEnforcedAPF}
 

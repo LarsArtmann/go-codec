@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `ObservableCodec` / `ObserveCodec` / `CodecMetrics` / `MetricsSnapshot` /
+  `MetricsHook` (`observability.go`): opt-in, decorator-based telemetry for any
+  `Codec`. Records per-operation encode/decode call counts, byte totals, error
+  counts, and last errors; implements `BufferEncoder` when the wrapped codec does.
+  `MetricsHook` enables push-style telemetry (Prometheus, OpenTelemetry) without
+  polling. Goroutine-safe via `sync.RWMutex` — `observability_test.go`.
+- `AutoDetectDebug` / `AutoDetectResult` / `DetectionReason` (`autodetect.go`):
+  explainable version of `AutoDetect` that returns not only the inferred encoding
+  but also a stable `DetectionReason` (`empty`, `cbor_major_type`,
+  `json_structure`, `json_trial_decode`, `cbor_trial_decode`, `oversized`,
+  `unknown`) and a human-readable `Detail` string for triage and logging. The
+  original `AutoDetect` now delegates to `AutoDetectDebug(...).Encoding`, preserving
+  behavior — `autodetect_test.go`.
 - `EncodePooled` (`pool.go`): callback-based pool-backed encode helper that
   manages `GetBuffer`/`EncodeToBuffer`/`PutBuffer` lifecycle automatically.
   Eliminates per-call `[]byte` allocation in hot paths where the caller

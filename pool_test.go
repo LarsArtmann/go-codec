@@ -156,12 +156,16 @@ func TestEncodePooled_CallbackMustNotRetainBuffer(t *testing.T) {
 		return nil
 	})
 
-	// After EncodePooled returns, the buffer is back in the pool.
-	// A second call may reuse the same buffer, overwriting stale's backing array.
+	// Right after EncodePooled returns, stale still points to the first encode's
+	// bytes because the buffer has not yet been reused. Reading it now is safe
+	// only because no other pool user has run yet.
+	if len(stale) == 0 {
+		t.Error("first callback received empty data")
+	}
+
+	// A second encode may reuse the same pooled buffer, overwriting stale's
+	// backing array. The callback must copy data if it needs to keep it.
 	_ = codec.EncodePooled(c, map[string]string{testBeta: "2"}, func(data []byte) error {
-		// data may or may not share backing array with stale — either way,
-		// stale is no longer safe to use. We verify the second encode produced
-		// correct output.
 		if len(data) == 0 {
 			t.Error("second encode produced empty output")
 		}
@@ -169,6 +173,5 @@ func TestEncodePooled_CallbackMustNotRetainBuffer(t *testing.T) {
 		return nil
 	})
 
-	// stale is intentionally not used here — it may point to reused pool memory.
-	_ = stale
+	// stale is intentionally not read again — it may point to reused pool memory.
 }

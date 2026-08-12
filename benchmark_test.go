@@ -7,6 +7,11 @@ import (
 	"github.com/larsartmann/go-codec"
 )
 
+const (
+	benchNameJSON = "JSON"
+	benchNameCBOR = "CBOR"
+)
+
 func BenchmarkJSONCodec_Encode(b *testing.B) {
 	b.ReportAllocs()
 
@@ -78,7 +83,7 @@ func BenchmarkCodecComparison_Encode(b *testing.B) {
 	cborCodec := codec.CBORCodec{}
 	payload := map[string]string{testField: testName, testFieldE: testEmail}
 
-	b.Run("JSON", func(b *testing.B) {
+	b.Run(benchNameJSON, func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 
@@ -90,7 +95,7 @@ func BenchmarkCodecComparison_Encode(b *testing.B) {
 		}
 	})
 
-	b.Run("CBOR", func(b *testing.B) {
+	b.Run(benchNameCBOR, func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 
@@ -113,7 +118,7 @@ func BenchmarkCodecComparison_Decode(b *testing.B) {
 	jsonData, _ := jsonCodec.Encode(payload)
 	cborData, _ := cborCodec.Encode(payload)
 
-	b.Run("JSON", func(b *testing.B) {
+	b.Run(benchNameJSON, func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 
@@ -125,7 +130,7 @@ func BenchmarkCodecComparison_Decode(b *testing.B) {
 		}
 	})
 
-	b.Run("CBOR", func(b *testing.B) {
+	b.Run(benchNameCBOR, func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 
@@ -291,8 +296,8 @@ func BenchmarkRealisticPayload_Encode(b *testing.B) {
 		c    codec.Codec
 		v    any
 	}{
-		{"JSON", jsonCodec, order},
-		{"CBOR", cborCodec, order},
+		{benchNameJSON, jsonCodec, order},
+		{benchNameCBOR, cborCodec, order},
 		{"CBOR_compact_toarray", compactCodec, orderArr},
 	}
 
@@ -331,7 +336,7 @@ func BenchmarkRealisticPayload_Decode(b *testing.B) {
 	cborData, _ := cborCodec.Encode(order)
 	compactData, _ := compactCodec.Encode(orderArr)
 
-	b.Run("JSON", func(b *testing.B) {
+	b.Run(benchNameJSON, func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 
@@ -343,7 +348,7 @@ func BenchmarkRealisticPayload_Decode(b *testing.B) {
 		}
 	})
 
-	b.Run("CBOR", func(b *testing.B) {
+	b.Run(benchNameCBOR, func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 
@@ -375,8 +380,8 @@ func BenchmarkBufferEncoder(b *testing.B) {
 		name string
 		c    codec.BufferEncoder
 	}{
-		{"JSON", codec.JSONCodec{}},
-		{"CBOR", codec.CBORCodec{}},
+		{benchNameJSON, codec.JSONCodec{}},
+		{benchNameCBOR, codec.CBORCodec{}},
 		{"CBOR_compact", codec.CBORCompactCodec{}},
 	}
 
@@ -405,8 +410,8 @@ func BenchmarkEncodePooled(b *testing.B) {
 		name string
 		c    codec.BufferEncoder
 	}{
-		{"JSON", codec.JSONCodec{}},
-		{"CBOR", codec.CBORCodec{}},
+		{benchNameJSON, codec.JSONCodec{}},
+		{benchNameCBOR, codec.CBORCodec{}},
 		{"CBOR_compact", codec.CBORCompactCodec{}},
 	}
 

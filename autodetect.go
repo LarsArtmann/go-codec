@@ -24,7 +24,8 @@ const (
 	DetectionReasonJSONStructure DetectionReason = "json_structure"
 	// DetectionReasonJSONTrialDecode means the first byte was ambiguous, but JSON trial decode succeeded.
 	DetectionReasonJSONTrialDecode DetectionReason = "json_trial_decode"
-	// DetectionReasonCBORTrialDecode means the first byte was ambiguous and JSON trial decode failed, but CBOR trial decode succeeded.
+	// DetectionReasonCBORTrialDecode means the first byte was ambiguous, JSON
+	// trial decode failed, but CBOR trial decode succeeded.
 	DetectionReasonCBORTrialDecode DetectionReason = "cbor_trial_decode"
 	// DetectionReasonOversized means the payload exceeded maxAutoDetectSize and was treated as raw.
 	DetectionReasonOversized DetectionReason = "oversized"

@@ -3,7 +3,7 @@
 > Session: composable-SDK execution (the "fix it all" run).
 > Predecessor: `2026-08-11_23-38_docs-health-audit-and-improvement-brainstorm.md`.
 > This report covers the execution of the plan in
-> `docs/planning/2026-08-11_23-45_composable-sdk-fixes.md`.
+> `docs/planning/archived/2026-08-11_23-45_composable-sdk-fixes.md`.
 
 ---
 
@@ -13,12 +13,14 @@
   default, v2 opt-in via `GOEXPERIMENT=jsonv2`). 127 tests pass in each mode.
 - Tagged **`v0.1.0`** — first release.
 - 5 code commits + 1 docs commit shipped this session (30 files, +833/−169).
-- **What I forgot:** I never updated `ROADMAP.md` or
+- **What I forgot:** ~~I never updated `ROADMAP.md` or
   `docs/DOMAIN_LANGUAGE.md` after the API renames and the dual-build addition.
   They still describe the old world (`"cqrs"` magic, `COSE*String` names, no
   dual-build concept). I also never ran the fuzz targets to confirm they still
   pass — only the non-fuzz `go test` suite. And I never set up a git remote, so
-  the tag and commits are local-only despite the user asking to push.
+  the tag and commits are local-only despite the user asking to push.~~
+  **Resolved next session:** DOMAIN_LANGUAGE + ROADMAP fixed (`3f8ac9d`); remote
+  created + pushed (`ef1f4f4`); fuzz/coverage still open (→ `TODO_LIST.md`).
 
 ---
 
@@ -150,125 +152,129 @@
 ## f) Next 50 things to do
 
 ### Critical — split-brain & unfinished instructions
-1. **Push to remote.** Get the GitHub remote URL from the user, `git remote add
-   origin <url>`, `git push -u origin master --tags`.
-2. **Update `docs/DOMAIN_LANGUAGE.md`** — fix `envelopeMagic` value to `"gcdc"`,
+1. ~~**Push to remote.** Get the GitHub remote URL from the user, `git remote add
+   origin <url>`, `git push -u origin master --tags`.~~ done — remote `git@github.com:LarsArtmann/go-codec.git` added, master + `v0.1.0` pushed
+2. ~~**Update `docs/DOMAIN_LANGUAGE.md`** — fix `envelopeMagic` value to `"gcdc"`,
    rename `COSE*String` → `COSE*Diagnostic`, add entries for dual-build,
-   `normalizeForJSON`, `rawJSONValue`.
-3. **Update `ROADMAP.md`** — mark the "dispatch table" idea as partially done
-   (ForEncoding now covers all three encodings); add dual-build as delivered.
-4. **Run `golangci-lint run ./...` and `--build-tags goexperiment.jsonv2`**,
-   fix any findings, confirm a clean baseline.
+   `normalizeForJSON`, `rawJSONValue`.~~ done at `3f8ac9d`
+3. ~~**Update `ROADMAP.md`** — mark the "dispatch table" idea as partially done
+   (ForEncoding now covers all three encodings); add dual-build as delivered.~~ done at `3f8ac9d`
+4. ~~**Run `golangci-lint run ./...` and `--build-tags goexperiment.jsonv2`**,
+   fix any findings, confirm a clean baseline.~~ done at `3f8ac9d` (88→0)
 
 ### Verification gaps
 5. **Run fuzz targets** for at least 60s each: `FuzzCBORCodec_Roundtrip`,
    `FuzzTranscodeToJSON` (especially on v1 mode to exercise
-   `normalizeForJSON`).
+   `normalizeForJSON`). ← **open — `TODO_LIST.md` #11**
 6. **Generate coverage report** (`go test ./... -coverprofile=coverage.out`) in
-   both modes; report the percentage; add to README/FEATURES.
+   both modes; report the percentage; add to README/FEATURES. ← **open — `TODO_LIST.md` #12**
 7. **Run `nix build` and `nix run .#test`** to verify the flake.nix actually
-   works (I wrote it by adaptation; never executed it).
+   works (I wrote it by adaptation; never executed it). ← **open — `TODO_LIST.md` #13**
 8. **Verify `UPDATE_SNAPSHOTS=true go test ./...`** still produces stable
-   golden output in both JSON modes.
+   golden output in both JSON modes. ← **open — verification**
 
 ### CI / release hygiene
-9. **Add `.github/workflows/ci.yml`** — build+test+lint+race in both JSON
-   modes, mirroring the Nix checks.
-10. **Add `gosec` and `govulncheck`** to CI (per how-to-golang policy).
-11. **Add `gitleaks`** to CI (secret scanning).
-12. **Publish `v0.1.0`** to pkg.go.dev once pushed (GOPROXY will pick it up).
-13. **Add release notes** to the GitHub Release for `v0.1.0`.
-14. **Add a `CHANGELOG.md` link** to the release description.
+9. ~~**Add `.github/workflows/ci.yml`** — build+test+lint+race in both JSON
+   modes, mirroring the Nix checks.~~ done at `ef1f4f4`
+10. **Add `gosec` and `govulncheck`** to CI (per how-to-golang policy). ← **partial — `govulncheck` done `ef1f4f4`; `gosec` open → `TODO_LIST.md` #3**
+11. **Add `gitleaks`** to CI (secret scanning). ← **open — `TODO_LIST.md` #3**
+12. ~~**Publish `v0.1.0`** to pkg.go.dev once pushed (GOPROXY will pick it up).~~ done — pushed; pkg.go.dev badge live
+13. **Add release notes** to the GitHub Release for `v0.1.0`. ← **open — no release exists → `TODO_LIST.md` #5**
+14. **Add a `CHANGELOG.md` link** to the release description. ← **open — blocked on #13 → `TODO_LIST.md` #5**
 
 ### API polish (from the original brainstorm, deferred)
-15. **`Size` → `SizeResult{JSON, CBOR int}`** — self-documenting return.
+15. **`Size` → `SizeResult{JSON, CBOR int}`** — self-documenting return. ← **open — `TODO_LIST.md` #18**
 16. **Add `TranscodeToCBOR`** (symmetric to `TranscodeToJSON`) or rename to
-    make the one-way contract unmistakable.
-17. **Depth/size cap in `AutoDetect`** before trial-decode of untrusted bytes.
-18. **Depth/size cap in `TranscodeToJSON`** for the same reason.
-19. **`sync.Pool[*bytes.Buffer]` helper** for `BufferEncoder` hot paths.
+    make the one-way contract unmistakable. ← **open — `TODO_LIST.md` #19**
+17. **Depth/size cap in `AutoDetect`** before trial-decode of untrusted bytes. ← **open — `TODO_LIST.md` #2**
+18. **Depth/size cap in `TranscodeToJSON`** for the same reason. ← **open — `TODO_LIST.md` #1**
+19. **`sync.Pool[*bytes.Buffer]` helper** for `BufferEncoder` hot paths. ← **open — `TODO_LIST.md` #20**
 20. **Evaluate dropping `go-error-family`** for stdlib `errors` + a code field
-    (one fewer direct dep for a serialization lib).
+    (one fewer direct dep for a serialization lib). ← **open — decision deferred**
 
 ### Test & docs polish
 21. **Add `TestNormalizeForJSON`** — dedicated table-driven test for the
-    recursive normalizer (currently only exercised transitively).
+    recursive normalizer (currently only exercised transitively). ← **open — `TODO_LIST.md` #9**
 22. **Add a fuzz target specifically for `normalizeForJSON`** — adversarial
-    nested `map[interface{}]interface{}` and cycles.
-23. **Add a `SizeResult` example to doc.go** if #15 lands.
+    nested `map[interface{}]interface{}` and cycles. ← **open — `TODO_LIST.md` #10**
+23. **Add a `SizeResult` example to doc.go** if #15 lands. ← **open — blocked on #15 → `TODO_LIST.md` #18**
 24. **Mine the benchmark data** — add concrete numbers to the README's "19-43%
     smaller / 25-72% faster" claims (the `_bench` tests exist; run them and
-    cite results).
+    cite results). ← **open — `TODO_LIST.md` #21**
 25. **Add a `docs/TIMEZONE_HANDLING.md`** — the README references this file in
     the cqrs-lite parent but it doesn't exist here; either create a
-    codec-scoped version or drop the reference.
-26. **Add `CODEOWNERS`**.
+    codec-scoped version or drop the reference. ← **open — `TODO_LIST.md` #23**
+26. **Add `CODEOWNERS`**. ← **open — `TODO_LIST.md` #22**
 27. **Add issue/PR templates** (`.github/ISSUE_TEMPLATE/`,
-    `.github/PULL_REQUEST_TEMPLATE.md`).
+    `.github/PULL_REQUEST_TEMPLATE.md`). ← **open — `TODO_LIST.md` #22**
 
 ### Architecture / composable-SDK direction
-28. **Add an `ExampleForEncoding`** godoc example showing all three encodings.
-29. **Add an `ExampleTranscodeToJSON`** godoc example.
+28. **Add an `ExampleForEncoding`** godoc example showing all three encodings. ← **open — nice-to-have**
+29. **Add an `ExampleTranscodeToJSON`** godoc example. ← **open — nice-to-have**
 30. **Document the wire-format commitment** for `toarray`/`keyasint` in a
     dedicated `docs/` page (currently spread across doc.go, README, and
-    DOMAIN_LANGUAGE).
+    DOMAIN_LANGUAGE). ← **open — nice-to-have**
 31. **Schema-evolution helper**: lint that blocks reordering `toarray` struct
-    fields (ROADMAP item).
+    fields (ROADMAP item). ← **open — `ROADMAP.md` theme 3**
 32. **Migration helper** pairing `UnwrapDecode` with a codec swap for
-    incremental store re-encoding (ROADMAP item).
+    incremental store re-encoding (ROADMAP item). ← **open — `ROADMAP.md` theme 3**
 33. **Custom-codec registration table** for `ForEncoding` (ROADMAP item — drop
-    the hardcoded switch, let users register `"encrypted"` etc.).
+    the hardcoded switch, let users register `"encrypted"` etc.). ← **open — `ROADMAP.md` theme 1**
 34. **Add `Result[T]` pattern** to codec Decode (like go-branded-id's
-    `result/` package) if the sibling stack adopts it.
-35. **Consider a streaming JSON codec** (symmetry with CBOR streaming).
+    `result/` package) if the sibling stack adopts it. ← **open — deferred (conditional on sibling stack)**
+35. **Consider a streaming JSON codec** (symmetry with CBOR streaming). ← **open — `ROADMAP.md` theme 2**
 
 ### Repo hygiene
-36. **Run `nix flake check`** to validate the flake.
-37. **Add `flake.lock`** (go-branded-id has one; this repo doesn't after adding
-    flake.nix).
-38. **Add `.gitattributes` linguist-attributes** if the repo grows non-Go
-    content (website, etc.).
+36. **Run `nix flake check`** to validate the flake. ← **open — `TODO_LIST.md` #13**
+37. ~~**Add `flake.lock`** (go-branded-id has one; this repo doesn't after adding
+    flake.nix).~~ done — `flake.lock` present
+38. ~~**Add `.gitattributes` linguist-attributes** if the repo grows non-Go
+    content (website, etc.).~~ done — `.gitattributes` present
 39. **Consider a `website/`** via the `website-launch` skill (go-branded-id has
-    one; this repo doesn't).
-40. **Add a `Security.md`** (GitHub expects this for published libraries).
-41. **Re-run the full docs-health AUDIT** after #2–#4 land to confirm
-    Accuracy/Fitness back to 10/10 with no split brains.
-42. **Annotate the prior status report** (`2026-08-11_23-38_…`) — mark its
-    open questions as resolved or superseded by this session.
-43. **Annotate the plan** (`docs/planning/2026-08-11_23-45_…`) — mark
-    completed items inline.
-44. **Status-report this session** (you are here).
-45. **Add a `dedup-acceptance.md`** if `art-dupl` is used across sibling repos.
+    one; this repo doesn't). ← **open — `ROADMAP.md` theme 5**
+40. **Add a `Security.md`** (GitHub expects this for published libraries). ← **open — `TODO_LIST.md` #22**
+41. ~~**Re-run the full docs-health AUDIT** after #2–#4 land to confirm
+    Accuracy/Fitness back to 10/10 with no split brains.~~ done 2026-08-12 (this audit)
+42. ~~**Annotate the prior status report** (`2026-08-11_23-38_…`) — mark its
+    open questions as resolved or superseded by this session.~~ done 2026-08-12
+43. ~~**Annotate the plan** (`docs/planning/2026-08-11_23-45_…`) — mark
+    completed items inline.~~ done 2026-08-12 (plan archived)
+44. ~~**Status-report this session** (you are here).~~ done — superseded by `2026-08-12_09-25` report
+45. **Add a `dedup-acceptance.md`** if `art-dupl` is used across sibling repos. ← **open — deferred**
 
 ### Performance
 46. **Benchmark v1 vs v2 JSON paths** — confirm the dual-build has no perf
-    regression vs the original v2-only code.
+    regression vs the original v2-only code. ← **open — `TODO_LIST.md` #21**
 47. **Benchmark `normalizeForJSON`** — it allocates on every CBOR→JSON
-    transcode; consider a zero-alloc or streaming version if it's a hot path.
-48. **Add a `BenchmarkNormalizeForJSON`**.
-49. **Profile `TranscodeToJSON`** under realistic payload shapes.
+    transcode; consider a zero-alloc or streaming version if it's a hot path. ← **open — `TODO_LIST.md` #21**
+48. **Add a `BenchmarkNormalizeForJSON`**. ← **open — `TODO_LIST.md` #21**
+49. **Profile `TranscodeToJSON`** under realistic payload shapes. ← **open — `TODO_LIST.md` #21**
 50. **Consider lazy normalization** — only convert keys when the marshaler
-    actually chokes (try v1 marshal, fall back to normalize).
+    actually chokes (try v1 marshal, fall back to normalize). ← **open — idea, `ROADMAP.md` theme 2**
 
 ## g) Questions I cannot answer myself (max 3)
 
-1. **What is the git remote URL?** `git remote -v` is empty. The user asked to
+1. **What is the git remote URL?** ~~`git remote -v` is empty. The user asked to
    push; I can't without a remote. Should I create a `github.com/larsartmann/go-codec`
    repo (does it exist already?), or is this meant to live inside the
    go-cqrs-lite mono-repo? This determines whether the tag/push even makes
-   sense as a standalone module.
+   sense as a standalone module.~~
+   **Resolved:** standalone repo `github.com/larsartmann/go-codec` created + pushed.
 
 2. **Should ROADMAP/DOMAIN_LANGUAGE be updated now, or rolled into the next
-   docs-health pass?** I introduced a split-brain by renaming code without
+   docs-health pass?** ~~I introduced a split-brain by renaming code without
    updating those two docs. I can fix it immediately (5 min), or leave it for
    a dedicated docs-health HARVEST/VERIFY cycle — but only if you confirm
    you're not shipping v0.1.0 to consumers in the meantime (stale docs ship
-   with the tag right now).
+   with the tag right now).~~
+   **Resolved:** fixed at `3f8ac9d` (next session).
 
 3. **Is the `normalizeForJSON` recursion-depth concern real for your threat
-   model?** The function recursively walks CBOR-decoded `any` values to
+   model?** ~~The function recursively walks CBOR-decoded `any` values to
    normalize map keys for v1 JSON. Deeply nested CBOR (intentional or
    adversarial) will recurse deeply. I can add a depth cap (cheap, ~5 lines),
    but only if `TranscodeToJSON` / `AutoDetect` will ever see untrusted input.
    If this codec only ever runs inside a trusted store boundary, it may be
-   unnecessary. Your call.
+   unnecessary. Your call.~~
+   **Still open** — needs your threat-model decision; tracked at
+   `TODO_LIST.md` #1, #2. The depth cap is cheap defense-in-depth regardless.

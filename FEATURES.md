@@ -13,8 +13,8 @@
 | 🔴 `BROKEN`               | Present in code but not working / disabled / failing.        |
 | ⚪ `PLANNED`              | Designed or documented but **not yet implemented** in code.  |
 
-> All statuses verified: `go test ./...` and `GOEXPERIMENT=jsonv2 go test ./...`
-> both pass with `-race` on Go 1.26.5.
+> All statuses verified by running `go test ./...` and
+> `GOEXPERIMENT=jsonv2 go test ./...` with `-race` (both JSON modes green).
 
 ## Codecs
 

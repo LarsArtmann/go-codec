@@ -34,6 +34,9 @@ Raw ideas:
   for hot payload types (code generation or caching)
 - Benchmark and document the `toarray` / `keyasint` size/speed tradeoffs across
   realistic payload shapes
+- Streaming JSON encoder/decoder for parity with `NewCBOREncoder` /
+  `NewCBORDecoder` (large-batch encode/decode without materializing the full
+  byte slice)
 
 ### 3. Schema evolution & drift detection
 
@@ -60,6 +63,19 @@ Raw ideas:
   per-codec telemetry
 - A "why was this detected as X?" debug mode for `AutoDetect` to aid triage of
   mixed-encoding streams
+
+### 5. Ecosystem & public presence
+
+The module is published but has no in-repo consumer wired yet and no dedicated
+public site. Directions for making it discoverable and proving adoption.
+
+Raw ideas:
+
+- Project website / docs site via the `website-launch` skill (Astro + Starlight
+  + Firebase Hosting pattern used by sibling modules)
+- A worked end-to-end example consuming `go-codec` from `go-cqrs-lite` to prove
+  the `Codec` contract in a real store
+- pkg.go.dev polish: ensure every exported symbol carries a godoc example
 
 ## Non-goals
 

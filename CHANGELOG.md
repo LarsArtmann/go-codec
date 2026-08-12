@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+_No changes since v0.1.0. Post-tag commits (`ef1f4f4`, `5352889`, `ba73a7e`) are
+CI workflow and documentation only — no library code changes._
+
+## [0.1.0] - 2026-08-12
+
+First tagged release. Deterministic payload codec library for event-sourced
+serialization, tag at `3f8ac9d`.
+
 ### Added
 
 - Deterministic payload codec library for event-sourced serialization, exposing a
@@ -68,3 +76,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `snaps_clean_test.go` compile error: reverted `_ =` prefix to bare call
   (matching the original cqrs-lite source), which Go allows for multi-return
   functions used as statements
+
+[Unreleased]: https://github.com/larsartmann/go-codec/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/larsartmann/go-codec/releases/tag/v0.1.0

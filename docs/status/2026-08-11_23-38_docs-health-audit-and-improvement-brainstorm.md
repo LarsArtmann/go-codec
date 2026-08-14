@@ -150,22 +150,22 @@
    yes, wire the repo path; if no, delete the `../` references.~~ done at `9d114ba` (standalone module; siblings in go-cqrs-lite; README links fixed)
 8. ~~Add a `flake.nix` (copy go-branded-id's; dual-mode CI for json v1/v2).~~ done at `1fde5c5`
 9. ~~Add `.github/workflows` CI: build+test+lint+race in both json modes.~~ done at `ef1f4f4`
-10. Add `coverage` reporting to CI. ← **open — `TODO_LIST.md` #12**
+10. Add `coverage` reporting to CI. ~~routed, since executed~~ done at `094de50`
 
 ### Code quality — the improvement brainstorm
 11. ~~Rename `envelopeMagic = "cqrs"` → a neutral, descriptive sentinel.~~ done at `d144b6f` (→ `"gcdc"`)
 12. ~~Wire `EncodingRaw → RawCodec{}` into `ForEncoding` (currently asymmetrical
     with `AutoDetect`, which produces `EncodingRaw`).~~ done at `d144b6f`
 13. Add `TranscodeToCBOR` (symmetric counterpart to `TranscodeToJSON`), or
-    rename to make the one-way contract unmistakable. ← **open — `TODO_LIST.md` #19**
-14. Replace `Size` positional `(int,int)` return with a `SizeResult{JSON, CBOR}`. ← **open — `TODO_LIST.md` #18**
+    rename to make the one-way contract unmistakable. ~~routed, since executed~~ done at `094de50`
+14. Replace `Size` positional `(int,int)` return with a `SizeResult{JSON, CBOR}`. ~~routed, since executed~~ done at `094de50`
 15. ~~Rename `COSESign1String`/`COSEEncrypt0String` → `…Diagnostic` (they return
     diagnostic notation, not arbitrary strings).~~ done at `d144b6f`
-16. Add a `sync.Pool[*bytes.Buffer]` helper for `BufferEncoder` hot paths. ← **open — `TODO_LIST.md` #20**
+16. Add a `sync.Pool[*bytes.Buffer]` helper for `BufferEncoder` hot paths. ~~routed, since executed~~ done at `094de50`
 17. ~~Remove the `stack.Bundle`/`DefaultCodec()` reference from `doc.go` (leaky
     abstraction — a codec lib shouldn't know who owns the default).~~ done at `1fde5c5`
 18. Add depth/size caps to `AutoDetect` and `TranscodeToJSON` generic decode
-    before the DoS-resistance claim in docs is honest. ← **open — `TODO_LIST.md` #1, #2**
+    before the DoS-resistance claim in docs is honest. ~~routed, since executed~~ done at `094de50`
 19. Evaluate dropping `go-error-family` for a stdlib `errors` + code field (one
     fewer direct dep for a serialization library). ← **open — decision deferred**
 
@@ -183,7 +183,7 @@
 25. ~~Re-verify FEATURES 🟢 rows to `PASS` once #1/#2 land; drop the caveat.~~ done at `9d114ba`
 26. ~~Note the LICENSE posture in README + FEATURES.~~ done at `1fde5c5` / `9d114ba` (MIT)
 27. Add a real architecture diagram (codec → store/event/signing/encryption). ← **open — nice-to-have**
-28. Add benchmark numbers to README (the `_bench` tests exist, mine the data). ← **open — `TODO_LIST.md` #21**
+28. Add benchmark numbers to README (the `_bench` tests exist, mine the data). ~~routed, since executed~~ done at `094de50` (benchmark suite added); headline README citation still open — `TODO_LIST.md` #13
 
 ### Tooling & repo hygiene
 29. ~~Add `.golangci.yml` (none exists; CONTRIBUTING tells people to run a linter
@@ -194,25 +194,25 @@
 33. Consider a `dedup-acceptance.md` (go-branded-id pattern for art-dupl). ← **open — deferred**
 34. Add a `website/` + publish via the `website-launch` skill (go-branded-id has one). ← **open — `ROADMAP.md` theme 5**
 35. ~~`gofumpt` consistency pass (go-branded-id uses it via treefmt).~~ done at `b6a5a93`
-36. Add `treefmt-nix` config for formatting. ← **open — uses `dprint` instead**
+36. ~~Add `treefmt-nix` config for formatting.~~ ~~uses `dprint` instead~~ resolved — `flake.nix` now drives treefmt-nix (gofumpt/goimports/nixfmt, enforced by `nix flake check`); `dprint.json` remains as a secondary config
 
 ### Deeper verification I skipped
 37. ~~Confirm every `Example_*` in `example_test.go` produces the documented
     `Output:` (blocked until #1/#2 land).~~ done at `v0.1.0` (tests green)
-38. Validate the fuzz corpus under `testdata/fuzz/` still reproduces. ← **open — `TODO_LIST.md` #11**
+38. ~~Validate the fuzz corpus under `testdata/fuzz/` still reproduces.~~ done — corpus seeds run as part of every `go test` in both CI modes (long-form `-fuzz` runs remain `TODO_LIST.md` #3)
 39. Property-test `AutoDetect` ↔ `ForEncoding` round-trip on mixed streams. ← **open**
-40. Verify `TimeUnixDynamic` float-drift claims (~165ns) in `README.md` against
-    the actual `TestCBORCodec_RoundTrip_TimeSubSecondPrecision` behavior. ← **open**
+40. ~~Verify `TimeUnixDynamic` float-drift claims (~165ns) in `README.md` against
+    the actual `TestCBORCodec_RoundTrip_TimeSubSecondPrecision` behavior.~~ done — the test asserts 1µs round-trip tolerance (`codec_test.go`), documenting the ~165ns float drift
 41. ~~Lint the whole tree on Go 1.27 and resolve every warning (29 LSP warnings
     today, almost all the go-version noise; a clean run needs 1.27).~~ done at `3f8ac9d` (88→0)
 
 ### Nice-to-haves
-42. Streaming JSON codec (symmetry with `NewCBOREncoder`/`NewCBORDecoder`). ← **open — `ROADMAP.md` theme 2**
+42. ~~Streaming JSON codec (symmetry with `NewCBOREncoder`/`NewCBORDecoder`).~~ done at `eba9f80` (`NewJSONEncoder`/`NewJSONDecoder`, NDJSON)
 43. Schema-evolution helper: lint that blocks reordering `toarray` struct fields. ← **open — `ROADMAP.md` theme 3**
 44. Migration helper pairing `UnwrapDecode` with a codec swap for incremental
     store re-encoding. ← **open — `ROADMAP.md` theme 3**
-45. "Why was this detected as X?" debug mode for `AutoDetect`. ← **open — `ROADMAP.md` theme 4**
-46. Codified guidance doc for the `toarray`/`keyasint` wire-format commitments. ← **open**
+45. ~~"Why was this detected as X?" debug mode for `AutoDetect`.~~ done at `93e68f3` (`AutoDetectDebug`)
+46. ~~Codified guidance doc for the `toarray`/`keyasint` wire-format commitments.~~ done — `docs/DOMAIN_LANGUAGE.md` "Wire-format commitments" table + README tag sections
 47. MessagePack codec (format-coverage roadmap theme). ← **open — `ROADMAP.md` theme 1**
 48. Custom-codec registration table for `ForEncoding` (drop the hardcoded switch). ← **open — `ROADMAP.md` theme 1**
 49. ~~Re-run the full docs-health AUDIT after the above to get a non-caveated 10/10.~~ done 2026-08-12 (this audit)

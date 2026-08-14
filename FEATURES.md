@@ -19,18 +19,13 @@
 
 ## Performance
 
-| Benchmark | v1 (ns/op) | v2 (ns/op) | v1 allocs | v2 allocs |
-| --- | --- | --- | --- | --- |
-| `BenchmarkNormalizeForJSON` | 1562 | 932 (-40%) | 19 | 9 (-53%) |
-| `BenchmarkJSONCodec_MarshalUnmarshal` | 937 | 614 (-35%) | 8 | 3 (-63%) |
-
-## Performance benchmarks
-
 | Benchmark | What it measures | Key finding |
 | --- | --- | --- |
+| `BenchmarkNormalizeForJSON` / `BenchmarkJSONCodec_MarshalUnmarshal` | v1 vs v2 JSON paths (incl. normalizer) | v2: 35-40% lower latency, ~50-63% fewer allocations |
 | `BenchmarkTagTradeoffs_Encode/Decode` | map vs toarray vs keyasint across small/medium/large payloads | toarray smallest (23-41% size reduction); keyasint close behind (18-37%) |
 | `BenchmarkCBORReflectionCache` | Cold (first encode) vs warm (cached) CBOR encode | Cold ~117µs/104 allocs; warm ~340ns/2 allocs — 344x faster after cache. No codegen needed |
 | `BenchmarkEncodePooled` | Pool-backed encode vs plain Encode | Eliminates per-call []byte allocation via sync.Pool callback |
+| `BenchmarkTranscodeToJSON_*` | CBOR→JSON transcoding vs JSON passthrough | Nested-deep and passthrough paths quantified |
 
 ## Codecs
 
@@ -55,8 +50,14 @@
 | Feature                                              | Status                | Notes                                                                       |
 | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
 | `ObservableCodec` — decorator codec with telemetry   | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; wraps any `Codec`, records per-operation metrics, implements `BufferEncoder` when the inner codec does; goroutine-safety locked by 16k-op race stress test — `observability_test.go` |
-| `CodecMetrics` / `MetricsSnapshot` — counters & last errors | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; goroutine-safe encode/deode call counts, byte totals, error counts, and last errors with `Snapshot()` / `Reset()` — `observability_test.go` |
+| `CodecMetrics` / `MetricsSnapshot` — counters & last errors | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; goroutine-safe encode/decode call counts, byte totals, error counts, and last errors with `Snapshot()` / `Reset()` — `observability_test.go` |
 | `MetricsHook` — per-operation callback               | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; invoked after each encode/decode with operation, encoding, bytes processed, and error for push-style telemetry; documented panic policy (propagates, metrics recorded pre-hook) tested in `observability_test.go` |
+
+## Signing safety
+
+| Feature                                          | Status                | Notes                                                                  |
+| ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
+| `DeterministicCodec` marker interface            | ⚪ `PLANNED`          | Approved proposal (`docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4): compile-time guard so only deterministic codecs reach signing APIs. No code exists yet — `TODO_LIST.md` #2 |
 ## Security hardening
 
 | Feature                                          | Status                | Notes                                                                  |

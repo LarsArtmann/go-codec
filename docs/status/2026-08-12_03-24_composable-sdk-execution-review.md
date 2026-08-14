@@ -165,48 +165,48 @@
 ### Verification gaps
 5. **Run fuzz targets** for at least 60s each: `FuzzCBORCodec_Roundtrip`,
    `FuzzTranscodeToJSON` (especially on v1 mode to exercise
-   `normalizeForJSON`). ← **open — `TODO_LIST.md` #11**
+   `normalizeForJSON`). **still open — now `TODO_LIST.md` #3 (fuzz job/corpus)**
 6. **Generate coverage report** (`go test ./... -coverprofile=coverage.out`) in
-   both modes; report the percentage; add to README/FEATURES. ← **open — `TODO_LIST.md` #12**
+   both modes; report the percentage; add to README/FEATURES. ~~routed, since executed~~ done at `094de50`
 7. **Run `nix build` and `nix run .#test`** to verify the flake.nix actually
-   works (I wrote it by adaptation; never executed it). ← **open — `TODO_LIST.md` #13**
+   works (I wrote it by adaptation; never executed it). ~~routed, since executed~~ done at `094de50`
 8. **Verify `UPDATE_SNAPSHOTS=true go test ./...`** still produces stable
-   golden output in both JSON modes. ← **open — verification**
+   golden output in both JSON modes. ~~verification~~ done — golden snapshot tests green in both CI modes continuously since
 
 ### CI / release hygiene
 9. ~~**Add `.github/workflows/ci.yml`** — build+test+lint+race in both JSON
    modes, mirroring the Nix checks.~~ done at `ef1f4f4`
 10. **Add `gosec` and `govulncheck`** to CI (per how-to-golang policy). ← **partial — `govulncheck` done `ef1f4f4`; `gosec` open → `TODO_LIST.md` #3**
-11. **Add `gitleaks`** to CI (secret scanning). ← **open — `TODO_LIST.md` #3**
+11. **Add `gitleaks`** to CI (secret scanning). ~~routed, since executed~~ done at `ef1f4f4`
 12. ~~**Publish `v0.1.0`** to pkg.go.dev once pushed (GOPROXY will pick it up).~~ done — pushed; pkg.go.dev badge live
-13. **Add release notes** to the GitHub Release for `v0.1.0`. ← **open — no release exists → `TODO_LIST.md` #5**
-14. **Add a `CHANGELOG.md` link** to the release description. ← **open — blocked on #13 → `TODO_LIST.md` #5**
+13. **Add release notes** to the GitHub Release for `v0.1.0`. ← **still open — awaiting release decision (`TODO_LIST.md` #1)**
+14. **Add a `CHANGELOG.md` link** to the release description. ← **still open — blocked on #13 (`TODO_LIST.md` #1)**
 
 ### API polish (from the original brainstorm, deferred)
-15. **`Size` → `SizeResult{JSON, CBOR int}`** — self-documenting return. ← **open — `TODO_LIST.md` #18**
+15. **`Size` → `SizeResult{JSON, CBOR int}`** — self-documenting return. ~~routed, since executed~~ done at `094de50`
 16. **Add `TranscodeToCBOR`** (symmetric to `TranscodeToJSON`) or rename to
-    make the one-way contract unmistakable. ← **open — `TODO_LIST.md` #19**
-17. **Depth/size cap in `AutoDetect`** before trial-decode of untrusted bytes. ← **open — `TODO_LIST.md` #2**
-18. **Depth/size cap in `TranscodeToJSON`** for the same reason. ← **open — `TODO_LIST.md` #1**
-19. **`sync.Pool[*bytes.Buffer]` helper** for `BufferEncoder` hot paths. ← **open — `TODO_LIST.md` #20**
+    make the one-way contract unmistakable. ~~routed, since executed~~ done at `094de50`
+17. **Depth/size cap in `AutoDetect`** before trial-decode of untrusted bytes. ~~routed, since executed~~ done at `094de50`
+18. **Depth/size cap in `TranscodeToJSON`** for the same reason. ~~routed, since executed~~ done at `094de50`
+19. **`sync.Pool[*bytes.Buffer]` helper** for `BufferEncoder` hot paths. ~~routed, since executed~~ done at `094de50`
 20. **Evaluate dropping `go-error-family`** for stdlib `errors` + a code field
     (one fewer direct dep for a serialization lib). ← **open — decision deferred**
 
 ### Test & docs polish
 21. **Add `TestNormalizeForJSON`** — dedicated table-driven test for the
-    recursive normalizer (currently only exercised transitively). ← **open — `TODO_LIST.md` #9**
+    recursive normalizer (currently only exercised transitively). ~~routed, since executed~~ done at `094de50`
 22. **Add a fuzz target specifically for `normalizeForJSON`** — adversarial
-    nested `map[interface{}]interface{}` and cycles. ← **open — `TODO_LIST.md` #10**
-23. **Add a `SizeResult` example to doc.go** if #15 lands. ← **open — blocked on #15 → `TODO_LIST.md` #18**
+    nested `map[interface{}]interface{}` and cycles. ~~routed, since executed~~ done at `094de50`
+23. **Add a `SizeResult` example to doc.go** if #15 lands. ← **#15 landed at `094de50`; the example itself is still open — `TODO_LIST.md` #9**
 24. **Mine the benchmark data** — add concrete numbers to the README's "19-43%
     smaller / 25-72% faster" claims (the `_bench` tests exist; run them and
-    cite results). ← **open — `TODO_LIST.md` #21**
+    cite results). ~~routed, since executed~~ done at `094de50` (benchmark suite added); headline README citation still open — `TODO_LIST.md` #13
 25. **Add a `docs/TIMEZONE_HANDLING.md`** — the README references this file in
     the cqrs-lite parent but it doesn't exist here; either create a
-    codec-scoped version or drop the reference. ← **open — `TODO_LIST.md` #23**
-26. **Add `CODEOWNERS`**. ← **open — `TODO_LIST.md` #22**
+    codec-scoped version or drop the reference. ~~routed, since executed~~ done at `094de50`
+26. **Add `CODEOWNERS`**. ~~routed, since executed~~ done at `094de50`
 27. **Add issue/PR templates** (`.github/ISSUE_TEMPLATE/`,
-    `.github/PULL_REQUEST_TEMPLATE.md`). ← **open — `TODO_LIST.md` #22**
+    `.github/PULL_REQUEST_TEMPLATE.md`). ~~routed, since executed~~ done at `094de50`
 
 ### Architecture / composable-SDK direction
 28. **Add an `ExampleForEncoding`** godoc example showing all three encodings. ← **open — nice-to-have**
@@ -222,17 +222,17 @@
     the hardcoded switch, let users register `"encrypted"` etc.). ← **open — `ROADMAP.md` theme 1**
 34. **Add `Result[T]` pattern** to codec Decode (like go-branded-id's
     `result/` package) if the sibling stack adopts it. ← **open — deferred (conditional on sibling stack)**
-35. **Consider a streaming JSON codec** (symmetry with CBOR streaming). ← **open — `ROADMAP.md` theme 2**
+35. ~~**Consider a streaming JSON codec** (symmetry with CBOR streaming).~~ done at `eba9f80` (`NewJSONEncoder`/`NewJSONDecoder`, NDJSON)
 
 ### Repo hygiene
-36. **Run `nix flake check`** to validate the flake. ← **open — `TODO_LIST.md` #13**
+36. **Run `nix flake check`** to validate the flake. ~~routed, since executed~~ done at `094de50`
 37. ~~**Add `flake.lock`** (go-branded-id has one; this repo doesn't after adding
     flake.nix).~~ done — `flake.lock` present
 38. ~~**Add `.gitattributes` linguist-attributes** if the repo grows non-Go
     content (website, etc.).~~ done — `.gitattributes` present
 39. **Consider a `website/`** via the `website-launch` skill (go-branded-id has
     one; this repo doesn't). ← **open — `ROADMAP.md` theme 5**
-40. **Add a `Security.md`** (GitHub expects this for published libraries). ← **open — `TODO_LIST.md` #22**
+40. **Add a `Security.md`** (GitHub expects this for published libraries). ~~routed, since executed~~ done at `094de50`
 41. ~~**Re-run the full docs-health AUDIT** after #2–#4 land to confirm
     Accuracy/Fitness back to 10/10 with no split brains.~~ done 2026-08-12 (this audit)
 42. ~~**Annotate the prior status report** (`2026-08-11_23-38_…`) — mark its
@@ -244,11 +244,11 @@
 
 ### Performance
 46. **Benchmark v1 vs v2 JSON paths** — confirm the dual-build has no perf
-    regression vs the original v2-only code. ← **open — `TODO_LIST.md` #21**
+    regression vs the original v2-only code. ~~routed, since executed~~ done at `094de50` (benchmark suite added); headline README citation still open — `TODO_LIST.md` #13
 47. **Benchmark `normalizeForJSON`** — it allocates on every CBOR→JSON
-    transcode; consider a zero-alloc or streaming version if it's a hot path. ← **open — `TODO_LIST.md` #21**
-48. **Add a `BenchmarkNormalizeForJSON`**. ← **open — `TODO_LIST.md` #21**
-49. **Profile `TranscodeToJSON`** under realistic payload shapes. ← **open — `TODO_LIST.md` #21**
+    transcode; consider a zero-alloc or streaming version if it's a hot path. ~~routed, since executed~~ done at `094de50` (benchmark suite added); headline README citation still open — `TODO_LIST.md` #13
+48. **Add a `BenchmarkNormalizeForJSON`**. ~~routed, since executed~~ done at `094de50` (benchmark suite added); headline README citation still open — `TODO_LIST.md` #13
+49. **Profile `TranscodeToJSON`** under realistic payload shapes. ~~routed, since executed~~ done at `094de50` (benchmark suite added); headline README citation still open — `TODO_LIST.md` #13
 50. **Consider lazy normalization** — only convert keys when the marshaler
     actually chokes (try v1 marshal, fall back to normalize). ← **open — idea, `ROADMAP.md` theme 2**
 

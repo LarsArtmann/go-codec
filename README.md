@@ -106,7 +106,7 @@ work everywhere in the library; pick one per use case.
 | Event payloads in PebbleDB              | `CBORCodec`        | Deterministic encoding for signing  |
 | Cryptographic signing of payloads       | `CBORCodec`        | Canonical byte representation       |
 | High-throughput event streams           | `CBORCodec`        | Smaller encoded size, faster decode |
-| Read models / projections               | `CBORCodec`        | Stack `DefaultCodec()` returns CBOR |
+| Read models / projections               | `CBORCodec`        | Smaller, faster, deterministic |
 | New event store with schema drift guard | `CBORCompactCodec` | Unknown-field rejection on decode   |
 | External system interop / HTTP APIs     | `JSONCodec`        | Universal support                   |
 | Debugging / human-readable payloads     | `JSONCodec`        | Readable in logs, curl, DB queries  |

@@ -78,7 +78,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   to `package codec_test` (white-box access via `export_test.go`).
 - `paralleltest` linter re-enabled: all 19 previously-unparallelized test
   functions now call `t.Parallel()`.
-
 - `TestObservableCodec_ConcurrentStress`: 16,000 concurrent encode/decode
   operations across a shared `CodecMetrics` and `MetricsHook` under `-race`,
   locking in the goroutine-safety claim with exact call/byte/hook-count
@@ -115,6 +114,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - README Go version corrected from `"Go 1.23+"` to `"Go 1.26.5+"`.
 - `doc.go`: added explicit one-way contract note for `TranscodeToJSON`.
 - `CONTRIBUTING.md`: added snapshot-update dual-mode flow and test conventions.
+- CI workflow hardened: GitHub Actions pinned to commit SHAs, `golangci-lint`
+  v2.12.2 installed explicitly, and a `govulncheck` vulnerability-scan job
+  added alongside the gitleaks secret scan.
+- `flake.nix`: hermetic `checks.build` / `checks.test` via `buildGoModule`
+  (dependencies fetched through the Nix sandbox), plus a `packages.default`
+  so plain `nix build` works. Fixes the `/homeless-shelter` sandbox failure
+  that made `nix flake check` red.
+- `docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md`:
+  architecture decisions on COSE extraction (no), JWS/JWE (no), signing /
+  encryption module structure (keep separate), and the approved
+  `DeterministicCodec` marker-interface proposal.
 
 ## [0.1.0] - 2026-08-12
 

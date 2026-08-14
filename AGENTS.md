@@ -16,9 +16,9 @@ CBOR compact, JSON, Raw) plus shared COSE structure helpers, transcoding,
 envelope wrapping, autodetection, streaming, observability, and size/diagnostic
 utilities.
 
-**Adoption proof:** `go-cqrs-lite/codec/v4` requires `go-codec v0.1.0` from the
-module proxy (verified 2026-08-14: `GOWORK=off go build` green in that module).
-The sibling repo consumes the published tag, not just the go.work overlay.
+**Adoption proof:** `go-cqrs-lite/codec/v4` requires the published `go-codec`
+tag from the module proxy (not just a go.work overlay) — the sibling repo
+builds against the proxy artifact with `GOWORK=off`.
 
 ## Directory Structure
 
@@ -53,10 +53,11 @@ golangci-lint run --build-tags goexperiment.jsonv2 ./... # lint (v2)
 With flake.nix (preferred in LarsArtmann projects):
 
 ```bash
-nix build                              # build
-nix run .#test                         # test both JSON modes
-nix run .#test-race                    # race-test both modes
-nix run .#lint                         # lint both modes
+nix build                              # build (packages.default via buildGoModule)
+nix flake check                       # hermetic: format + build + dual-mode tests
+nix run .#test                        # test both JSON modes
+nix run .#test-race                   # race-test both modes
+nix run .#lint                        # lint both modes
 ```
 
 ## Architecture
@@ -90,6 +91,12 @@ nix run .#lint                         # lint both modes
   `NewJSONDecoder` return `*JSONEncoder`/`*JSONDecoder` wrapper types (defined
   in the dual-build `json_compat_v*.go` files). JSON streaming uses NDJSON
   (newline-delimited JSON): each `Encode` writes one value + `\n`.
+- **v2 NDJSON gotcha:** `jsontext.Encoder` inserts separator tokens between
+  top-level values and corrupts NDJSON — that is why the v2 streaming encoder
+  uses per-value `json.MarshalWrite` + manual `\n`, and the decoder wraps
+  `jsontext.NewDecoder` (NOT `json.UnmarshalRead`, which over-reads from the
+  `io.Reader` and silently breaks sequential `Decode` calls). See
+  `json_compat_v2.go`.
 - **Buffer pool** (`pool.go`) — `GetBuffer`/`PutBuffer` manage a `sync.Pool`
   of `*bytes.Buffer`. `EncodePooled` is a callback-based helper that handles
   the full GetBuffer to EncodeToBuffer to callback to PutBuffer lifecycle
@@ -119,13 +126,16 @@ nix run .#lint                         # lint both modes
 
 ## Gotchas
 
+- **`flake.nix` vendorHash:** hermetic checks fetch modules via a fixed-output
+  derivation. After ANY `go.mod`/`go.sum` dependency change, `nix build` will
+  report a hash mismatch — paste the `got: sha256-…` value into `vendorHash`.
 - **Dual-build: never import `json.*` directly.** All JSON calls go through the
   `json_compat_v*.go` helpers. goimports may corrupt v1 files to import v2 — the
   contract test (`json_contract_test.go`) catches this. Always run both modes.
-  **This corruption actually happened (2026-08-14, committed at HEAD):** the v1
-  files imported `encoding/json/v2` while tagged `!goexperiment.jsonv2`, which
-  broke the entire default build AND made gopls diagnostics look "stale" when
-  they were real. If the default `go build ./...` fails with "build constraints
+  **This corruption has happened before:** v1 files once imported
+  `encoding/json/v2` while carrying `!goexperiment.jsonv2` tags, which broke
+  the entire default build and made gopls diagnostics look "stale" when they
+  were real. If the default `go build ./...` fails with "build constraints
   exclude all Go files" for `encoding/json/v2`/`jsontext`, check the v1 compat
   file imports first — do not blame the toolchain or the LSP cache.
 - **`CBORCodec` ≠ `CBORCompactCodec` bytes.** Never assume data written by one

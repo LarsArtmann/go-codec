@@ -43,6 +43,19 @@
             type = "app";
             program = "${pkgs.writeShellApplication { inherit name runtimeInputs text; }}/bin/${name}";
           };
+
+          # Hermetic module source: fetches dependencies through the Nix sandbox
+          # (goModules FOD) instead of relying on $HOME/GOMODCACHE, so checks and
+          # `nix build` work without network access at build time.
+          goModule = pkgs.buildGoModule {
+            pname = "go-codec";
+            version = "unstable";
+            src = lib.fileset.toSource {
+              root = ./.;
+              fileset = lib.fileset.gitTracked ./.;
+            };
+            vendorHash = "sha256-+JW5EWwTL68usFvVUq32KKyHb+YX0NR1IyDd6K/ShQc=";
+          };
         in
         {
           treefmt = {
@@ -79,34 +92,25 @@
             GOWORK = "off";
           };
 
-          checks = {
-            build = pkgs.runCommand "go-codec-build" { nativeBuildInputs = [ goPkg ]; } ''
-              export GOWORK=off
-              export GOCACHE="$TMPDIR/go-cache"
-              cp -r ${
-                lib.fileset.toSource {
-                  root = ./.;
-                  fileset = lib.fileset.gitTracked ./.;
-                }
-              } src && chmod -R u+w src && cd src
-              ${goPkg}/bin/go build ./...
-              GOEXPERIMENT=jsonv2 ${goPkg}/bin/go build ./...
-              touch $out
-            '';
+          packages.default = goModule.overrideAttrs (old: {
+            doCheck = false;
+          });
 
-            test = pkgs.runCommand "go-codec-test" { nativeBuildInputs = [ goPkg ]; } ''
-              export GOWORK=off
-              export GOCACHE="$TMPDIR/go-cache"
-              cp -r ${
-                lib.fileset.toSource {
-                  root = ./.;
-                  fileset = lib.fileset.gitTracked ./.;
-                }
-              } src && chmod -R u+w src && cd src
-              ${goPkg}/bin/go test ./... -count=1
-              GOEXPERIMENT=jsonv2 ${goPkg}/bin/go test ./... -count=1
-              touch $out
-            '';
+          checks = {
+            build = goModule.overrideAttrs (old: {
+              doCheck = false;
+            });
+
+            # Runs `go test ./...` in both JSON modes inside the sandbox against
+            # the vendored dependency set.
+            test = goModule.overrideAttrs (old: {
+              checkPhase = ''
+                runHook preCheck
+                go test ./... -count=1
+                GOEXPERIMENT=jsonv2 go test ./... -count=1
+                runHook postCheck
+              '';
+            });
           };
 
           apps = {

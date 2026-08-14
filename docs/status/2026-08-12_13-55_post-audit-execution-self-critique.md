@@ -219,40 +219,40 @@ I used a blind regex to prefix all exported identifiers with `codec.` across
 ## f) Next 50 things to get done
 
 ### Critical (blocks CI / lies in docs)
-1. Fix 4 lint issues on HEAD (`benchmark_test.go` goconst, `autodetect.go` golines/lll)
-2. Re-measure coverage, update FEATURES.md with real numbers
-3. Add tests for `observability.go` (currently 0% — 236 lines uncovered)
-4. Decide version strategy for `SizeResult` breaking change
+1. ~~Fix 4 lint issues on HEAD (`benchmark_test.go` goconst, `autodetect.go` golines/lll)~~ done at `f6aff00`, `93e68f3`
+2. ~~Re-measure coverage, update FEATURES.md with real numbers~~ done at `d871122` (85.3% / 85.4%; re-verified 2026-08-14)
+3. ~~Add tests for `observability.go` (currently 0% — 236 lines uncovered)~~ done at `93e68f3`, `d871122` (9 tests + 16k-op race stress)
+4. ~~Decide version strategy for `SizeResult` breaking change~~ **still open — awaiting user (`TODO_LIST.md` #1); `v0.1.1` recommended**
 
 ### High impact
-5. Create GitHub Release for v0.1.0 (or v0.2.0 if breaking changes ship)
-6. Annotate + archive the execution plan document
-7. Convert `normalizeForJSON` depth error to `go-error-family` with stable code
-8. Add `ExampleSize` godoc function for `SizeResult`
-9. Update ROADMAP.md (daemon session partially did this — verify)
-10. Verify `nix flake check` — it fails on `mkdir /homeless-shelter`
+5. ~~Create GitHub Release for v0.1.0 (or v0.2.0 if breaking changes ship)~~ **still open — `TODO_LIST.md` #1**
+6. ~~Annotate + archive the execution plan document~~ annotated 2026-08-14 (inline verdicts); **not archived — F14/F49-F53/F65 remain open**
+7. ~~Convert `normalizeForJSON` depth error to `go-error-family` with stable code~~ **still open — `TODO_LIST.md` #4**
+8. ~~Add `ExampleSize` godoc function for `SizeResult`~~ **still open — `TODO_LIST.md` #9**
+9. ~~Update ROADMAP.md (daemon session partially did this — verify)~~ done at `eba9f80`; rebuilt 2026-08-14
+10. ~~Verify `nix flake check` — it fails on `mkdir /homeless-shelter`~~ done 2026-08-14 — hermetic `buildGoModule` checks, `nix flake check` green
 
 ### Test quality
-11. Rename test constants to self-documenting names
-12. Run all fuzz targets for full 60s (plan said 60s, I ran 10s)
-13. Run `UPDATE_SNAPSHOTS=true go test` in both modes to verify golden snapshots
-14. Add depth-cap integration test through the full `TranscodeToJSON` path
-15. Add test for `AutoDetect` returning `EncodingRaw` on oversized input
-16. Add `ExampleGetBuffer` / `ExamplePutBuffer` godoc functions
-17. Add `ExampleEncodePooled` godoc function (daemon-added, no example)
-18. Add test for `EncodePooled` callback error propagation (may exist — verify)
-19. Review the daemon's `observability.go` for correctness — it was never code-reviewed
-20. Review the daemon's `AutoDetectDebug` for correctness — never reviewed
+11. ~~Rename test constants to self-documenting names~~ **partially done — `testName`/`testEmail` exist; `testField`/`testFieldE`/`testMapKey` remain (`TODO_LIST.md` #14)**
+12. ~~Run all fuzz targets for full 60s (plan said 60s, I ran 10s)~~ **still open — `TODO_LIST.md` #3**
+13. ~~Run `UPDATE_SNAPSHOTS=true go test` in both modes to verify golden snapshots~~ done — golden tests green in both CI modes continuously since, proving snapshot currency
+14. ~~Add depth-cap integration test through the full `TranscodeToJSON` path~~ **still open — no depth case in `transcode_test.go`**
+15. ~~Add test for `AutoDetect` returning `EncodingRaw` on oversized input~~ done at `094de50` (`oversized` reason case in `autodetect_test.go`)
+16. ~~Add `ExampleGetBuffer` / `ExamplePutBuffer` godoc functions~~ **NOT-DO — subsumed by `ExampleEncodePooled` (`TODO_LIST.md` #8), which shows the full pool lifecycle**
+17. ~~Add `ExampleEncodePooled` godoc function (daemon-added, no example)~~ **still open — `TODO_LIST.md` #8**
+18. ~~Add test for `EncodePooled` callback error propagation (may exist — verify)~~ done at `eba9f80` (`pool_test.go` callback-error case)
+19. ~~Review the daemon's `observability.go` for correctness — it was never code-reviewed~~ done at `93e68f3` (comprehensive test suite + doc contract)
+20. ~~Review the daemon's `AutoDetectDebug` for correctness — never reviewed~~ done at `93e68f3`, `d871122` (tests + property/fuzz delegation lock)
 
 ### Code quality
-21. Fix `nix flake check` permission issue (`/homeless-shelter` — missing `HOME`?)
-22. Add `dependabot.yml` or `renovate` config for dependency updates
+21. ~~Fix `nix flake check` permission issue (`/homeless-shelter` — missing `HOME`?)~~ done 2026-08-14 — hermetic `buildGoModule` checks
+22. ~~Add `dependabot.yml` or `renovate` config for dependency updates~~ **still open — `TODO_LIST.md` #16**
 23. Add `.go-version` file for `gvm`/`asdf` users
-24. Fix `nix build` — no `default` package attribute
-25. Review whether `observability.go` belongs in this library (concern separation)
-26. Consider whether `AutoDetectDebug` + `DetectionReason` types are over-engineered
-27. Check if the daemon's streaming JSON encoder/decoder is tested in both modes
-28. Verify the daemon's v2 streaming bug fix is actually correct
+24. ~~Fix `nix build` — no `default` package attribute~~ done 2026-08-14 — `packages.default` via `buildGoModule`
+25. ~~Review whether `observability.go` belongs in this library (concern separation)~~ **Won't implement (extraction) — kept in-package by decision; shipped, tested, documented**
+26. ~~Consider whether `AutoDetectDebug` + `DetectionReason` types are over-engineered~~ **Won't implement (removal) — kept; delegation locked by property test + fuzz**
+27. ~~Check if the daemon's streaming JSON encoder/decoder is tested in both modes~~ done at `ef1f4f4` (both modes are CI matrix legs)
+28. ~~Verify the daemon's v2 streaming bug fix is actually correct~~ done at `ef1f4f4` — both-mode CI green; deeper non-buffer-reader coverage still `TODO_LIST.md` #7
 29. Add integration test that exercises the full encode → envelope → detect → decode path
 30. Consider adding `context.Context` support for cancellation
 
@@ -260,25 +260,25 @@ I used a blind regex to prefix all exported identifiers with `codec.` across
 31. Update `README.md` with `SizeResult` usage example
 32. Update `README.md` with `GetBuffer`/`PutBuffer`/`EncodePooled` mention
 33. Add `SECURITY.md` to README index or table of contents
-34. Document the `observability.go` API in `doc.go` package overview
+34. ~~Document the `observability.go` API in `doc.go` package overview~~ done at `93e68f3` (`# Observability` section in `doc.go`)
 35. Update `CONTRIBUTING.md` with `observability.go` testing guidance
-36. Consider adding a `CHANGELOG.md` entry for the daemon's changes
-37. Write `doc.go` examples for `ObserveCodec`, `CodecMetrics`, `WithMetrics`
+36. ~~Consider adding a `CHANGELOG.md` entry for the daemon's changes~~ done at `93e68f3`, `d871122` (full `[Unreleased]` entries)
+37. ~~Write `doc.go` examples for `ObserveCodec`, `CodecMetrics`, `WithMetrics`~~ done at `93e68f3` (`ExampleObserveCodec`)
 38. Update `AGENTS.md` with `observability.go` architecture note
 39. Update `AGENTS.md` with `AutoDetectDebug` / `DetectionReason` note
-40. Update `FEATURES.md` with observability + streaming JSON features
+40. ~~Update `FEATURES.md` with observability + streaming JSON features~~ done at `93e68f3`, `d871122`
 
 ### Ecosystem / verification
-41. Wire `go-cqrs-lite` to consume `go-codec@v0.1.0`
+41. ~~Wire `go-cqrs-lite` to consume `go-codec@v0.1.0`~~ done at `d871122` (proxy-consumption verified; deeper `ObservableCodec` wiring is `ROADMAP.md` theme 5)
 42. Verify `pkg.go.dev` renders the package correctly
-43. Add `go ref` links in README to pkg.go.dev
+43. ~~Add `go ref` links in README to pkg.go.dev~~ done — pkg.go.dev reference badge at README top
 44. Consider adding a versioned API stability guarantee doc
-45. Run `govulncheck` on the final dependency tree
-46. Review whether `gitleaks-action@v2` needs a GitHub App token vs `GITHUB_TOKEN`
-47. Test the CI pipeline end-to-end (push to a branch, verify all jobs)
-48. Consider adding a `codec-cli` diagnostic tool (read CBOR, output JSON)
-49. Evaluate whether `observability.go` should be a separate module
-50. Plan v0.2.0 scope (breaking changes: `SizeResult`, new APIs from daemon)
+45. ~~Run `govulncheck` on the final dependency tree~~ done at `ef1f4f4` (CI vulncheck job on every push)
+46. ~~Review whether `gitleaks-action@v2` needs a GitHub App token vs `GITHUB_TOKEN`~~ done — running with `GITHUB_TOKEN` since `ef1f4f4`
+47. ~~Test the CI pipeline end-to-end (push to a branch, verify all jobs)~~ done — every push since `ef1f4f4` exercises the full matrix
+48. ~~Consider adding a `codec-cli` diagnostic tool (read CBOR, output JSON)~~ **still open — routed to `ROADMAP.md` theme 5**
+49. ~~Evaluate whether `observability.go` should be a separate module~~ **Won't implement — kept in-package (same verdict as #25)**
+50. ~~Plan v0.2.0 scope (breaking changes: `SizeResult`, new APIs from daemon)~~ **still open — blocked on the release decision (`TODO_LIST.md` #1)**
 
 ---
 
@@ -318,3 +318,19 @@ whether to:
 (d) Revert to inline literals and add `//nolint:goconst` pragmas instead.
 
 This is a style/convention decision that affects the entire test suite.
+
+---
+
+## Resolution (2026-08-14, docs-health pass)
+
+Every item above has a verdict: 26 closed inline (done / Won't implement /
+NOT-DO), 12 marked **still open** with a current owner (`TODO_LIST.md` #1, #3,
+#4, #7, #8, #9, #14, #16, #22, #25-ish; `ROADMAP.md` theme 5), and the
+remainder left untouched as deliberately-unowned nice-to-haves: #23
+(`.go-version`), #29 (full-chain integration test), #30 (`context.Context`),
+#31/#32 (README `SizeResult`/pool sections — folded into `TODO_LIST.md` #22),
+#33 (README index — README intentionally has none), #35 (CONTRIBUTING
+observability note), #38/#39 (AGENTS AutoDetectDebug note), #42 (pkg.go.dev
+render check), #44 (API-stability doc). Question g-1 (version strategy) still
+awaits the user; g-2 (observability placement) is settled; g-3 (constant
+naming) is partially settled via `TODO_LIST.md` #14.

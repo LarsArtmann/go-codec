@@ -216,8 +216,8 @@ own rule until prompted to self-review.
 4. Fix `realisticOrderKeyInt` to add `cbor:"3,keyasint"` on the `Items` field
 5. Add a v2-specific streaming test using `strings.Reader` (non-buffer reader)
    to catch over-read issues that `bytes.Buffer` masks
-6. Run `golangci-lint run --build-tags goexperiment.jsonv2 ./...` to verify
-   v2 lint is clean for new files
+6. ~~Run `golangci-lint run --build-tags goexperiment.jsonv2 ./...` to verify
+   v2 lint is clean for new files~~ done at `ef1f4f4` (v2 lint is a CI matrix leg)
 7. Add `nolint:wrapcheck` consistency audit — `EncodePooled` wraps the encode
    error but not the callback error; document this decision
 
@@ -260,14 +260,17 @@ own rule until prompted to self-review.
 24. Update `doc.go` benchmark numbers with a "your results may vary" caveat
 25. Add `AGENTS.md` gotcha about v2 `jsontext.Encoder` corrupting NDJSON (so
     future maintainers don't repeat the mistake)
-26. Add `AGENTS.md` note about always running `nix run .#test` or both
-    `go test` + `GOEXPERIMENT=jsonv2 go test` after touching dual-build files
-27. Add `CONTRIBUTING.md` note about testing streaming in both JSON modes
+26. ~~Add `AGENTS.md` note about always running `nix run .#test` or both
+    `go test` + `GOEXPERIMENT=jsonv2 go test` after touching dual-build files~~
+    done — covered by the pre-existing AGENTS.md dual-build gotcha ("Always run
+    both modes")
+27. ~~Add `CONTRIBUTING.md` note about testing streaming in both JSON modes~~
+    done — covered by CONTRIBUTING.md's "always test in both v1 and v2 modes"
 
 ### CI & tooling
 
-28. Verify `nix run .#lint` passes for both modes (v2 lint wasn't run this
-    session)
+28. ~~Verify `nix run .#lint` passes for both modes (v2 lint wasn't run this
+    session)~~ done at `ef1f4f4` (CI) and re-verified in later sessions
 29. Add a CI check that runs benchmarks and compares against a baseline
     (regression detection)
 30. Add `benchstat` to flake.nix for benchmark comparison
@@ -354,3 +357,19 @@ and the callback shape would be different (the caller needs to provide the
 input `[]byte` anyway). Is there a real use case for this, or is it premature?
 The ROADMAP lists it as a "remaining raw idea" but I'm not sure it's worth
 building until a consumer actually needs it.
+
+---
+
+## Resolution (2026-08-14, docs-health pass)
+
+Items 6, 26, 27, and 28 are resolved inline above. Of the remaining open items,
+the actionable ones were routed: #1 (`ExampleEncodePooled`), #3 (newline
+allocation), #4 (`realisticOrderKeyInt.Items`), #5 (non-buffer reader test),
+#20 (`PutBuffer` size guard), #21-22 (README streaming-JSON/`EncodePooled`
+sections), and #2/#10 (streaming benchmarks) → `TODO_LIST.md`; #8 (decode-side
+pool), #9 (cache pre-warm), #29-31 (benchmark regression detection, benchstat,
+`nix run .#bench`) → `ROADMAP.md` theme 2. The long tail of API-surface ideas
+(#12-19, #32-37) and test-depth items (#38-50, incl. #13-15 fuzz/snapshot for
+streaming) stay open, unmarked — no consumer demand yet; revisit with the
+ROADMAP. The v2 `jsontext.Encoder` NDJSON corruption gotcha now lives in
+AGENTS.md.

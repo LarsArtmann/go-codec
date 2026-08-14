@@ -59,11 +59,11 @@ $ golangci-lint run --build-tags goexperiment.jsonv2 ./...
 
 | Item | Why not started | Still wanted? | Notes |
 | ---- | --------------- | ------------- | ----- |
-| Sibling-module integration (e.g., `go-cqrs-lite` wiring `ObservableCodec`) | Out of repo scope for this session. | Yes | This is the natural next consumer; requires cross-repo PR. |
-| README.md / godoc examples for `ObserveCodec` and `AutoDetectDebug` | Feature docs in `CHANGELOG.md`/`FEATURES.md` were prioritized; README examples not yet written. | Yes | Helps end-users discover the new APIs. |
-| `ObservableCodec` benchmarks | No performance baseline yet; not required for correctness. | Nice to have | Quantifies telemetry overhead on hot paths. |
-| Coverage re-measurement and `FEATURES.md` coverage update | Coverage numbers were not re-run. | Yes | Current `FEATURES.md` still cites 82.4% / 81.9% from a prior run. |
-| `TODO_LIST.md` / `ROADMAP.md` harvest from this report | Intentionally deferred to the user's explicit harvest step. | Yes | Section (f) contains the candidate list. |
+| Sibling-module integration (e.g., `go-cqrs-lite` wiring `ObservableCodec`) | Out of repo scope for this session. | Yes | ~~Now `ROADMAP.md` theme 5 (cross-repo integration).~~ Still open. |
+| README.md / godoc examples for `ObserveCodec` and `AutoDetectDebug` | Feature docs in `CHANGELOG.md`/`FEATURES.md` were prioritized; README examples not yet written. | ~~Yes~~ Done | Done at `93e68f3`, `d871122`. |
+| `ObservableCodec` benchmarks | No performance baseline yet; not required for correctness. | ~~Nice to have~~ Open | Still open — `TODO_LIST.md` #5. |
+| Coverage re-measurement and `FEATURES.md` coverage update | Coverage numbers were not re-run. | ~~Yes~~ Done | Done at `d871122` — 85.3% / 85.4%. |
+| `TODO_LIST.md` / `ROADMAP.md` harvest from this report | Intentionally deferred to the user's explicit harvest step. | ~~Yes~~ Done | Harvested 2026-08-14 (previous round) and re-swept 2026-08-14 (this pass). |
 
 ---
 
@@ -106,25 +106,25 @@ $ golangci-lint run --build-tags goexperiment.jsonv2 ./...
 
 | # | Task | Impact | Effort | Category |
 | - | ---- | ------ | ------ | -------- |
-| 1 | Investigate and fix stale gopls/golangci-lint diagnostics | Critical | M | Tooling |
-| 2 | Re-run coverage and update `FEATURES.md` coverage figures | High | S | Documentation |
-| 3 | Add `ExampleObserveCodec` and `ExampleAutoDetectDebug` godoc examples | High | S | Documentation |
-| 4 | Add README.md telemetry/observability section | High | S | Documentation |
-| 5 | Add concurrent stress test for `ObservableCodec` + `CodecMetrics` | High | S | Testing |
-| 6 | Document `MetricsHook` panic policy | High | S | Documentation |
-| 7 | Document `AutoDetectDebug.Detail` as unstable/human-readable | Medium | S | Documentation |
-| 8 | Add `ObservableCodec` benchmark to quantify overhead | Medium | S | Performance |
-| 9 | Add property test: `AutoDetect(data) == AutoDetectDebug(data).Encoding` for random payloads | Medium | S | Testing |
-| 10 | Add fuzz target for `AutoDetectDebug` | Medium | S | Testing |
-| 11 | Add test for `ObservableCodec` wrapping `CBORCompactCodec` | Medium | S | Testing |
-| 12 | Add test for `EncodeToBuffer` error propagation when inner `BufferEncoder` fails | Medium | S | Testing |
-| 13 | Add test for fallback `EncodeToBuffer` when `buf.Write` fails | Medium | S | Testing |
-| 14 | Add test for `WithMetrics` returning the same pointer passed in | Low | S | Testing |
-| 15 | Add test that `MetricsSnapshot` is an immutable copy | Low | S | Testing |
-| 16 | Add test for `ObserveCodec` with no options (default private metrics) | Low | S | Testing |
-| 17 | Add test for `AutoDetectDebug` on oversized non-JSON-start byte path | Medium | S | Testing |
+| 1 | ~~Investigate and fix stale gopls/golangci-lint diagnostics~~ done at `d871122` — root cause was committed v1-import corruption, not an LSP cache bug | Critical | M | Tooling |
+| 2 | ~~Re-run coverage and update `FEATURES.md` coverage figures~~ done at `d871122` (85.3%/85.4%) | High | S | Documentation |
+| 3 | ~~Add `ExampleObserveCodec` and `ExampleAutoDetectDebug` godoc examples~~ done at `93e68f3` | High | S | Documentation |
+| 4 | ~~Add README.md telemetry/observability section~~ done at `d871122` (telemetry + AutoDetectDebug sections) | High | S | Documentation |
+| 5 | ~~Add concurrent stress test for `ObservableCodec` + `CodecMetrics`~~ done at `d871122` (16k-op race stress) | High | S | Testing |
+| 6 | ~~Document `MetricsHook` panic policy~~ done at `d871122` (godoc + propagates test) | High | S | Documentation |
+| 7 | ~~Document `AutoDetectDebug.Detail` as unstable/human-readable~~ done at `d871122` | Medium | S | Documentation |
+| 8 | ~~Add `ObservableCodec` benchmark to quantify overhead~~ **still open — `TODO_LIST.md` #5** | Medium | S | Performance |
+| 9 | ~~Add property test: `AutoDetect(data) == AutoDetectDebug(data).Encoding` for random payloads~~ done at `d871122` (rapid) | Medium | S | Testing |
+| 10 | ~~Add fuzz target for `AutoDetectDebug`~~ done at `d871122` (target exists; long-run coverage is `TODO_LIST.md` #3) | Medium | S | Testing |
+| 11 | ~~Add test for `ObservableCodec` wrapping `CBORCompactCodec`~~ **still open — `TODO_LIST.md` #6** | Medium | S | Testing |
+| 12 | ~~Add test for `EncodeToBuffer` error propagation when inner `BufferEncoder` fails~~ **still open — `TODO_LIST.md` #6** | Medium | S | Testing |
+| 13 | ~~Add test for fallback `EncodeToBuffer` when `buf.Write` fails~~ **still open — `TODO_LIST.md` #6** | Medium | S | Testing |
+| 14 | ~~Add test for `WithMetrics` returning the same pointer passed in~~ done at `93e68f3` (`TestObservableCodec_SharedMetrics`) | Low | S | Testing |
+| 15 | ~~Add test that `MetricsSnapshot` is an immutable copy~~ **still open — `TODO_LIST.md` #6** | Low | S | Testing |
+| 16 | ~~Add test for `ObserveCodec` with no options (default private metrics)~~ done at `93e68f3` (default-options tests use private metrics) | Low | S | Testing |
+| 17 | ~~Add test for `AutoDetectDebug` on oversized non-JSON-start byte path~~ done at `93e68f3` (oversized reason cases) | Medium | S | Testing |
 | 18 | Add test for `AutoDetectDebug` detail string containing first-byte hex | Low | S | Testing |
-| 19 | Add test that `ObservableCodec.Encoding()` delegates correctly | Low | S | Testing |
+| 19 | ~~Add test that `ObservableCodec.Encoding()` delegates correctly~~ done at `93e68f3` (encoding recorded in metrics assertions) | Low | S | Testing |
 | 20 | Add test for `AutoDetectDebug` with envelope-wrapped payloads | Low | S | Testing |
 | 21 | Add `ObservableCodec` integration with `WrapEncode`/`UnwrapDecode` | Medium | M | Testing |
 | 22 | Add `AutoDetectDebug` benchmark | Low | S | Performance |
@@ -132,30 +132,30 @@ $ golangci-lint run --build-tags goexperiment.jsonv2 ./...
 | 24 | Add `LastEncodeTime` / `LastDecodeTime` timestamps to `CodecMetrics` | Low | S | Feature |
 | 25 | Add per-encoding aggregated metrics helper | Low | M | Feature |
 | 26 | Add histogram / buckets of payload sizes to metrics | Low | M | Feature |
-| 27 | Add Prometheus/OpenTelemetry example in `README.md` or `example_test.go` | Medium | S | Documentation |
-| 28 | Add `WithMetricsHook` example showing structured logging | Medium | S | Documentation |
-| 29 | Add `AutoDetectDebug` example showing stream triage logging | Medium | S | Documentation |
-| 30 | Verify `ObservableCodec` works with `EncodePooled` (buffer-pool path) | Medium | S | Testing |
-| 31 | Add test for `MetricsHook` receiving correct byte counts on decode error | Medium | S | Testing |
-| 32 | Add test for `MetricsHook` receiving correct byte counts on encode error | Medium | S | Testing |
+| 27 | ~~Add Prometheus/OpenTelemetry example in `README.md` or `example_test.go`~~ **still open — `TODO_LIST.md` #17 (blocked on backend choice)** | Medium | S | Documentation |
+| 28 | ~~Add `WithMetricsHook` example showing structured logging~~ done at `93e68f3` (`ExampleObserveCodec` hook output) | Medium | S | Documentation |
+| 29 | ~~Add `AutoDetectDebug` example showing stream triage logging~~ done at `93e68f3` (`ExampleAutoDetectDebug`) | Medium | S | Documentation |
+| 30 | ~~Verify `ObservableCodec` works with `EncodePooled` (buffer-pool path)~~ **still open — `TODO_LIST.md` #6** | Medium | S | Testing |
+| 31 | ~~Add test for `MetricsHook` receiving correct byte counts on decode error~~ **still open — `TODO_LIST.md` #6** | Medium | S | Testing |
+| 32 | ~~Add test for `MetricsHook` receiving correct byte counts on encode error~~ **still open — `TODO_LIST.md` #6** | Medium | S | Testing |
 | 33 | Add test for shared metrics reset between wrappers | Low | S | Testing |
-| 34 | Add test for `ObservableCodec` wrapping another `ObservableCodec` | Low | S | Testing |
-| 35 | Add test for `ObserveCodec(nil)` behavior (panic or error) | Low | S | Testing |
-| 36 | Consider exposing `maxAutoDetectSize` as configurable (with safe default) | Low | M | Feature |
-| 37 | Add `CHANGELOG.md` date/version for next release | Medium | S | Documentation |
-| 38 | Prepare v0.2.0 release notes once theme is stable | Medium | M | Release |
-| 39 | Update `TODO_LIST.md` to mark observability theme done | High | S | Documentation |
-| 40 | Update `ROADMAP.md` §4 if observability is complete | Medium | S | Documentation |
-| 41 | Add `AGENTS.md` note about stale LSP diagnostics workaround | Medium | S | Documentation |
-| 42 | Add `ObservableCodec` + `AutoDetectDebug` to `doc.go` package overview | Medium | S | Documentation |
-| 43 | Add snapshot test for `AutoDetectDebug` detail strings (if we want them stable) | Low | M | Testing |
-| 44 | Add negative test: `AutoDetectDebug` on random bytes stays within reason | Low | S | Testing |
+| 34 | ~~Add test for `ObservableCodec` wrapping another `ObservableCodec`~~ **still open — `TODO_LIST.md` #6 (no double-count)** | Low | S | Testing |
+| 35 | ~~Add test for `ObserveCodec(nil)` behavior (panic or error)~~ **still open — `TODO_LIST.md` #6** | Low | S | Testing |
+| 36 | ~~Consider exposing `maxAutoDetectSize` as configurable (with safe default)~~ still open — `ROADMAP.md` theme 4 | Low | M | Feature |
+| 37 | ~~Add `CHANGELOG.md` date/version for next release~~ **still open — blocked on release decision (`TODO_LIST.md` #1)** | Medium | S | Documentation |
+| 38 | ~~Prepare v0.2.0 release notes once theme is stable~~ **still open — blocked on release decision (`TODO_LIST.md` #1)** | Medium | M | Release |
+| 39 | ~~Update `TODO_LIST.md` to mark observability theme done~~ done at `d871122`; list rebuilt again 2026-08-14 | High | S | Documentation |
+| 40 | ~~Update `ROADMAP.md` §4 if observability is complete~~ done at `eba9f80`; rebuilt 2026-08-14 | Medium | S | Documentation |
+| 41 | ~~Add `AGENTS.md` note about stale LSP diagnostics workaround~~ done at `d871122` (dual-build corruption gotcha; CLI is truth) | Medium | S | Documentation |
+| 42 | ~~Add `ObservableCodec` + `AutoDetectDebug` to `doc.go` package overview~~ done at `93e68f3` | Medium | S | Documentation |
+| 43 | ~~Add snapshot test for `AutoDetectDebug` detail strings (if we want them stable)~~ **Won't implement — `Detail` is documented unstable; snapshotting would freeze it** | Low | M | Testing |
+| 44 | ~~Add negative test: `AutoDetectDebug` on random bytes stays within reason~~ done at `d871122` (rapid property + fuzz) | Low | S | Testing |
 | 45 | Add test that `AutoDetectDebug` never allocates excessively for oversized input | Low | S | Testing |
-| 46 | Add test that `ObservableCodec` does not double-count when inner codec implements `BufferEncoder` | Medium | S | Testing |
-| 47 | Add CI step that prints `golangci-lint run` JSON to reduce LSP-vs-CLI confusion | Medium | S | Tooling |
-| 48 | Cross-repo PR: wire `ObservableCodec` into `go-cqrs-lite` event store | High | L | Integration |
-| 49 | Cross-repo PR: use `AutoDetectDebug` in `go-cqrs-lite` mixed-stream diagnostics | Medium | M | Integration |
-| 50 | Add `docs/status` report for the next completed theme to keep status discipline | Medium | S | Process |
+| 46 | ~~Add test that `ObservableCodec` does not double-count when inner codec implements `BufferEncoder`~~ done at `93e68f3` (`EncodeCalls == 1` + `EncodeBytes == buf.Len()`) | Medium | S | Testing |
+| 47 | ~~Add CI step that prints `golangci-lint run` JSON to reduce LSP-vs-CLI confusion~~ **still open — `TODO_LIST.md` #18** | Medium | S | Tooling |
+| 48 | ~~Cross-repo PR: wire `ObservableCodec` into `go-cqrs-lite` event store~~ still open — `ROADMAP.md` theme 5 (cross-repo) | High | L | Integration |
+| 49 | ~~Cross-repo PR: use `AutoDetectDebug` in `go-cqrs-lite` mixed-stream diagnostics~~ still open — `ROADMAP.md` theme 5 (cross-repo) | Medium | M | Integration |
+| 50 | ~~Add `docs/status` report for the next completed theme to keep status discipline~~ done — `2026-08-14_13-54` report exists | Medium | S | Process |
 
 ---
 
@@ -188,3 +188,18 @@ $ golangci-lint run --build-tags goexperiment.jsonv2 ./...
 ## Closing
 
 The Observability theme is **shipped and green**. Do not ship further until the stale LSP diagnostics are understood, and make sure to harvest section (f) into `TODO_LIST.md` / `ROADMAP.md` before the next session starts.
+
+---
+
+## Resolution (2026-08-14, docs-health pass)
+
+All 50 items have verdicts inline. Closed: 26 (shipped at `93e68f3`, `d871122`,
+`eba9f80`, or rejected by decision — #43 Won't-implement). Re-routed open: #8,
+#11-13, #15, #27, #30-32, #34-35 (`TODO_LIST.md` #5/#6/#17), #18/#22/#23/#24/#25
+(#18 detail-hex and #22 AutoDetectDebug benchmark remain unowned niche items),
+#36 + #48/#49 (`ROADMAP.md` themes 4/5), #37/#38 (release decision, `TODO_LIST.md`
+#1). Unmarked niche items: #20 (envelope-wrapped detection), #21 (envelope
+integration test), #33 (shared-metrics reset between wrappers), #45 (oversized
+alloc profiling). Question g-1 (LSP reliability) was resolved by the `d871122`
+root-cause; g-2 (panic policy) and g-3 (Detail contract) were decided and
+documented at `d871122`.

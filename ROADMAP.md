@@ -23,28 +23,22 @@ Raw ideas:
 
 ### 2. Performance & allocation discipline
 
-CBOR and JSON already expose `BufferEncoder` for zero-alloc hot paths. There is
+CBOR and JSON already expose `BufferEncoder` and pool-backed helpers
+(`GetBuffer`/`PutBuffer`/`EncodePooled`) for zero-alloc hot paths. There is
 headroom to push further on throughput and GC pressure for high-volume event
 streams.
 
-Completed:
-
-- Buffer-pool-backed encode helper (`EncodePooled` in `pool.go`) — callback-based
-  API managing `sync.Pool[*bytes.Buffer]` lifecycle automatically
-- CBOR reflection caching investigated and documented — fxamacker/cbor caches
-  type metadata in a process-wide `sync.Map` (cold ~117µs → warm ~340ns, 344x
-  faster). Code generation is NOT needed; the cache handles it
-- `toarray` / `keyasint` size/speed tradeoffs benchmarked and documented across
-  small/medium/large payload shapes — `BenchmarkTagTradeoffs_Encode/Decode`
-- Streaming JSON encoder/decoder for parity with `NewCBOREncoder` /
-  `NewCBORDecoder` — `NewJSONEncoder` / `NewJSONDecoder` (NDJSON convention)
-
-Remaining raw ideas:
+Raw ideas:
 
 - Decode-side buffer pool (currently encode-only; decode takes `[]byte` directly,
   so the caller owns the read buffer)
 - Explore whether hot payload types benefit from pre-warming the CBOR type cache
   at startup (trading a few ms of init time for consistent first-request latency)
+- Benchmark regression detection in CI (baseline comparison, `benchstat`, a
+  `nix run .#bench` app) — benchmarks exist, but nothing guards against
+  regressions
+- Lazy normalization: only convert `map[interface{}]interface{}` keys when the
+  v1 marshaler actually chokes, instead of always normalizing
 
 ### 3. Schema evolution & drift detection
 
@@ -62,24 +56,24 @@ Raw ideas:
 
 ### 4. Observability
 
-`Size` compares JSON vs CBOR sizes today; transcoding and autodetection already
-exist. There is room to make codec behavior more measurable.
+`ObservableCodec` telemetry and explainable `AutoDetectDebug` detection are
+shipped. Remaining ideas are richer metrics, all deferred until a consumer asks
+for them.
 
-Completed:
+Raw ideas:
 
-- Per-codec telemetry hooks via the `ObservableCodec` decorator
-  (`ObserveCodec`, `CodecMetrics`, `MetricsSnapshot`, `MetricsHook`)
-- Explainable `AutoDetect` triage via `AutoDetectDebug`, `AutoDetectResult`, and
-  `DetectionReason`
-
-Remaining raw ideas:
-
-- (none — theme is complete for now)
+- `LastEncodeTime` / `LastDecodeTime` timestamps, payload-size histograms, and
+  per-encoding aggregated metrics helpers
+- Atomics-based `CodecMetrics` (drop `sync.RWMutex`) if benchmarks justify the
+  refactor
+- Make `maxAutoDetectSize` configurable (safe default) if consumers need a
+  different trial-decode ceiling
 
 ### 5. Ecosystem & public presence
 
-The module is published but has no in-repo consumer wired yet and no dedicated
-public site. Directions for making it discoverable and proving adoption.
+The module is published and consumed by `go-cqrs-lite` via the module proxy, but
+no sibling has wired the newer APIs yet and there is no dedicated public site.
+Directions for making it discoverable and proving adoption.
 
 Raw ideas:
 
@@ -88,6 +82,13 @@ Raw ideas:
 - A worked end-to-end example consuming `go-codec` from `go-cqrs-lite` to prove
   the `Codec` contract in a real store
 - pkg.go.dev polish: ensure every exported symbol carries a godoc example
+- A small `codec-cli` diagnostic tool (CBOR→JSON dump, `Diagnose` wrapper) if
+  triage workflows want a binary
+- Cross-repo integration (lives in `go-cqrs-lite`, driven from here): wire
+  `ObservableCodec` into the event store, use `AutoDetectDebug` for mixed-stream
+  diagnostics, retire the deprecated `codec/v4` shim (mechanical migration
+  starting at `event/codec.go` — see
+  `docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §6-7)
 
 ## Non-goals
 
@@ -99,18 +100,12 @@ Things we are deliberately NOT pursuing and why:
 - **Event storage / persistence.** Stores, snapshots, and projections are sibling
   modules. `go-codec` stays a pure serialization layer.
 - **A custom JSON implementation.** We use the Go standard library
-  (`encoding/json` v1 by default, `encoding/json/v2` opt-in via
+  (`encoding/json` v1 by default, `encoding/json` v2 opt-in via
   `GOEXPERIMENT=jsonv2`) for correctness and interop; we do not reimplement
   JSON.
+- **A JOSE/JWS/JWE envelope.** COSE already protects JSON payloads opaquely; a
+  pure-JSON envelope is a transport concern for a separate `jose` module, and
+  carries a determinism landmine under v1 JSON (see the 2026-08-14 architecture
+  review, §3).
 - **A security boundary in `AutoDetect`.** Format sniffing is for diagnostics
   and tooling only — it will never gate validation.
-
----
-
-<!-- Guidance for the builder:
-  - NO bounded actionable tasks here. If it has a clear scope and effort
-    estimate, it belongs in TODO_LIST.md.
-  - NO status indicators on individual items. This is vision, not inventory.
-  - Ideas should be raw and unrefined by design.
-  - Revisit quarterly to prune stale directions.
--->

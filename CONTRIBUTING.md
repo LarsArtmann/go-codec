@@ -73,6 +73,28 @@ Stale snapshots are automatically cleaned by `snaps.Clean(m)` in `TestMain`.
 - **Both JSON modes**: always test in both v1 and v2 modes. CI runs both
   automatically.
 
+## Fuzzing
+
+Fuzz targets live in dedicated `*_fuzz_test.go` files and run as normal
+tests (seed corpus only) on every `go test`. To fuzz a target for real:
+
+```bash
+go test -run '^$' -fuzz='FuzzCBORCodec_Roundtrip' -fuzztime=30s
+GOEXPERIMENT=jsonv2 go test -run '^$' -fuzz='FuzzCBORCodec_Roundtrip' -fuzztime=30s
+```
+
+- Seed corpus files live in `testdata/fuzz/<FuzzTargetName>/` — see
+  `testdata/fuzz/README.md` for the two-line file format and the
+  `$GOCACHE/fuzz` cache location.
+- A weekly CI job (`fuzz` in `.github/workflows/ci.yml`) runs every target
+  in both JSON modes and uploads the generated corpus as an artifact
+  (artifact-only; new seeds are PR'd manually after review).
+- New targets must be added to BOTH target lists in the CI `fuzz` job
+  (the v1 list includes v2-incompatible targets such as `FuzzNormalizeForJSON`).
+- If a fuzz run finds a crasher, Go writes the input into `testdata/fuzz/`.
+  Fix the bug, then keep that file as a committed regression seed with a
+  descriptive name (e.g. `seed-number-float64-overflow`).
+
 ## Reporting Issues
 
 Please use GitHub Issues to report bugs or request features.

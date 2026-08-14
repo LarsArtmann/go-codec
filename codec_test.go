@@ -846,3 +846,19 @@ func TestCBORMode_SingletonsReturnIdenticalValues(t *testing.T) {
 		t.Error("CBORDecMode() returned different values on repeated calls")
 	}
 }
+
+// TestDiagnose_InvalidCBOR locks the error path of the diagnostic helper:
+// garbage bytes produce an error and an empty diagnostic string, not a panic
+// or partial output.
+func TestDiagnose_InvalidCBOR(t *testing.T) {
+	t.Parallel()
+
+	diag, err := codec.Diagnose([]byte{0xff, 0xff, 0xff})
+	if err == nil {
+		t.Fatal("Diagnose on invalid CBOR must return an error, got nil")
+	}
+
+	if diag != "" {
+		t.Errorf("Diagnose on invalid CBOR returned partial output %q, want empty", diag)
+	}
+}

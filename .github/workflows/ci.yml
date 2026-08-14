@@ -26,6 +26,10 @@ jobs:
           go-version-file: go.mod
       - run: go build ./...
       - run: go test ./... -race -count=1
+      - name: Coverage summary
+        run: |
+          go test ./... -count=1 -coverprofile=coverage.out
+          go tool cover -func=coverage.out | tail -1
       - name: FEATURES.md drift check (PLANNED symbols must not resolve)
         if: matrix.json-mode == 'v1'
         run: bash scripts/check-features-planned.sh
@@ -112,6 +116,8 @@ jobs:
               FuzzAutoDetectDebug_Consistency
               FuzzNormalizeForJSON
               FuzzTranscodeToJSON
+              FuzzStreamingJSON_NDJSONRoundtrip
+              FuzzObservableCodec_HookSafety
             )
           else
             targets=(
@@ -125,6 +131,8 @@ jobs:
               FuzzCBORCodec_CanonicalFidelity
               FuzzAutoDetectDebug_Consistency
               FuzzTranscodeToJSON
+              FuzzStreamingJSON_NDJSONRoundtrip
+              FuzzObservableCodec_HookSafety
             )
           fi
 

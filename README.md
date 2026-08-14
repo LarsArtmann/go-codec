@@ -44,6 +44,20 @@ flowchart LR
 - Sibling modules in `go-cqrs-lite` consume the contract; the signing module can assert
   `DeterministicCodec` to reject non-deterministic codecs at compile time.
 
+Text-only summary of the diagram above:
+
+```text
+             ┌───────────────────── go-codec ─────────────────────┐
+             │  Codec (CBOR / JSON / Raw) + BufferEncoder         │
+             │  ObservableCodec · AutoDetect · TranscodeToJSON    │
+             │  WrapEncode / UnwrapDecode · Size                  │
+             └──────┬──────────┬──────────┬──────────┬───────────┘
+                    │          │          │          │
+                 storage     event     signing   encryption
+                 (pebble)   payloads   (requires  (wraps any
+                                     DeterministicCodec)  Codec)
+```
+
 ## Codecs
 
 | Codec              | Description                                                              |

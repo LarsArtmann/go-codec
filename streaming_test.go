@@ -2,6 +2,7 @@ package codec_test
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"strings"
 	"testing"
@@ -309,4 +310,37 @@ func (r *byteAtATimeReader) Read(p []byte) (int, error) {
 	r.pos++
 
 	return 1, nil
+}
+
+// failingWriter rejects every write with a persistent error.
+type failingWriter struct{ err error }
+
+func (w *failingWriter) Write(_ []byte) (int, error) { return 0, w.err }
+
+// TestStreaming_JSONEncoderWriterError locks the error path: when the
+// underlying writer fails, Encode must surface the writer's error (not
+// swallow it, not panic).
+func TestStreaming_JSONEncoderWriterError(t *testing.T) {
+	t.Parallel()
+
+	writerErr := errors.New("disk on fire")
+
+	enc := codec.NewJSONEncoder(&failingWriter{err: writerErr})
+
+	if err := enc.Encode(map[string]string{testFieldName: testName}); err == nil {
+		t.Fatal("Encode must return the writer's error, got nil")
+	}
+}
+
+// TestStreaming_JSONDecoderTruncatedInput locks the behavior for truncated
+// JSON: Decode returns an error rather than hanging or panicking.
+func TestStreaming_JSONDecoderTruncatedInput(t *testing.T) {
+	t.Parallel()
+
+	dec := codec.NewJSONDecoder(strings.NewReader(`{"name":`))
+
+	var target map[string]string
+	if err := dec.Decode(&target); err == nil {
+		t.Fatal("Decode of truncated JSON must fail, got nil")
+	}
 }

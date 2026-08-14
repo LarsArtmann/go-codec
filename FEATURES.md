@@ -15,7 +15,9 @@
 
 > All statuses verified by running `go test ./...` and
 > `GOEXPERIMENT=jsonv2 go test ./...` with `-race` (both JSON modes green).
-> Test coverage: **85.3%** (v1) / **85.4%** (v2) of statements.
+> Test coverage: **88.0%** (v1) / **88.8%** (v2) of statements.
+> Drift-guarded in CI by `scripts/check-features-planned.sh`: a symbol marked
+> `PLANNED` that actually resolves in the package fails the build.
 
 ## Performance
 
@@ -26,6 +28,10 @@
 | `BenchmarkCBORReflectionCache` | Cold (first encode) vs warm (cached) CBOR encode | Cold ~117µs/104 allocs; warm ~340ns/2 allocs — 344x faster after cache. No codegen needed |
 | `BenchmarkEncodePooled` | Pool-backed encode vs plain Encode | Eliminates per-call []byte allocation via sync.Pool callback |
 | `BenchmarkTranscodeToJSON_*` | CBOR→JSON transcoding vs JSON passthrough | Nested-deep and passthrough paths quantified |
+| `BenchmarkAutoDetect` / `BenchmarkAutoDetectDebug` | Format-detection cost (JSON/CBOR/unknown payloads) | ~70-105ns when the first byte decides; ~170ns + 4 allocs when trial-decode fires |
+| `BenchmarkWrapEncode` / `BenchmarkUnwrapDecode` | Envelope wrap/unwrap overhead vs bare encode | ~290ns wrap / ~840ns unwrap on a 3-field payload |
+| `BenchmarkSize` | JSON-vs-CBOR size comparison helper | ~240ns, 2 allocs |
+| `BenchmarkCBORCompact_vs_Canon_Decode` | Compact vs canonical CBOR decode cost | Parity (~320ns both) — key-sort choice costs nothing at decode |
 
 ## Codecs
 
@@ -51,13 +57,13 @@
 | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
 | `ObservableCodec` — decorator codec with telemetry   | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; wraps any `Codec`, records per-operation metrics, implements `BufferEncoder` when the inner codec does; goroutine-safety locked by 16k-op race stress test — `observability_test.go` |
 | `CodecMetrics` / `MetricsSnapshot` — counters & last errors | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; goroutine-safe encode/decode call counts, byte totals, error counts, and last errors with `Snapshot()` / `Reset()` — `observability_test.go` |
-| `MetricsHook` — per-operation callback               | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; invoked after each encode/decode with operation, encoding, bytes processed, and error for push-style telemetry; documented panic policy (propagates, metrics recorded pre-hook) tested in `observability_test.go` |
+| `MetricsHook` — per-operation callback               | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; invoked after each encode/decode with operation, encoding, bytes processed, and error for push-style telemetry; documented panic policy (propagates, metrics recorded pre-hook) tested in `observability_test.go`; arbitrary-payload hook safety locked by `FuzzObservableCodec_HookSafety` — `observability_fuzz_test.go` |
 
 ## Signing safety
 
 | Feature                                          | Status                | Notes                                                                  |
 | ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
-| `DeterministicCodec` marker interface            | 🟢 `FULLY_FUNCTIONAL` | `codec.go` — `Codec` plus unexported `signingSafe()` so only in-package codecs can qualify. `CBORCodec` (`cbor.go:23`) and `CBORCompactCodec` (`cbor_compact.go:35`) always satisfy it; `JSONCodec` only in the v2 build (`json_compat_v2.go:42`); `RawCodec` never. Shipped at `2c98116` per the approved proposal (`docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4) |
+| `DeterministicCodec` marker interface            | 🟢 `FULLY_FUNCTIONAL` | `codec.go` — `Codec` plus unexported `signingSafe()` so only in-package codecs can qualify. `CBORCodec` (`cbor.go:23`) and `CBORCompactCodec` (`cbor_compact.go:35`) always satisfy it; `JSONCodec` only in the v2 build (`json_compat_v2.go:42`); `RawCodec` never. Shipped at `2c98116` per the approved proposal (`docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4); per-build satisfaction locked by runtime matrix — `deterministic_codec_test.go`, `deterministic_codec_v1_test.go`, `deterministic_codec_v2_test.go` |
 
 ## Security hardening
 
@@ -99,7 +105,7 @@
 | Feature                                         | Status                | Notes                                                          |
 | ----------------------------------------------- | --------------------- | -------------------------------------------------------------- |
 | `NewCBOREncoder` / `NewCBORDecoder` — streaming | 🟢 `FULLY_FUNCTIONAL` | `streaming.go`; batch encode/decode, multiple encodes — `streaming_test.go` |
-| `NewJSONEncoder` / `NewJSONDecoder` — streaming | 🟢 `FULLY_FUNCTIONAL` | `streaming.go` + `json_compat_v1.go` / `json_compat_v2.go`; NDJSON (newline-delimited JSON), dual-build — `streaming_test.go`, `example_test.go` |
+| `NewJSONEncoder` / `NewJSONDecoder` — streaming | 🟢 `FULLY_FUNCTIONAL` | `streaming.go` + `json_compat_v1.go` / `json_compat_v2.go`; NDJSON (newline-delimited JSON), dual-build — `streaming_test.go`, `example_test.go`; framing locked under fuzz incl. byte-at-a-time readers and the `1e700` float64-overflow seed — `streaming_fuzz_test.go` |
 
 ## COSE (RFC 9052) structure codec
 

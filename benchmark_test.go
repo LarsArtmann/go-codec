@@ -220,6 +220,56 @@ func BenchmarkCBORCompact_vs_Canon_Size(b *testing.B) {
 	}
 }
 
+// BenchmarkCBORCompact_vs_Canon_Decode compares decode speed between the two
+// CBOR codecs. CBORCompactCodec additionally rejects unknown fields (schema
+// drift guard), which costs extra per-field validation on decode.
+func BenchmarkCBORCompact_vs_Canon_Decode(b *testing.B) {
+	type eventPayload struct {
+		Name    string
+		Email   string
+		Version int
+		Active  bool
+	}
+
+	payload := eventPayload{Name: testName, Email: testEmail, Version: 42, Active: true}
+
+	canonical := codec.CBORCodec{}
+	compact := codec.CBORCompactCodec{}
+
+	canonicalData, err := canonical.Encode(payload)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	compactData, err := compact.Encode(payload)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	codecs := []struct {
+		name string
+		c    codec.Codec
+		data []byte
+	}{
+		{"Canonical", canonical, canonicalData},
+		{"Compact", compact, compactData},
+	}
+
+	for _, tc := range codecs {
+		b.Run(tc.name, func(b *testing.B) {
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for b.Loop() {
+				var out eventPayload
+				if err := tc.c.Decode(tc.data, &out); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
 // realisticOrder simulates a real-world event payload with mixed field types.
 type realisticOrder struct {
 	OrderID    string

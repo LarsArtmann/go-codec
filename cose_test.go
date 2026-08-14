@@ -1,6 +1,7 @@
 package codec_test
 
 import (
+	"math"
 	"testing"
 
 	"github.com/fxamacker/cbor/v2"
@@ -248,4 +249,56 @@ func TestCOSEEncrypt0String(t *testing.T) {
 
 	diag := codec.COSEEncrypt0Diagnostic(data)
 	g.Expect(diag).To(ContainSubstring("h'"))
+}
+
+func TestNormalizeCOSEAlgorithm(t *testing.T) {
+	t.Parallel()
+
+	g := NewWithT(t)
+
+	tests := []struct {
+		name   string
+		value  any
+		want   int64
+		errSub string
+	}{
+		{name: "int64", value: int64(-19), want: -19},
+		{name: "int", value: 24, want: 24},
+		{name: "int32", value: int32(5), want: 5},
+		{name: "uint32", value: uint32(3), want: 3},
+		{name: "uint64 in range", value: uint64(1), want: 1},
+		{
+			name:   "uint64 overflow",
+			value:  uint64(math.MaxUint64),
+			errSub: "overflows int64",
+		},
+		{
+			name:   "non-integer",
+			value:  "ES256",
+			errSub: "expected integer, got string",
+		},
+		{
+			name:   "float",
+			value:  5.0,
+			errSub: "expected integer, got float64",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := codec.NormalizeCOSEAlgorithm(tc.value)
+
+			if tc.errSub != "" {
+				g.Expect(err).To(HaveOccurred())
+				g.Expect(err.Error()).To(ContainSubstring(tc.errSub))
+
+				return
+			}
+
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(got).To(Equal(tc.want))
+		})
+	}
 }

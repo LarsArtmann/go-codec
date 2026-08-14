@@ -123,6 +123,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   only — signing with non-deterministic v1 JSON becomes a compile-time error.
   Implements the approved proposal in
   `docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4.
+- DeterministicCodec satisfaction-matrix tests: `TestDeterministicCodec_CBORAndCompactAlwaysSatisfy`
+  and `TestDeterministicCodec_RawNeverSatisfies` (every build) plus build-tagged
+  `TestDeterministicCodec_JSONCodecV1DoesNotSatisfy` /
+  `TestDeterministicCodec_JSONCodecV2Satisfies` — runtime-assert exactly which
+  codecs satisfy the marker interface per build, so the compile-time signing
+  contract cannot silently drift — `deterministic_codec_test.go`,
+  `deterministic_codec_v1_test.go`, `deterministic_codec_v2_test.go`.
+- `FuzzStreamingJSON_NDJSONRoundtrip` (`streaming_fuzz_test.go`): fuzzes the
+  NDJSON streaming contract (value framing survives encode/decode round-trip,
+  including byte-at-a-time readers). Seeded with the `1e700` regression corpus
+  entry (`testdata/fuzz/FuzzStreamingJSON_NDJSONRoundtrip/`): decoding into
+  `any` overflows float64 on out-of-range numbers, so the fuzz target decodes
+  into `RawJSONValue` to keep values byte-exact.
+- `FuzzObservableCodec_HookSafety` (`observability_fuzz_test.go`): arbitrary
+  payloads through the `ObservableCodec` decorator with `MetricsHook` attached —
+  metric counts and error bookkeeping stay consistent and never panic.
+- `scripts/check-features-planned.sh`: FEATURES.md drift tripwire — fails when
+  a symbol documented as `PLANNED` actually resolves in the package, so the
+  feature inventory cannot lag behind shipped code. Wired into CI (v1 test
+  job); self-tested to pass clean and fail on injected drift.
+- `doc.go`: codec-choice guidance now covers `DeterministicCodec` (which codecs
+  are signing-safe in which build) and an explicit warning that `CBORCodec` and
+  `CBORCompactCodec` bytes are not interchangeable.
+- CI: coverage summary step per JSON mode, and the two new fuzz targets
+  (`FuzzStreamingJSON_NDJSONRoundtrip`, `FuzzObservableCodec_HookSafety`) added
+  to both the v1 and v2 fuzz matrices — `.github/workflows/ci.yml`.
+- Benchmarks: `BenchmarkAutoDetect` / `BenchmarkAutoDetectDebug`
+  (`autodetect_benchmark_test.go`), `BenchmarkWrapEncode` /
+  `BenchmarkUnwrapDecode` (`envelope_benchmark_test.go`), `BenchmarkSize`
+  (`size_benchmark_test.go`), and `BenchmarkCBORCompact_vs_Canon_Decode`
+  (`benchmark_test.go`, compact vs canonical CBOR decode cost).
+- Edge/error-path tests: `TestDiagnose_InvalidCBOR` (`codec_test.go`), 8-case
+  `TestNormalizeCOSEAlgorithm` table (`cose_test.go`),
+  `TestStreaming_JSONEncoderWriterError` /
+  `TestStreaming_JSONDecoderTruncatedInput` via `failingWriter`
+  (`streaming_test.go`), and `TestObservableCodec_HookEncodingTagWithForEncoding`
+  — the hook reports the wrapped codec's encoding tag across `ForEncoding`
+  resolution (`observability_test.go`).
+- Godoc examples: `ExampleAutoDetect`, `ExampleTranscodeToJSON`,
+  `ExampleDeterministicCodec`, `ExampleCBORCodec_time`, `ExampleMetricsSnapshot`
+  — `example_test.go`.
+- Docs: `CONTRIBUTING.md` fuzzing section (local fuzz commands + corpus
+  policy), `README.md` ASCII summary of the architecture diagram,
+  `testdata/fuzz/README.md` `$GOCACHE/fuzz` crash-corpus location guide,
+  `.go-version` pinned to `1.26.5`, two new High-Value References rows in
+  `AGENTS.md`, and inline resolution annotations on the historical reports
+  `docs/status/2026-08-14_17-29_*` and `2026-08-14_18-09_*`.
 
 ### Fixed
 

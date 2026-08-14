@@ -178,4 +178,6 @@ nix run .#lint                        # lint both modes
 | `doc.go`         | Package-level overview, codec-choice guidance, tag usage  |
 | `README.md`      | User-facing usage + when-to-use matrix; sibling cross-refs |
 | `FEATURES.md`    | Honest feature inventory with status                      |
+| `codec.go`       | `Codec`/`BufferEncoder`/`DeterministicCodec` contracts    |
 | `errors.go`      | Stable error sentinels and codes                          |
+| `scripts/check-features-planned.sh` | FEATURES.md drift tripwire (PLANNED symbols must not resolve via `go doc`); runs in CI |

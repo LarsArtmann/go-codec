@@ -712,3 +712,46 @@ func TestObservableCodec_HookByteCountOnErrorPaths(t *testing.T) {
 		t.Errorf("hook err = %v, want %v", dc.err, decodeErr)
 	}
 }
+
+// TestObservableCodec_HookEncodingTagWithForEncoding locks that the hook sees
+// the encoding tag of the codec selected by ForEncoding — the tag callers
+// branch on when routing metrics per format.
+func TestObservableCodec_HookEncodingTagWithForEncoding(t *testing.T) {
+	t.Parallel()
+
+	for _, enc := range []codec.Encoding{codec.EncodingJSON, codec.EncodingCBOR, codec.EncodingRaw} {
+		t.Run(string(enc), func(t *testing.T) {
+			t.Parallel()
+
+			selected, err := codec.ForEncoding(enc)
+			if err != nil {
+				t.Fatalf("ForEncoding(%q): %v", enc, err)
+			}
+
+			var tags []codec.Encoding
+
+			obs := codec.ObserveCodec(selected, codec.WithMetricsHook(
+				func(_ codec.Operation, enc codec.Encoding, _ int, _ error) {
+					tags = append(tags, enc)
+				},
+			))
+
+			var payload any = map[string]string{testFieldName: testName}
+			if enc == codec.EncodingRaw {
+				payload = []byte("raw bytes") // RawCodec accepts only []byte payloads
+			}
+
+			if _, err := obs.Encode(payload); err != nil {
+				t.Fatalf("Encode: %v", err)
+			}
+
+			if len(tags) != 1 {
+				t.Fatalf("hook calls = %d, want 1", len(tags))
+			}
+
+			if tags[0] != enc {
+				t.Errorf("hook encoding = %q, want %q", tags[0], enc)
+			}
+		})
+	}
+}

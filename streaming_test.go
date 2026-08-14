@@ -156,7 +156,7 @@ func TestStreaming_JSONNewlineDelimited(t *testing.T) {
 	}
 
 	events := []event{
-		{Type: "created", Data: testGreeting},
+		{Type: testEventCreated, Data: testGreeting},
 		{Type: "updated", Data: testUserName},
 		{Type: "deleted", Data: testBob},
 	}

@@ -5,14 +5,14 @@ package codec
 // named constants satisfies goconst and makes test data intentions explicit.
 
 const (
-	testName     = "Alice"
-	testEmail    = "alice@example.com"
-	testUserName = "alice"
-	testGreeting = "hello"
-	testValue    = "test"
-	testMapKey   = "key"
-	testMapVal   = "value"
-	testField    = "name"
-	testFieldE   = "email"
-	testCount    = "count"
+	testName       = "Alice"
+	testEmail      = "alice@example.com"
+	testUserName   = "alice"
+	testGreeting   = "hello"
+	testValue      = "test"
+	testMapKey     = "key"
+	testMapVal     = "value"
+	testFieldName  = "name"
+	testFieldEmail = "email"
+	testCount      = "count"
 )

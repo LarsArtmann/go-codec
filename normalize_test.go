@@ -51,7 +51,7 @@ func TestNormalizeForJSON(t *testing.T) {
 				g := gomega.NewWithT(t)
 				m, ok := v.(map[string]any)
 				g.Expect(ok).To(gomega.BeTrue())
-				g.Expect(m[testField]).To(gomega.Equal("Alice"))
+				g.Expect(m[testFieldName]).To(gomega.Equal("Alice"))
 				g.Expect(m["age"]).To(gomega.Equal(30))
 			},
 		},

@@ -456,7 +456,7 @@ type smallEventKeyInt struct {
 }
 
 func sampleSmallEvent() smallEvent {
-	return smallEvent{ID: testOrderID, Type: "created", Data: testUserName}
+	return smallEvent{ID: testOrderID, Type: testEventCreated, Data: testUserName}
 }
 
 // realisticOrderKeyInt uses keyasint for integer-keyed CBOR encoding.

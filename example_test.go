@@ -415,13 +415,12 @@ func ExampleEncodePooled() {
 	}
 
 	c := codec.CBORCodec{}
-	evt := Event{Type: "created", Data: "hello"}
+	evt := Event{Type: testEventCreated, Data: "hello"}
 
 	var encoded []byte
 
 	err := codec.EncodePooled(c, evt, func(data []byte) error {
-		encoded = make([]byte, len(data)) // copy: data is invalid after callback
-		copy(encoded, data)
+		encoded = append([]byte(nil), data...) // copy: data is invalid after callback
 
 		return nil
 	})

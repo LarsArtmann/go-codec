@@ -633,8 +633,7 @@ func TestObservableCodec_EncodePooledComposition(t *testing.T) {
 	var encoded []byte
 
 	err := codec.EncodePooled(obs, payload{Name: testName}, func(data []byte) error {
-		encoded = make([]byte, len(data))
-		copy(encoded, data)
+		encoded = append([]byte(nil), data...)
 
 		return nil
 	})

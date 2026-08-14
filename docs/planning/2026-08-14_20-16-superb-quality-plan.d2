@@ -1,0 +1,46 @@
+direction: down
+baseline: {
+  shape: rectangle
+  label: "Baseline verified green\nbuild + race-test + lint (v1 + v2)"
+  style.fill: "#16161d"
+  style.font-color: "#f4f4f0"
+  style.stroke: "#6eb5ff"
+}
+
+tier1: {
+  label: "1% tier → 51% of value — lock the contract"
+  style.fill: "#f4d35e"
+  t1: "T1 · DeterministicCodec build-tagged matrix tests"
+  t2: "T2 · FEATURES drift tripwire (script + CI)"
+  t3: "T3 · doc.go: signing guidance + CBOR incompatibility warning"
+}
+
+tier4: {
+  label: "4% tier → 64% — public surface hardening"
+  style.fill: "#ffb347"
+  t4: "T4 · godoc examples ×5 (AutoDetect, Transcode, Deterministic, time.UTC, MetricsSnapshot)"
+  t5: "T5 · fuzz ×2 (NDJSON streams, hook safety) + CI wiring"
+  t6: "T6 · CI coverage reporting"
+}
+
+tier20: {
+  label: "20% tier → 80% — depth + maintenance"
+  style.fill: "#6eb5ff"
+  t7: "T7 · benchmarks ×4 (AutoDetect, Wrap, Size, canon-vs-compact)"
+  t8: "T8 · edge tests ×5 (COSE alg, JSON error paths, pool Grow, hook tag)"
+  t9: "T9 · docs polish ×5 (AGENTS row, fuzz cache, CONTRIBUTING, .go-version, ASCII diagram)"
+  t10: "T10 · annotate 17-29 + 18-09 status reports"
+}
+
+final: {
+  shape: rectangle
+  label: "T11 · living docs sync\nCHANGELOG + FEATURES + TODO_LIST\nFULL GATES: test+lint v1/v2, nix flake check"
+  style.fill: "#16161d"
+  style.font-color: "#f4f4f0"
+  style.stroke: "#f4d35e"
+}
+
+baseline -> tier1: verify after each task
+tier1 -> tier4
+tier4 -> tier20
+tier20 -> final: every gate green

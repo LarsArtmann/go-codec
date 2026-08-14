@@ -26,6 +26,9 @@ jobs:
           go-version-file: go.mod
       - run: go build ./...
       - run: go test ./... -race -count=1
+      - name: FEATURES.md drift check (PLANNED symbols must not resolve)
+        if: matrix.json-mode == 'v1'
+        run: bash scripts/check-features-planned.sh
 
   lint:
     name: Lint (JSON ${{ matrix.json-mode }})

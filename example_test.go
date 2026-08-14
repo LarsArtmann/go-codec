@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/larsartmann/go-codec"
 )
@@ -488,4 +489,143 @@ func ExampleSize() {
 
 	// Output:
 	// CBOR saves 8 bytes (18% smaller)
+}
+
+// ExampleAutoDetect infers the encoding of unknown payload bytes from the
+// leading byte. It is a best-effort heuristic for diagnostics and tooling —
+// always pair the result with the matched codec's Decode for real work.
+func ExampleAutoDetect() {
+	for _, data := range [][]byte{
+		[]byte(`{"name":"Alice"}`),                                      // JSON object
+		{0xa1, 0x64, 'n', 'a', 'm', 'e', 0x65, 'A', 'l', 'i', 'c', 'e'}, // CBOR map
+		{0x1f}, // unrecognized
+	} {
+		fmt.Println(codec.AutoDetect(data))
+	}
+
+	// Output:
+	// json
+	// cbor
+	// raw
+}
+
+// ExampleTranscodeToJSON converts a stored CBOR payload into JSON bytes for
+// serving to browsers or REST clients without knowing the original Go type.
+func ExampleTranscodeToJSON() {
+	c := codec.CBORCodec{}
+
+	type User struct {
+		Name string
+	}
+
+	cborBytes, err := c.Encode(User{Name: testName})
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	jsonBytes, err := codec.TranscodeToJSON(cborBytes, codec.EncodingCBOR)
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(string(jsonBytes))
+
+	// Output:
+	// {"Name":"Alice"}
+}
+
+// ExampleDeterministicCodec shows how a signing helper can require a
+// byte-deterministic codec at compile time. CBORCodec and CBORCompactCodec
+// always satisfy the interface; JSONCodec satisfies it only in the
+// GOEXPERIMENT=jsonv2 build; RawCodec never does.
+func ExampleDeterministicCodec() {
+	sign := func(c codec.DeterministicCodec, v any) ([]byte, error) {
+		// Signing safety is guaranteed by the type: only codecs whose Encode
+		// is byte-deterministic can reach this body.
+		return c.Encode(v)
+	}
+
+	type User struct {
+		Name string
+	}
+
+	first, err := sign(codec.CBORCodec{}, User{Name: testName})
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	second, err := sign(codec.CBORCodec{}, User{Name: testName})
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(bytes.Equal(first, second))
+
+	// The following would NOT compile in the default (v1) build, because
+	// encoding/json v1 map key order is non-deterministic:
+	//
+	//	_ = sign(codec.JSONCodec{}, User{Name: testName})
+
+	// Output:
+	// true
+}
+
+// ExampleCBORCodec_time shows time.Time round-tripping through CBOR. Times
+// are encoded as epoch values (TimeUnixDynamic), so the instant survives but
+// the original time zone does not: normalize with .UTC() before encoding and
+// re-normalize after decoding.
+func ExampleCBORCodec_time() {
+	c := codec.CBORCodec{}
+
+	created := time.Date(2026, 8, 14, 12, 0, 0, 0, time.UTC)
+
+	data, err := c.Encode(created)
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	var decoded time.Time
+
+	if err := c.Decode(data, &decoded); err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(decoded.UTC())
+
+	// Output:
+	// 2026-08-14 12:00:00 +0000 UTC
+}
+
+// ExampleMetricsSnapshot takes a point-in-time copy of ObservableCodec
+// counters for operational dashboards. The snapshot is immutable — later
+// codec operations do not change it.
+func ExampleMetricsSnapshot() {
+	type User struct {
+		Name string
+	}
+
+	obs := codec.ObserveCodec(codec.CBORCodec{})
+
+	for range 2 {
+		_, _ = obs.Encode(User{Name: testName})
+	}
+
+	snap := obs.Metrics().Snapshot()
+
+	fmt.Printf("encode calls: %d, encode errors: %d\n", snap.EncodeCalls, snap.EncodeErrors)
+
+	// Output:
+	// encode calls: 2, encode errors: 0
 }

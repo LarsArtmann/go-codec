@@ -9,6 +9,12 @@
 //   - CBORCompactCodec: stricter CBOR with unknown-field rejection (schema drift guard)
 //   - RawCodec: passthrough for pre-encoded []byte payloads
 //
+// CBORCodec and CBORCompactCodec are NOT interchangeable: they sort map keys
+// differently (RFC 7049 length-first vs RFC 8949 bytewise-lexical) and the
+// compact codec rejects unknown fields, so data written by one does not
+// round-trip through the other. Choose one codec per store and keep it
+// documented.
+//
 // # Choosing a Codec
 //
 // Both JSON and CBOR are fully supported across the library. CBOR is recommended
@@ -17,6 +23,14 @@
 // and deterministic (same input always produces the same output bytes — safe for
 // cryptographic signing). JSON is the right choice for external interop, HTTP
 // APIs, debugging, and any case where human-readability matters.
+//
+// Payloads that will be signed or content-addressed require byte-deterministic
+// encoding. The DeterministicCodec interface makes that a compile-time
+// guarantee: CBORCodec and CBORCompactCodec always satisfy it, JSONCodec
+// satisfies it only in the GOEXPERIMENT=jsonv2 build, and RawCodec never does.
+// Signing modules should accept DeterministicCodec rather than Codec so that a
+// non-deterministic codec choice fails to build instead of silently producing
+// signatures that break on re-encoding.
 //
 // # Usage
 //

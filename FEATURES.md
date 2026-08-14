@@ -15,7 +15,7 @@
 
 > All statuses verified by running `go test ./...` and
 > `GOEXPERIMENT=jsonv2 go test ./...` with `-race` (both JSON modes green).
-> Test coverage: **82.4%** (v1) / **81.9%** (v2) of statements.
+> Test coverage: **85.3%** (v1) / **85.4%** (v2) of statements.
 
 ## Performance
 
@@ -48,15 +48,15 @@
 | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
 | `ForEncoding` — encoding stamp → codec (all 3 encodings) | 🟢 `FULLY_FUNCTIONAL` | `codec.go`; JSON/CBOR/Raw resolve, unknown returns `ErrUnknownEncoding`, round-trips with `AutoDetect` — `resolve_test.go` |
 | `AutoDetect` — infer encoding from raw bytes         | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; empty→raw, JSON/CBOR first-byte + trial decode, 1 MiB size guard on trial-decode — `autodetect_test.go`. Heuristic, not a security boundary |
-| `AutoDetectDebug` — explainable format detection     | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; returns `Encoding`, `DetectionReason`, and human-readable `Detail` for triage and logging — `autodetect_test.go` |
+| `AutoDetectDebug` — explainable format detection     | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; returns `Encoding`, stable `DetectionReason` (`Detail` is documented human-readable/unstable), human-readable `Detail` for triage and logging; delegation locked by rapid property test + fuzz — `autodetect_test.go` |
 
 ## Observability
 
 | Feature                                              | Status                | Notes                                                                       |
 | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| `ObservableCodec` — decorator codec with telemetry   | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; wraps any `Codec`, records per-operation metrics, implements `BufferEncoder` when the inner codec does — `observability_test.go` |
+| `ObservableCodec` — decorator codec with telemetry   | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; wraps any `Codec`, records per-operation metrics, implements `BufferEncoder` when the inner codec does; goroutine-safety locked by 16k-op race stress test — `observability_test.go` |
 | `CodecMetrics` / `MetricsSnapshot` — counters & last errors | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; goroutine-safe encode/deode call counts, byte totals, error counts, and last errors with `Snapshot()` / `Reset()` — `observability_test.go` |
-| `MetricsHook` — per-operation callback               | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; invoked after each encode/decode with operation, encoding, bytes processed, and error for push-style telemetry — `observability_test.go` |
+| `MetricsHook` — per-operation callback               | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; invoked after each encode/decode with operation, encoding, bytes processed, and error for push-style telemetry; documented panic policy (propagates, metrics recorded pre-hook) tested in `observability_test.go` |
 ## Security hardening
 
 | Feature                                          | Status                | Notes                                                                  |

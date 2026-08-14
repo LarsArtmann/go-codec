@@ -2,9 +2,11 @@ package codec_test
 
 import (
 	"bytes"
+	"slices"
 	"testing"
 
 	"github.com/larsartmann/go-codec"
+	"pgregory.net/rapid"
 )
 
 func TestAutoDetect_Empty(t *testing.T) {
@@ -270,5 +272,83 @@ func TestAutoDetectDebug_WrapsAutoDetect(t *testing.T) {
 		if got := codec.AutoDetect(data); got != codec.AutoDetectDebug(data).Encoding {
 			t.Errorf("AutoDetect(%v) != AutoDetectDebug(%v).Encoding", data, data)
 		}
+	}
+}
+
+// TestProperty_AutoDetectDelegatesToDebug locks the delegation contract for
+// arbitrary random payloads: AutoDetect is exactly AutoDetectDebug().Encoding,
+// and every debug result carries a known Reason and a non-empty Detail.
+func TestProperty_AutoDetectDelegatesToDebug(t *testing.T) {
+	t.Parallel()
+
+	rapid.Check(t, func(t *rapid.T) {
+		data := rapid.SliceOf(rapid.Byte()).Draw(t, "data")
+
+		debug := codec.AutoDetectDebug(data)
+
+		if got := codec.AutoDetect(data); got != debug.Encoding {
+			t.Fatalf("AutoDetect(%x) = %q, AutoDetectDebug().Encoding = %q", data, got, debug.Encoding)
+		}
+
+		if debug.Detail == "" {
+			t.Fatalf("AutoDetectDebug(%x).Detail is empty", data)
+		}
+
+		if slices.Contains(knownDetectionReasons(), debug.Reason) {
+			return
+		}
+
+		t.Fatalf("DetectionReason %q is not a known reason", debug.Reason)
+	})
+}
+
+// FuzzAutoDetectDebug_Consistency verifies for arbitrary fuzz input that
+// detection never panics, always returns a valid encoding, keeps AutoDetect
+// and AutoDetectDebug in lockstep, and reports a known reason.
+func FuzzAutoDetectDebug_Consistency(f *testing.F) {
+	f.Add([]byte{0x00})
+	f.Add([]byte{0x1f})
+	f.Add([]byte{0xff})
+	f.Add([]byte(`{`))
+	f.Add([]byte(`42`))
+
+	f.Fuzz(func(t *testing.T, data []byte) {
+		debug := codec.AutoDetectDebug(data)
+
+		switch debug.Encoding {
+		case codec.EncodingJSON, codec.EncodingCBOR, codec.EncodingRaw:
+		default:
+			t.Fatalf("AutoDetectDebug(%x).Encoding = %q, not a known encoding", data, debug.Encoding)
+		}
+
+		if got := codec.AutoDetect(data); got != debug.Encoding {
+			t.Fatalf("AutoDetect(%x) = %q, AutoDetectDebug().Encoding = %q", data, got, debug.Encoding)
+		}
+
+		assertKnownDetectionReason(t, debug.Reason)
+
+		if debug.Detail == "" {
+			t.Fatalf("AutoDetectDebug(%x).Detail is empty", data)
+		}
+	})
+}
+
+func assertKnownDetectionReason(t *testing.T, reason codec.DetectionReason) {
+	t.Helper()
+
+	if !slices.Contains(knownDetectionReasons(), reason) {
+		t.Errorf("DetectionReason %q is not a known reason", reason)
+	}
+}
+
+func knownDetectionReasons() []codec.DetectionReason {
+	return []codec.DetectionReason{
+		codec.DetectionReasonEmpty,
+		codec.DetectionReasonCBORMajorType,
+		codec.DetectionReasonJSONStructure,
+		codec.DetectionReasonJSONTrialDecode,
+		codec.DetectionReasonCBORTrialDecode,
+		codec.DetectionReasonOversized,
+		codec.DetectionReasonUnknown,
 	}
 }

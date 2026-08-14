@@ -34,6 +34,11 @@ const (
 )
 
 // AutoDetectResult carries the encoding chosen by AutoDetect plus the reason.
+//
+// Reason is the STABLE, machine-readable contract: branch on it in code.
+// Detail is human-readable, intended for logs and triage output only. Its
+// exact wording and format are NOT part of the API contract and may change in
+// any release — never parse it.
 type AutoDetectResult struct {
 	Encoding Encoding
 	Reason   DetectionReason
@@ -62,6 +67,7 @@ func AutoDetect(data []byte) Encoding {
 // AutoDetectDebug is the verbose form of [AutoDetect]: it returns not only
 // the inferred encoding but also the reason and a human-readable detail string.
 // Use it when triaging mixed-encoding streams or when logging the decision path.
+// Branch on Reason (stable); treat Detail as diagnostic prose (unstable).
 func AutoDetectDebug(data []byte) AutoDetectResult {
 	if len(data) == 0 {
 		return AutoDetectResult{

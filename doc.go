@@ -118,6 +118,27 @@
 // call writes one JSON value followed by a newline, and Decode reads one value
 // at a time, skipping whitespace between values.
 //
+// # Observability
+//
+// ObserveCodec wraps any Codec with opt-in telemetry: per-operation call counts,
+// byte totals, error counts, and last errors (CodecMetrics), plus a push-style
+// MetricsHook for Prometheus/OpenTelemetry-style exporters. The wrapper is
+// goroutine-safe and preserves the BufferEncoder fast path when present.
+//
+//	obs := codec.ObserveCodec(codec.CBORCodec{},
+//	    codec.WithMetricsHook(func(op codec.Operation, enc codec.Encoding, n int, err error) {
+//	        // emit to your metrics backend
+//	    }),
+//	)
+//
+// # Format Detection
+//
+// AutoDetect infers the encoding (json/cbor/raw) of unknown payload bytes from
+// the leading byte, with trial-decode fallback for ambiguous starts. It is a
+// best-effort heuristic for diagnostics and tooling, NOT a security boundary.
+// AutoDetectDebug additionally returns a stable DetectionReason to branch on
+// and a human-readable Detail string for logs (unstable wording — never parse).
+//
 // # Performance
 //
 // fxamacker/cbor caches type metadata in a process-wide sync.Map keyed by

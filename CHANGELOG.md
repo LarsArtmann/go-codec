@@ -79,6 +79,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `paralleltest` linter re-enabled: all 19 previously-unparallelized test
   functions now call `t.Parallel()`.
 
+- `TestObservableCodec_ConcurrentStress`: 16,000 concurrent encode/decode
+  operations across a shared `CodecMetrics` and `MetricsHook` under `-race`,
+  locking in the goroutine-safety claim with exact call/byte/hook-count
+  assertions — `observability_test.go`.
+- `TestObservableCodec_HookPanicPropagates`: locks the documented `MetricsHook`
+  panic policy (propagates to caller; metrics recorded before the hook, so
+  counters stay consistent) — `observability_test.go`.
+- `TestProperty_AutoDetectDelegatesToDebug` (rapid) and
+  `FuzzAutoDetectDebug_Consistency` (native fuzz): arbitrary payloads keep
+  `AutoDetect` and `AutoDetectDebug(...).Encoding` in lockstep, always return a
+  known encoding and reason, and never panic — `autodetect_test.go`.
+- `ExampleObserveCodec` / `ExampleAutoDetectDebug`: godoc examples for the
+  observability APIs — `example_test.go`.
+
+### Fixed
+
+- **Default (v1 JSON) build was broken at HEAD**: `json_compat_v1.go` and
+  `json_helpers_v1_test.go` had been corrupted to import `encoding/json/v2`
+  while retaining `!goexperiment.jsonv2` build tags, so the default toolchain
+  could not compile the package at all and the JSON contract test failed.
+  Restored the `encoding/json` imports (caught by `json_contract_test.go` —
+  the guard did its job).
+- Documented `MetricsHook` panic policy (propagates, not recovered) and
+  `AutoDetectResult.Detail` as unstable human-readable prose (`Reason` is the
+  stable contract) in godoc and README.
+
 ### Changed
 
 - `makezero` config reverted to `always: true` with targeted `//nolint` on the

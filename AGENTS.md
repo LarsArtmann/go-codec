@@ -13,7 +13,12 @@ designed for consumption by `go-cqrs-lite` and other projects.
 
 It does NOT produce a binary. It is a library only: four codecs (CBOR canonical,
 CBOR compact, JSON, Raw) plus shared COSE structure helpers, transcoding,
-envelope wrapping, autodetection, streaming, and size/diagnostic utilities.
+envelope wrapping, autodetection, streaming, observability, and size/diagnostic
+utilities.
+
+**Adoption proof:** `go-cqrs-lite/codec/v4` requires `go-codec v0.1.0` from the
+module proxy (verified 2026-08-14: `GOWORK=off go build` green in that module).
+The sibling repo consumes the published tag, not just the go.work overlay.
 
 ## Directory Structure
 
@@ -117,6 +122,12 @@ nix run .#lint                         # lint both modes
 - **Dual-build: never import `json.*` directly.** All JSON calls go through the
   `json_compat_v*.go` helpers. goimports may corrupt v1 files to import v2 — the
   contract test (`json_contract_test.go`) catches this. Always run both modes.
+  **This corruption actually happened (2026-08-14, committed at HEAD):** the v1
+  files imported `encoding/json/v2` while tagged `!goexperiment.jsonv2`, which
+  broke the entire default build AND made gopls diagnostics look "stale" when
+  they were real. If the default `go build ./...` fails with "build constraints
+  exclude all Go files" for `encoding/json/v2`/`jsontext`, check the v1 compat
+  file imports first — do not blame the toolchain or the LSP cache.
 - **`CBORCodec` ≠ `CBORCompactCodec` bytes.** Never assume data written by one
   round-trips through the other (different key sort + compact rejects unknown
   fields). Document per-store which codec owns the data.

@@ -3,6 +3,8 @@ package codec_test
 import (
 	"bytes"
 	"errors"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/larsartmann/go-codec"
@@ -256,6 +258,145 @@ func TestObservableCodec_Reset(t *testing.T) {
 	if m.EncodeBytes != 0 {
 		t.Errorf("EncodeBytes after Reset = %d, want 0", m.EncodeBytes)
 	}
+}
+
+func TestObservableCodec_ConcurrentStress(t *testing.T) {
+	t.Parallel()
+
+	const goroutines = 32
+
+	const iterations = 500
+
+	shared := &codec.CodecMetrics{}
+
+	var hookCalls int64
+
+	hook := stressHook(t, &hookCalls)
+	obs := codec.ObserveCodec(codec.JSONCodec{}, codec.WithMetrics(shared), codec.WithMetricsHook(hook))
+
+	payload := map[string]string{testField: testName}
+
+	var wg sync.WaitGroup
+
+	wg.Add(goroutines * iterations)
+
+	for range goroutines * iterations {
+		go func() {
+			defer wg.Done()
+
+			data, err := obs.Encode(payload)
+			if err != nil {
+				t.Errorf("Encode: %v", err)
+
+				return
+			}
+
+			var decoded map[string]string
+
+			if err := obs.Decode(data, &decoded); err != nil {
+				t.Errorf("Decode: %v", err)
+
+				return
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	assertStressMetrics(t, shared.Snapshot(), atomic.LoadInt64(&hookCalls), goroutines*iterations)
+}
+
+// stressHook returns a MetricsHook that validates every call and counts
+// invocations into calls atomically.
+func stressHook(t *testing.T, calls *int64) codec.MetricsHook {
+	t.Helper()
+
+	return func(op codec.Operation, enc codec.Encoding, bytesProcessed int, err error) {
+		if err != nil {
+			t.Errorf("hook saw unexpected error: %v", err)
+
+			return
+		}
+
+		if enc != codec.EncodingJSON {
+			t.Errorf("hook encoding = %q, want %q", enc, codec.EncodingJSON)
+
+			return
+		}
+
+		if bytesProcessed <= 0 {
+			t.Errorf("hook bytesProcessed = %d, want > 0", bytesProcessed)
+
+			return
+		}
+
+		if op != codec.OpEncode && op != codec.OpDecode {
+			t.Errorf("hook op = %v, want encode or decode", op)
+
+			return
+		}
+
+		atomic.AddInt64(calls, 1)
+	}
+}
+
+func assertStressMetrics(t *testing.T, m codec.MetricsSnapshot, hookCalls int64, ops int) {
+	t.Helper()
+
+	if m.EncodeCalls != int64(ops) {
+		t.Errorf("EncodeCalls = %d, want %d", m.EncodeCalls, ops)
+	}
+
+	if m.DecodeCalls != int64(ops) {
+		t.Errorf("DecodeCalls = %d, want %d", m.DecodeCalls, ops)
+	}
+
+	if m.EncodeErrors != 0 || m.DecodeErrors != 0 {
+		t.Errorf("EncodeErrors = %d, DecodeErrors = %d, want 0", m.EncodeErrors, m.DecodeErrors)
+	}
+
+	if hookCalls != int64(2*ops) {
+		t.Errorf("hookCalls = %d, want %d", hookCalls, 2*ops)
+	}
+
+	if m.EncodeBytes != m.DecodeBytes {
+		t.Errorf("EncodeBytes %d != DecodeBytes %d", m.EncodeBytes, m.DecodeBytes)
+	}
+}
+
+// TestObservableCodec_HookPanicPropagates locks the documented panic policy:
+// hook panics are NOT recovered; they propagate to the caller. Metrics are
+// recorded before the hook runs, so counters stay consistent despite the panic.
+func TestObservableCodec_HookPanicPropagates(t *testing.T) {
+	t.Parallel()
+
+	obs := codec.ObserveCodec(codec.JSONCodec{},
+		codec.WithMetricsHook(func(codec.Operation, codec.Encoding, int, error) {
+			panic("hook exploded")
+		}))
+
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("Encode did not propagate the hook panic")
+
+			return
+		}
+
+		if r != "hook exploded" {
+			t.Fatalf("recovered %v, want %q", r, "hook exploded")
+		}
+
+		m := obs.Metrics().Snapshot()
+
+		if m.EncodeCalls != 1 {
+			t.Errorf("EncodeCalls after hook panic = %d, want 1 (metrics recorded before hook)", m.EncodeCalls)
+		}
+	}()
+
+	_, _ = obs.Encode(map[string]string{testField: testName})
+
+	t.Fatal("unreachable: Encode should have panicked")
 }
 
 type hookCall struct {

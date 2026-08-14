@@ -20,6 +20,13 @@ const (
 // MetricsHook receives a notification after each observed operation.
 // bytesProcessed is the length of the encoded payload for encodes or the
 // input length for decodes. err is the result of the operation (nil on success).
+//
+// Panic policy: hooks are caller-supplied callbacks and their panics PROPAGATE
+// to the caller of Encode/Decode — they are not recovered. This is the idiomatic
+// Go contract (a library must not swallow panics, which hides bugs). Metrics are
+// always recorded BEFORE the hook runs, so a panicking hook leaves counters
+// consistent. Keep hooks fast and panic-free: they execute inline on the codec's
+// hot path.
 type MetricsHook func(op Operation, enc Encoding, bytesProcessed int, err error)
 
 // CodecMetrics records per-instance codec operation counters and last results.

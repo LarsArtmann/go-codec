@@ -260,6 +260,61 @@ func ExampleNewJSONEncoder() {
 	// 2 events decoded from JSON stream
 }
 
+// ExampleObserveCodec demonstrates wrapping a codec with telemetry. The
+// ObservableCodec decorator records per-operation metrics and invokes a
+// MetricsHook after every encode/decode — useful for Prometheus or
+// OpenTelemetry-style push telemetry without polling.
+func ExampleObserveCodec() {
+	obs := codec.ObserveCodec(codec.CBORCodec{},
+		codec.WithMetricsHook(func(op codec.Operation, enc codec.Encoding, bytes int, err error) {
+			fmt.Printf("op=%d enc=%s bytes=%d err=%v\n", op, enc, bytes, err)
+		}))
+
+	data, _ := obs.Encode(map[string]string{testField: testName})
+
+	var decoded map[string]string
+
+	_ = obs.Decode(data, &decoded)
+
+	m := obs.Metrics().Snapshot()
+	fmt.Printf("encode calls: %d, decode calls: %d\n", m.EncodeCalls, m.DecodeCalls)
+
+	// Output:
+	// op=0 enc=cbor bytes=12 err=<nil>
+	// op=1 enc=cbor bytes=12 err=<nil>
+	// encode calls: 1, decode calls: 1
+}
+
+// ExampleAutoDetectDebug demonstrates explainable format detection: beyond the
+// inferred encoding, it returns a stable DetectionReason to branch on and a
+// human-readable Detail for logs. Detail is NOT a stable contract — never
+// parse it.
+func ExampleAutoDetectDebug() {
+	for _, data := range [][]byte{
+		[]byte(`{"name":"Alice"}`),
+		{0xa1, 0x64, 'n', 'a', 'm', 'e', 0x65, 'A', 'l', 'i', 'c', 'e'}, // CBOR map
+		{0x1f}, // unrecognized
+	} {
+		result := codec.AutoDetectDebug(data)
+
+		switch result.Reason {
+		case codec.DetectionReasonJSONStructure, codec.DetectionReasonJSONTrialDecode:
+			fmt.Println("json")
+		case codec.DetectionReasonCBORMajorType, codec.DetectionReasonCBORTrialDecode:
+			fmt.Println("cbor")
+		case codec.DetectionReasonEmpty,
+			codec.DetectionReasonOversized,
+			codec.DetectionReasonUnknown:
+			fmt.Printf("other (%s): %s\n", result.Reason, result.Detail)
+		}
+	}
+
+	// Output:
+	// json
+	// cbor
+	// other (unknown): first byte 0x1f does not match any known format
+}
+
 // ExampleDiagnose converts CBOR bytes to human-readable diagnostic notation.
 // Useful for debugging corrupt events or inspecting raw CBOR payloads.
 func ExampleDiagnose() {

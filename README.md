@@ -210,6 +210,49 @@ diag, _ := codec.Diagnose(cborData)
 log.Printf("CBOR event: %s", diag)
 ```
 
+## Telemetry (`ObservableCodec`)
+
+Wrap any codec with `ObserveCodec` to record per-operation metrics — call
+counts, byte totals, error counts, and last errors — without touching the
+underlying codec. The wrapper is goroutine-safe and preserves the optional
+`BufferEncoder` fast path when the wrapped codec implements it.
+
+```go
+obs := codec.ObserveCodec(codec.CBORCodec{},
+    codec.WithMetricsHook(func(op codec.Operation, enc codec.Encoding, bytes int, err error) {
+        // Push-style telemetry: emit to Prometheus, OpenTelemetry, or logs.
+    }),
+)
+
+data, _ := obs.Encode(payload)
+
+m := obs.Metrics().Snapshot() // m.EncodeCalls, m.EncodeBytes, m.EncodeErrors, ...
+```
+
+- **`WithMetrics(shared)`** — share one `CodecMetrics` sink across multiple codecs.
+- **`Snapshot()` / `Reset()`** — point-in-time copy vs. clear counters.
+- **Panic policy:** hook panics propagate (not recovered); metrics are recorded
+  before the hook runs, so counters stay consistent.
+
+## Explainable Format Detection (`AutoDetectDebug`)
+
+`AutoDetect` returns just the encoding; `AutoDetectDebug` also explains *why*:
+
+```go
+result := codec.AutoDetectDebug(payload)
+log.Printf("detected %s: %s", result.Encoding, result.Detail)
+
+switch result.Reason { // branch on Reason — it is the stable contract
+case codec.DetectionReasonCBORMajorType, codec.DetectionReasonCBORTrialDecode:
+    // handle CBOR
+case codec.DetectionReasonJSONStructure, codec.DetectionReasonJSONTrialDecode:
+    // handle JSON
+}
+```
+
+`Reason` is stable and machine-readable. `Detail` is human-readable prose for
+logs and triage — its wording may change between releases, so never parse it.
+
 ## Shared CBOR Modes
 
 Modules that need CBOR encoding identical to `CBORCodec` (e.g., custom storage

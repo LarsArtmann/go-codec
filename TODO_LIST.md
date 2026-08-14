@@ -16,30 +16,41 @@
 
 | #  | Task                                                                        | Status    | Impact | Effort | Notes                                                                          |
 | -- | --------------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------------------ |
-| 1  | Verify `go-cqrs-lite` consumes `go-codec@v0.1.0` (downstream adoption proof) | 🔴 `TODO` | Med    | 15min  | No consumer has been wired to the published module yet.                        |
-| 2  | Create GitHub Release for `v0.1.0` (`gh release create v0.1.0`)             | 🔵 `BLOCKED` | Med | 5min  | Tag exists; awaiting user decision on tag strategy (keep at `3f8ac9d` or cut `v0.1.1`). |
-| 3  | Investigate and fix stale gopls/golangci-lint diagnostics                   | 🔵 `BLOCKED` | Critical | M | CLI passes; LSP cache/config mismatch. See status report 2026-08-12.         |
-| 4  | Re-run coverage and update `FEATURES.md` figures                            | 🔴 `TODO` | High   | S      | New tests added; coverage numbers likely stale.                                |
-| 5  | Add README telemetry section and `ExampleObserveCodec` / `ExampleAutoDetectDebug` | 🔴 `TODO` | High   | S      | End-user discoverability for the new observability APIs.                         |
-| 6  | Add concurrent stress test for `ObservableCodec` + `CodecMetrics`           | 🔴 `TODO` | High   | S      | Lock in the goroutine-safety claim.                                              |
-| 7  | Document `MetricsHook` panic policy                                       | 🔴 `TODO` | High   | S      | Decide and encode whether panics are recovered.                                |
-| 8  | Document `AutoDetectDebug.Detail` as human-readable / unstable              | 🔴 `TODO` | Medium | S      | Code should branch on `Reason`, not parse `Detail`.                              |
-| 9  | Add property/fuzz tests for `AutoDetect` ↔ `AutoDetectDebug` consistency    | 🔴 `TODO` | Medium | S      | Rapid/fuzz random payloads to lock in delegation.                                |
+| 1  | Create GitHub Release for `v0.1.0` (`gh release create v0.1.0`)             | 🔵 `BLOCKED` | Med | 5min  | Tag exists; awaiting user decision on tag strategy (keep at `3f8ac9d` or cut `v0.1.1`). Note: HEAD `v0.1.0` tag predates the v1-build fix — cutting `v0.1.1` is now the safer option. |
 
 ## Completed in this session (logged in CHANGELOG [Unreleased])
 
-All 22 items from the prior TODO list have been completed:
-- Security: depth cap in normalizeForJSON (#1), AutoDetect size guard (#2)
-- CI: gosec/gitleaks (#3), v2 lint matrix (#4)
-- Lint: makezero reverted (#6), dead code removed (#15), goconst/tagliatelle re-enabled (#16-17), testpackage migration (#7), paralleltest (#8)
-- Tests: normalizer tests + fuzz (#9-10), fuzz verification (#11), coverage report (#12), nix verification (#13)
-- API: SizeResult struct (#18), TranscodeToJSON one-way doc (#19), buffer pool (#20)
-- Benchmarks: v1 vs v2 (#21)
-- Repo hygiene: CODEOWNERS, SECURITY.md, templates (#22), TIMEZONE accepted inline (#23), CONTRIBUTING polish (#24)
+Items 3-9 from the prior TODO list are done:
+
+- **Item 3 (stale diagnostics) — root cause found and fixed:** the "stale"
+  gopls/golangci-lint diagnostics were not stale — `json_compat_v1.go` and
+  `json_helpers_v1_test.go` at HEAD imported `encoding/json/v2` while carrying
+  `!goexperiment.jsonv2` build tags, so the default v1 build was genuinely
+  broken. Imports restored; both build modes green; CLI and LSP now agree.
+- **Item 4 (coverage):** re-measured — 85.3% (v1) / 85.4% (v2), updated in
+  `FEATURES.md`.
+- **Item 5 (README/examples):** telemetry + `AutoDetectDebug` sections added to
+  README; `ExampleObserveCodec` / `ExampleAutoDetectDebug` godoc examples.
+- **Item 6 (stress test):** `TestObservableCodec_ConcurrentStress` — 16,000
+  concurrent ops, shared metrics + hook, race-clean.
+- **Item 7 (panic policy):** documented on `MetricsHook` — panics propagate
+  (not recovered), metrics recorded before the hook; locked by
+  `TestObservableCodec_HookPanicPropagates`.
+- **Item 8 (Detail contract):** `AutoDetectResult.Detail` documented as
+  unstable human-readable prose; `Reason` is the stable contract (godoc +
+  README + example).
+- **Item 9 (property/fuzz):** `TestProperty_AutoDetectDelegatesToDebug` (rapid)
+  + `FuzzAutoDetectDebug_Consistency` lock the `AutoDetect` ↔ `AutoDetectDebug`
+  delegation for arbitrary payloads.
+- **Item 1 (downstream adoption):** verified `go-cqrs-lite/codec/v4` go.mod
+  requires `go-codec v0.1.0` from the module proxy (GOWORK=off build green) —
+  adoption proof complete; remaining work is the cross-repo PR to wire
+  `ObservableCodec` into the event store (see ROADMAP integration items).
+
+Prior session's 22 items remain completed (see CHANGELOG [Unreleased]).
 
 ---
 
 <!-- Open questions (need a human decision, not a task):
   - Should the v0.1.0 tag move to HEAD (include CI + post-tag work) or cut v0.1.1?
-  - Is `normalizeForJSON` recursion depth a real threat for your consumers (trusted
-    store boundary vs. untrusted input)? The depth cap is now in place regardless. -->
+    The v1-build fix makes v0.1.1 the recommended path. -->

@@ -216,8 +216,8 @@ own rule until prompted to self-review.
 4. Fix `realisticOrderKeyInt` to add `cbor:"3,keyasint"` on the `Items` field
 5. Add a v2-specific streaming test using `strings.Reader` (non-buffer reader)
    to catch over-read issues that `bytes.Buffer` masks
-6. ~~Run `golangci-lint run --build-tags goexperiment.jsonv2 ./...` to verify
-   v2 lint is clean for new files~~ done at `ef1f4f4` (v2 lint is a CI matrix leg)
+6. ~~Run `golangci-lint run --build-tags goexperiment.jsonv2 ./...` to verify~~
+   ~~v2 lint is clean for new files~~ done at `ef1f4f4` (v2 lint is a CI matrix leg)
 7. Add `nolint:wrapcheck` consistency audit — `EncodePooled` wraps the encode
    error but not the callback error; document this decision
 
@@ -260,8 +260,8 @@ own rule until prompted to self-review.
 24. Update `doc.go` benchmark numbers with a "your results may vary" caveat
 25. Add `AGENTS.md` gotcha about v2 `jsontext.Encoder` corrupting NDJSON (so
     future maintainers don't repeat the mistake)
-26. ~~Add `AGENTS.md` note about always running `nix run .#test` or both
-    `go test` + `GOEXPERIMENT=jsonv2 go test` after touching dual-build files~~
+26. ~~Add `AGENTS.md` note about always running `nix run .#test` or both~~
+    ~~`go test` + `GOEXPERIMENT=jsonv2 go test` after touching dual-build files~~
     done — covered by the pre-existing AGENTS.md dual-build gotcha ("Always run
     both modes")
 27. ~~Add `CONTRIBUTING.md` note about testing streaming in both JSON modes~~
@@ -269,8 +269,8 @@ own rule until prompted to self-review.
 
 ### CI & tooling
 
-28. ~~Verify `nix run .#lint` passes for both modes (v2 lint wasn't run this
-    session)~~ done at `ef1f4f4` (CI) and re-verified in later sessions
+28. ~~Verify `nix run .#lint` passes for both modes (v2 lint wasn't run this~~
+    ~~session)~~ done at `ef1f4f4` (CI) and re-verified in later sessions
 29. Add a CI check that runs benchmarks and compares against a baseline
     (regression detection)
 30. Add `benchstat` to flake.nix for benchmark comparison

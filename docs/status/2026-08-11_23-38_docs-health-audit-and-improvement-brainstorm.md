@@ -16,11 +16,11 @@
   needs 1.27. **I was wrong to give up.** nixpkgs ships `go_1_27` (1.27rc2); one
   `nix build nixpkgs#go_1_27` later the project **builds clean** and the test
   suite fails on exactly **one** line. I should have done this in the first hour.
-- **The project itself does not run on its declared toolchain.** ~~`go.mod` says
-  `go 1.26.5`; the code requires ≥1.27; and `snaps_clean_test.go:12` is a
-  compile error (`_ = snaps.Clean(m)` — returns 2 values). I documented both in
-  TODO_LIST but **did not fix them**. The docs are superb; the code is still
-  non-functional. That is the core unfinished work.~~ **Resolved:** dual-build
+- **The project itself does not run on its declared toolchain.** ~~`go.mod` says~~
+  ~~`go 1.26.5`; the code requires ≥1.27; and `snaps_clean_test.go:12` is a~~
+  ~~compile error (`_ = snaps.Clean(m)` — returns 2 values). I documented both in~~
+  ~~TODO_LIST but **did not fix them**. The docs are superb; the code is still~~
+  ~~non-functional. That is the core unfinished work.~~ **Resolved:** dual-build
   shipped (`f3e30e9`), `snaps_clean` fixed, both JSON modes build+test green;
   tagged `v0.1.0` (`3f8ac9d`). See `CHANGELOG.md`.
 
@@ -144,26 +144,26 @@
 
 ### Release & distribution
 5. ~~Tag `v0.1.0` the moment the build is green.~~ done at `v0.1.0`
-6. ~~Resolve the **proprietary LICENSE vs "downstream adoption"** contradiction
-   (pick MIT/Apache-2.0 if this is meant to be consumed externally).~~ done at `1fde5c5` (MIT)
-7. ~~Decide mono-repo vs standalone: do the sibling modules exist elsewhere? If
-   yes, wire the repo path; if no, delete the `../` references.~~ done at `9d114ba` (standalone module; siblings in go-cqrs-lite; README links fixed)
+6. ~~Resolve the **proprietary LICENSE vs "downstream adoption"** contradiction~~
+   ~~(pick MIT/Apache-2.0 if this is meant to be consumed externally).~~ done at `1fde5c5` (MIT)
+7. ~~Decide mono-repo vs standalone: do the sibling modules exist elsewhere? If~~
+   ~~yes, wire the repo path; if no, delete the `../` references.~~ done at `9d114ba` (standalone module; siblings in go-cqrs-lite; README links fixed)
 8. ~~Add a `flake.nix` (copy go-branded-id's; dual-mode CI for json v1/v2).~~ done at `1fde5c5`
 9. ~~Add `.github/workflows` CI: build+test+lint+race in both json modes.~~ done at `ef1f4f4`
 10. Add `coverage` reporting to CI. ~~routed, since executed~~ done at `094de50`
 
 ### Code quality — the improvement brainstorm
 11. ~~Rename `envelopeMagic = "cqrs"` → a neutral, descriptive sentinel.~~ done at `d144b6f` (→ `"gcdc"`)
-12. ~~Wire `EncodingRaw → RawCodec{}` into `ForEncoding` (currently asymmetrical
-    with `AutoDetect`, which produces `EncodingRaw`).~~ done at `d144b6f`
+12. ~~Wire `EncodingRaw → RawCodec{}` into `ForEncoding` (currently asymmetrical~~
+    ~~with `AutoDetect`, which produces `EncodingRaw`).~~ done at `d144b6f`
 13. Add `TranscodeToCBOR` (symmetric counterpart to `TranscodeToJSON`), or
     rename to make the one-way contract unmistakable. ~~routed, since executed~~ done at `094de50`
 14. Replace `Size` positional `(int,int)` return with a `SizeResult{JSON, CBOR}`. ~~routed, since executed~~ done at `094de50`
-15. ~~Rename `COSESign1String`/`COSEEncrypt0String` → `…Diagnostic` (they return
-    diagnostic notation, not arbitrary strings).~~ done at `d144b6f`
+15. ~~Rename `COSESign1String`/`COSEEncrypt0String` → `…Diagnostic` (they return~~
+    ~~diagnostic notation, not arbitrary strings).~~ done at `d144b6f`
 16. Add a `sync.Pool[*bytes.Buffer]` helper for `BufferEncoder` hot paths. ~~routed, since executed~~ done at `094de50`
-17. ~~Remove the `stack.Bundle`/`DefaultCodec()` reference from `doc.go` (leaky
-    abstraction — a codec lib shouldn't know who owns the default).~~ done at `1fde5c5`
+17. ~~Remove the `stack.Bundle`/`DefaultCodec()` reference from `doc.go` (leaky~~
+    ~~abstraction — a codec lib shouldn't know who owns the default).~~ done at `1fde5c5`
 18. Add depth/size caps to `AutoDetect` and `TranscodeToJSON` generic decode
     before the DoS-resistance claim in docs is honest. ~~routed, since executed~~ done at `094de50`
 19. Evaluate dropping `go-error-family` for a stdlib `errors` + code field (one
@@ -171,10 +171,10 @@
 
 ### Tests currently missing (from FEATURES PARTIALLY_FUNCTIONAL rows)
 20. ~~Direct unit tests for `base64_json.go` (6 exported helpers, 0 direct tests).~~ done at `f64abb0`
-21. ~~Direct unit test for `PrepareCOSESetup` (generic; only exercised by absent
-    siblings).~~ done at `f64abb0`
-22. ~~Contract test for the dual-build import split (like go-branded-id's
-    `id_json_contract_test.go`) to stop goimports corrupting v1 files.~~ done at `f64abb0`
+21. ~~Direct unit test for `PrepareCOSESetup` (generic; only exercised by absent~~
+    ~~siblings).~~ done at `f64abb0`
+22. ~~Contract test for the dual-build import split (like go-branded-id's~~
+    ~~`id_json_contract_test.go`) to stop goimports corrupting v1 files.~~ done at `f64abb0`
 
 ### Documentation polish (continuing the docs-health work)
 23. ~~Fix README `../` sibling links (or gate them behind "see mono-repo").~~ done at `9d114ba`
@@ -186,8 +186,8 @@
 28. Add benchmark numbers to README (the `_bench` tests exist, mine the data). ~~routed, since executed~~ done at `094de50` (benchmark suite added); headline README citation still open — `TODO_LIST.md` #13
 
 ### Tooling & repo hygiene
-29. ~~Add `.golangci.yml` (none exists; CONTRIBUTING tells people to run a linter
-    with no config).~~ done at `1fde5c5` (cleaned `3f8ac9d`)
+29. ~~Add `.golangci.yml` (none exists; CONTRIBUTING tells people to run a linter~~
+    ~~with no config).~~ done at `1fde5c5` (cleaned `3f8ac9d`)
 30. ~~`go mod tidy` + `go.sum` audit + dependency freshness check.~~ done at `b6a5a93`
 31. ~~Add `AUTHORS` file (go-branded-id has one; this repo doesn't).~~ done at `1fde5c5`
 32. Consider a `result/` package (go-branded-id pattern) if error handling grows. ← **open — deferred (not yet warranted)**
@@ -197,14 +197,14 @@
 36. ~~Add `treefmt-nix` config for formatting.~~ ~~uses `dprint` instead~~ resolved — `flake.nix` now drives treefmt-nix (gofumpt/goimports/nixfmt, enforced by `nix flake check`); `dprint.json` remains as a secondary config
 
 ### Deeper verification I skipped
-37. ~~Confirm every `Example_*` in `example_test.go` produces the documented
-    `Output:` (blocked until #1/#2 land).~~ done at `v0.1.0` (tests green)
+37. ~~Confirm every `Example_*` in `example_test.go` produces the documented~~
+    ~~`Output:` (blocked until #1/#2 land).~~ done at `v0.1.0` (tests green)
 38. ~~Validate the fuzz corpus under `testdata/fuzz/` still reproduces.~~ done — corpus seeds run as part of every `go test` in both CI modes (long-form `-fuzz` runs remain `TODO_LIST.md` #3)
 39. Property-test `AutoDetect` ↔ `ForEncoding` round-trip on mixed streams. ← **open**
-40. ~~Verify `TimeUnixDynamic` float-drift claims (~165ns) in `README.md` against
-    the actual `TestCBORCodec_RoundTrip_TimeSubSecondPrecision` behavior.~~ done — the test asserts 1µs round-trip tolerance (`codec_test.go`), documenting the ~165ns float drift
-41. ~~Lint the whole tree on Go 1.27 and resolve every warning (29 LSP warnings
-    today, almost all the go-version noise; a clean run needs 1.27).~~ done at `3f8ac9d` (88→0)
+40. ~~Verify `TimeUnixDynamic` float-drift claims (~165ns) in `README.md` against~~
+    ~~the actual `TestCBORCodec_RoundTrip_TimeSubSecondPrecision` behavior.~~ done — the test asserts 1µs round-trip tolerance (`codec_test.go`), documenting the ~165ns float drift
+41. ~~Lint the whole tree on Go 1.27 and resolve every warning (29 LSP warnings~~
+    ~~today, almost all the go-version noise; a clean run needs 1.27).~~ done at `3f8ac9d` (88→0)
 
 ### Nice-to-haves
 42. ~~Streaming JSON codec (symmetry with `NewCBOREncoder`/`NewCBORDecoder`).~~ done at `eba9f80` (`NewJSONEncoder`/`NewJSONDecoder`, NDJSON)
@@ -220,25 +220,25 @@
 
 ## g) Questions I cannot answer myself (max 3)
 
-1. **Do the sibling modules actually exist?** ~~README and doc.go reference
-   `event`, `signing`, `encryption`, `storage/pebble`, `kv`, `transport/http`,
-   `stack` via `../` paths and even `stack.Bundle.DefaultCodec()`. None live in
-   this repo. Are they in a parent mono-repo I should be linking to, or are they
-   planned-but-unbuilt (in which case the README is selling vapor)? This
-   determines whether the README links are fixable-in-place or need deletion.~~
+1. **Do the sibling modules actually exist?** ~~README and doc.go reference~~
+   ~~`event`, `signing`, `encryption`, `storage/pebble`, `kv`, `transport/http`,~~
+   ~~`stack` via `../` paths and even `stack.Bundle.DefaultCodec()`. None live in~~
+   ~~this repo. Are they in a parent mono-repo I should be linking to, or are they~~
+   ~~planned-but-unbuilt (in which case the README is selling vapor)? This~~
+   ~~determines whether the README links are fixable-in-place or need deletion.~~
    **Resolved:** standalone module; siblings live in `go-cqrs-lite`. README links
    fixed at `9d114ba`.
 
-2. **Is the Go ≥1.27 / `encoding/json/v2` hard dependency intentional?** ~~You
-   seemed interested in the dual v1+v2 build. Confirm the direction before I
-   implement: (a) keep v2-only and just bump `go.mod` to 1.27, or (b) implement
-   the dual build so v1 is the default and `GOEXPERIMENT=jsonv2` opts in? The
-   answer changes ~half the "next 50" list.~~
+2. **Is the Go ≥1.27 / `encoding/json/v2` hard dependency intentional?** ~~You~~
+   ~~seemed interested in the dual v1+v2 build. Confirm the direction before I~~
+   ~~implement: (a) keep v2-only and just bump `go.mod` to 1.27, or (b) implement~~
+   ~~the dual build so v1 is the default and `GOEXPERIMENT=jsonv2` opts in? The~~
+   ~~answer changes ~half the "next 50" list.~~
    **Resolved:** option (b) — dual build shipped at `f3e30e9` (v1 default).
 
-3. **Should I fix code in this repo, or only document?** ~~The two High-impact
-   TODOs (go.mod bump, `snaps.Clean`) are trivial and block everything, but I
-   left them untouched because the task was framed as docs-health + ideas. Do
-   you want me to switch into engineering mode and start landing fixes, or keep
-   the docs/planning boundary and hand the code work to you/another session?~~
+3. **Should I fix code in this repo, or only document?** ~~The two High-impact~~
+   ~~TODOs (go.mod bump, `snaps.Clean`) are trivial and block everything, but I~~
+   ~~left them untouched because the task was framed as docs-health + ideas. Do~~
+   ~~you want me to switch into engineering mode and start landing fixes, or keep~~
+   ~~the docs/planning boundary and hand the code work to you/another session?~~
    **Resolved:** yes — subsequent sessions fixed the code and shipped `v0.1.0`.

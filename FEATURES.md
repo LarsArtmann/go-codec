@@ -32,6 +32,8 @@
 | `BenchmarkWrapEncode` / `BenchmarkUnwrapDecode` | Envelope wrap/unwrap overhead vs bare encode | ~290ns wrap / ~840ns unwrap on a 3-field payload |
 | `BenchmarkSize` | JSON-vs-CBOR size comparison helper | ~240ns, 2 allocs |
 | `BenchmarkCBORCompact_vs_Canon_Decode` | Compact vs canonical CBOR decode cost | Parity (~320ns both) — key-sort choice costs nothing at decode |
+| `BenchmarkRealisticPayload_Encode/Decode` | CBOR vs JSON on a realistic 7-field order payload (map vs `toarray` vs `keyasint` shapes) | Run on your hardware — README `When to Use CBOR vs JSON` cites these |
+| `BenchmarkObserveCodec` | `ObservableCodec` decorator overhead vs the raw codec (encode/decode/pooled sub-benchmarks) | Sizes the telemetry cost when wrapping a codec |
 
 ## Codecs
 

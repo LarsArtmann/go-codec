@@ -209,6 +209,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   architecture decisions on COSE extraction (no), JWS/JWE (no), signing /
   encryption module structure (keep separate), and the approved
   `DeterministicCodec` marker-interface proposal.
+- Docs: docs-health audit pass — remaining multi-line `~~` annotation spans in
+  the older status reports (`2026-08-11_23-38`, `2026-08-12_03-24`,
+  `2026-08-12_09-25`, `2026-08-12_12-42`) migrated to the renderer-safe
+  per-line form; README CI badge added; FEATURES performance table extended
+  with `BenchmarkRealisticPayload_*` and `BenchmarkObserveCodec` rows;
+  `docs/DOMAIN_LANGUAGE.md` compat-helper count corrected (five helpers, was
+  four names); forward-looking items harvested from the 20:47/20:58 reports
+  into `TODO_LIST.md` and `ROADMAP.md`.
 
 ## [0.1.0] - 2026-08-12
 

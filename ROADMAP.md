@@ -84,11 +84,15 @@ Raw ideas:
 - pkg.go.dev polish: ensure every exported symbol carries a godoc example
 - A small `codec-cli` diagnostic tool (CBOR→JSON dump, `Diagnose` wrapper) if
   triage workflows want a binary
-- Cross-repo integration (lives in `go-cqrs-lite`, driven from here): wire
-  `ObservableCodec` into the event store, use `AutoDetectDebug` for mixed-stream
-  diagnostics, retire the deprecated `codec/v4` shim (mechanical migration
-  starting at `event/codec.go` — see
-  `docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §6-7)
+- Cross-repo integration (lives in `go-cqrs-lite`, driven from here): make the
+  sibling `signing` module accept `DeterministicCodec` (compile-time gate
+  against non-deterministic codecs — the marker interface exists here, the
+  consumer change is there), have siblings reuse `CBOREncMode()`/`CBORDecMode()`
+  instead of rebuilding identical modes, wire `ObservableCodec` into the event
+  store, use `AutoDetectDebug` for mixed-stream diagnostics, and retire the
+  deprecated `codec/v4` shim (mechanical migration starting at `event/codec.go`
+  — see `docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md`
+  §6-7)
 
 ## Non-goals
 

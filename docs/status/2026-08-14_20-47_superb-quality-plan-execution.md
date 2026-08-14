@@ -20,8 +20,9 @@ entries written and `nix flake check` passed (all checks).
 
 All quality gates verified green after every task: build + race-test + lint in
 **both JSON modes** (0 issues). Coverage rose **85.3% → 86.3% (v1)** and
-**85.4% → 88.8% (v2)**. ~~86.3% (v1)~~ final v1 figure is **88.0%** (86.3 was
-measured before the T7–T10 test files landed; FEATURES.md records 88.0/88.8).
+**85.4% → 88.8% (v2)**. ~~86.3% (v1)~~ final v1 figure is **88.0%** (fresh
+measurement on the final tree; the 86.3 figure did not reproduce — cause
+unverified, do not trust the original v1 number. FEATURES.md records 88.0/88.8).
 The new NDJSON fuzz target earned its keep
 immediately: it found `1e700` — a valid JSON number that overflows float64 on
 decode-into-`any` (stdlib asymmetry, not a library bug) — now a committed
@@ -164,10 +165,12 @@ session, resolved NOT-DO with reasons in the annotations, or routed above.)
 1. **Release:** cut `v0.1.1` from HEAD (recommendation unchanged — moving the
    published `v0.1.0` tag poisons the module proxy)? Also gates CHANGELOG
    dating and the GitHub Release body.
-2. **Commit granularity for the working tree:** T7–T10 (benchmarks + tests +
-   docs + annotations, 16 paths) is one uncommitted pile; the daemon may scoop
-   it into one commit. Explicit split (tests / docs / annotations) or let it
-   ride?
+2. **Commit granularity for the working tree:** ~~T7–T10 (benchmarks + tests +~~
+   ~~docs + annotations, 16 paths) is one uncommitted pile; the daemon may scoop~~
+   ~~it into one commit. Explicit split (tests / docs / annotations) or let it~~
+   ~~ride?~~ moot 2026-08-14 20:55 — the daemon committed the entire tree
+   (incl. the follow-up session's T11 docs) as single commit `f04d158` before
+   the decision was made.
 3. **Fuzz CI budget:** the matrix now runs 13 targets × 30s × 2 modes on the
    weekly cron. Is that runner-time budget acceptable, or should some targets
    get shorter budgets?

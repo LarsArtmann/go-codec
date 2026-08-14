@@ -13,14 +13,15 @@
   default, v2 opt-in via `GOEXPERIMENT=jsonv2`). 127 tests pass in each mode.
 - Tagged **`v0.1.0`** — first release.
 - 5 code commits + 1 docs commit shipped this session (30 files, +833/−169).
-- **What I forgot:** ~~I never updated `ROADMAP.md` or
-  `docs/DOMAIN_LANGUAGE.md` after the API renames and the dual-build addition.
-  They still describe the old world (`"cqrs"` magic, `COSE*String` names, no
-  dual-build concept). I also never ran the fuzz targets to confirm they still
-  pass — only the non-fuzz `go test` suite. And I never set up a git remote, so
-  the tag and commits are local-only despite the user asking to push.~~
+- **What I forgot:** ~~I never updated `ROADMAP.md` or~~
+  ~~`docs/DOMAIN_LANGUAGE.md` after the API renames and the dual-build addition.~~
+  ~~They still describe the old world (`"cqrs"` magic, `COSE*String` names, no~~
+  ~~dual-build concept). I also never ran the fuzz targets to confirm they still~~
+  ~~pass — only the non-fuzz `go test` suite. And I never set up a git remote, so~~
+  ~~the tag and commits are local-only despite the user asking to push.~~
   **Resolved next session:** DOMAIN_LANGUAGE + ROADMAP fixed (`3f8ac9d`); remote
-  created + pushed (`ef1f4f4`); fuzz/coverage still open (→ `TODO_LIST.md`).
+  created + pushed (`ef1f4f4`); ~~fuzz/coverage still open (→ `TODO_LIST.md`).~~
+  fuzz CI cron + coverage reporting shipped (`699fad9`/`f04d158`).
 
 ---
 
@@ -152,15 +153,15 @@
 ## f) Next 50 things to do
 
 ### Critical — split-brain & unfinished instructions
-1. ~~**Push to remote.** Get the GitHub remote URL from the user, `git remote add
-   origin <url>`, `git push -u origin master --tags`.~~ done — remote `git@github.com:LarsArtmann/go-codec.git` added, master + `v0.1.0` pushed
-2. ~~**Update `docs/DOMAIN_LANGUAGE.md`** — fix `envelopeMagic` value to `"gcdc"`,
-   rename `COSE*String` → `COSE*Diagnostic`, add entries for dual-build,
-   `normalizeForJSON`, `rawJSONValue`.~~ done at `3f8ac9d`
-3. ~~**Update `ROADMAP.md`** — mark the "dispatch table" idea as partially done
-   (ForEncoding now covers all three encodings); add dual-build as delivered.~~ done at `3f8ac9d`
-4. ~~**Run `golangci-lint run ./...` and `--build-tags goexperiment.jsonv2`**,
-   fix any findings, confirm a clean baseline.~~ done at `3f8ac9d` (88→0)
+1. ~~**Push to remote.** Get the GitHub remote URL from the user, `git remote add~~
+   ~~origin <url>`, `git push -u origin master --tags`.~~ done — remote `git@github.com:LarsArtmann/go-codec.git` added, master + `v0.1.0` pushed
+2. ~~**Update `docs/DOMAIN_LANGUAGE.md`** — fix `envelopeMagic` value to `"gcdc"`,~~
+   ~~rename `COSE*String` → `COSE*Diagnostic`, add entries for dual-build,~~
+   ~~`normalizeForJSON`, `rawJSONValue`.~~ done at `3f8ac9d`
+3. ~~**Update `ROADMAP.md`** — mark the "dispatch table" idea as partially done~~
+   ~~(ForEncoding now covers all three encodings); add dual-build as delivered.~~ done at `3f8ac9d`
+4. ~~**Run `golangci-lint run ./...` and `--build-tags goexperiment.jsonv2`**,~~
+   ~~fix any findings, confirm a clean baseline.~~ done at `3f8ac9d` (88→0)
 
 ### Verification gaps
 5. **Run fuzz targets** for at least 60s each: `FuzzCBORCodec_Roundtrip`,
@@ -171,11 +172,11 @@
 7. **Run `nix build` and `nix run .#test`** to verify the flake.nix actually
    works (I wrote it by adaptation; never executed it). ~~routed, since executed~~ done at `094de50`
 8. **Verify `UPDATE_SNAPSHOTS=true go test ./...`** still produces stable
-   golden output in both JSON modes. ~~verification~~ done — golden snapshot tests green in both CI modes continuously since
+   golden output in both JSON modes. ~~verification~~ done — golden snapshot tests green in both CI modes
 
 ### CI / release hygiene
-9. ~~**Add `.github/workflows/ci.yml`** — build+test+lint+race in both JSON
-   modes, mirroring the Nix checks.~~ done at `ef1f4f4`
+9. ~~**Add `.github/workflows/ci.yml`** — build+test+lint+race in both JSON~~
+   ~~modes, mirroring the Nix checks.~~ done at `ef1f4f4`
 10. **Add `gosec` and `govulncheck`** to CI (per how-to-golang policy). ← **partial — `govulncheck` done `ef1f4f4`; `gosec` open → `TODO_LIST.md` #3**
 11. **Add `gitleaks`** to CI (secret scanning). ~~routed, since executed~~ done at `ef1f4f4`
 12. ~~**Publish `v0.1.0`** to pkg.go.dev once pushed (GOPROXY will pick it up).~~ done — pushed; pkg.go.dev badge live
@@ -226,19 +227,19 @@
 
 ### Repo hygiene
 36. **Run `nix flake check`** to validate the flake. ~~routed, since executed~~ done at `094de50`
-37. ~~**Add `flake.lock`** (go-branded-id has one; this repo doesn't after adding
-    flake.nix).~~ done — `flake.lock` present
-38. ~~**Add `.gitattributes` linguist-attributes** if the repo grows non-Go
-    content (website, etc.).~~ done — `.gitattributes` present
+37. ~~**Add `flake.lock`** (go-branded-id has one; this repo doesn't after adding~~
+    ~~flake.nix).~~ done — `flake.lock` present
+38. ~~**Add `.gitattributes` linguist-attributes** if the repo grows non-Go~~
+    ~~content (website, etc.).~~ done — `.gitattributes` present
 39. **Consider a `website/`** via the `website-launch` skill (go-branded-id has
     one; this repo doesn't). ← **open — `ROADMAP.md` theme 5**
 40. **Add a `Security.md`** (GitHub expects this for published libraries). ~~routed, since executed~~ done at `094de50`
-41. ~~**Re-run the full docs-health AUDIT** after #2–#4 land to confirm
-    Accuracy/Fitness back to 10/10 with no split brains.~~ done 2026-08-12 (this audit)
-42. ~~**Annotate the prior status report** (`2026-08-11_23-38_…`) — mark its
-    open questions as resolved or superseded by this session.~~ done 2026-08-12
-43. ~~**Annotate the plan** (`docs/planning/2026-08-11_23-45_…`) — mark
-    completed items inline.~~ done 2026-08-12 (plan archived)
+41. ~~**Re-run the full docs-health AUDIT** after #2–#4 land to confirm~~
+    ~~Accuracy/Fitness back to 10/10 with no split brains.~~ done 2026-08-12 (this audit)
+42. ~~**Annotate the prior status report** (`2026-08-11_23-38_…`) — mark its~~
+    ~~open questions as resolved or superseded by this session.~~ done 2026-08-12
+43. ~~**Annotate the plan** (`docs/planning/2026-08-11_23-45_…`) — mark~~
+    ~~completed items inline.~~ done 2026-08-12 (plan archived)
 44. ~~**Status-report this session** (you are here).~~ done — superseded by `2026-08-12_09-25` report
 45. **Add a `dedup-acceptance.md`** if `art-dupl` is used across sibling repos. ← **open — deferred**
 
@@ -254,27 +255,27 @@
 
 ## g) Questions I cannot answer myself (max 3)
 
-1. **What is the git remote URL?** ~~`git remote -v` is empty. The user asked to
-   push; I can't without a remote. Should I create a `github.com/larsartmann/go-codec`
-   repo (does it exist already?), or is this meant to live inside the
-   go-cqrs-lite mono-repo? This determines whether the tag/push even makes
-   sense as a standalone module.~~
+1. **What is the git remote URL?** ~~`git remote -v` is empty. The user asked to~~
+   ~~push; I can't without a remote. Should I create a `github.com/larsartmann/go-codec`~~
+   ~~repo (does it exist already?), or is this meant to live inside the~~
+   ~~go-cqrs-lite mono-repo? This determines whether the tag/push even makes~~
+   ~~sense as a standalone module.~~
    **Resolved:** standalone repo `github.com/larsartmann/go-codec` created + pushed.
 
 2. **Should ROADMAP/DOMAIN_LANGUAGE be updated now, or rolled into the next
-   docs-health pass?** ~~I introduced a split-brain by renaming code without
-   updating those two docs. I can fix it immediately (5 min), or leave it for
-   a dedicated docs-health HARVEST/VERIFY cycle — but only if you confirm
-   you're not shipping v0.1.0 to consumers in the meantime (stale docs ship
-   with the tag right now).~~
+   docs-health pass?** ~~I introduced a split-brain by renaming code without~~
+   ~~updating those two docs. I can fix it immediately (5 min), or leave it for~~
+   ~~a dedicated docs-health HARVEST/VERIFY cycle — but only if you confirm~~
+   ~~you're not shipping v0.1.0 to consumers in the meantime (stale docs ship~~
+   ~~with the tag right now).~~
    **Resolved:** fixed at `3f8ac9d` (next session).
 
 3. **Is the `normalizeForJSON` recursion-depth concern real for your threat
-   model?** ~~The function recursively walks CBOR-decoded `any` values to
-   normalize map keys for v1 JSON. Deeply nested CBOR (intentional or
-   adversarial) will recurse deeply. I can add a depth cap (cheap, ~5 lines),
-   but only if `TranscodeToJSON` / `AutoDetect` will ever see untrusted input.
-   If this codec only ever runs inside a trusted store boundary, it may be
-   unnecessary. Your call.~~
+   model?** ~~The function recursively walks CBOR-decoded `any` values to~~
+   ~~normalize map keys for v1 JSON. Deeply nested CBOR (intentional or~~
+   ~~adversarial) will recurse deeply. I can add a depth cap (cheap, ~5 lines),~~
+   ~~but only if `TranscodeToJSON` / `AutoDetect` will ever see untrusted input.~~
+   ~~If this codec only ever runs inside a trusted store boundary, it may be~~
+   ~~unnecessary. Your call.~~
    **Still open** — needs your threat-model decision; tracked at
    `TODO_LIST.md` #1, #2. The depth cap is cheap defense-in-depth regardless.

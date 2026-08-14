@@ -44,7 +44,7 @@ Changing them breaks existing stored data and invalidates signatures.
 | Term                | Definition                                                                                                              | Where used                          |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | Dual-build          | The library supports both `encoding/json` (v1, default) and `encoding/json/v2` (opt-in via `GOEXPERIMENT=jsonv2`).     | `json_compat_v1.go`, `json_compat_v2.go` |
-| Compat helpers      | Five unexported functions (`jsonMarshal`, `jsonMarshalDet`, `jsonUnmarshal`, `jsonMarshalBuf`) that abstract the JSON stdlib. All source files call these, never `json.*` directly. | `json_compat_v*.go`            |
+| Compat helpers      | Five unexported helpers — four functions (`jsonMarshal`, `jsonMarshalDet`, `jsonUnmarshal`, `jsonMarshalBuf`) plus the `rawJSONValue` type alias — that abstract the JSON stdlib. All source files call these, never `json.*` directly. | `json_compat_v*.go`            |
 | `rawJSONValue`      | Type alias for the JSON raw-byte type (`json.RawMessage` in v1, `jsontext.Value` in v2). Used by `RawCodec.Encode`.     | `json_compat_v*.go`                 |
 | `normalizeForJSON`  | v1-only recursive normalizer that converts `map[interface{}]interface{}` (CBOR decode artifact) to `map[string]any`, since v1's `json.Marshal` rejects it. | `json_compat_v1.go` |
 

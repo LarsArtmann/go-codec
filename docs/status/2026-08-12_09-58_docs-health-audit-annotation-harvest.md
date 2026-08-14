@@ -116,19 +116,22 @@
    09-25 report §C). I did not change that.
 
 2. **No coverage report generated.** Coverage of the compat layer,
-   `normalizeForJSON`, and COSE helpers is unknown. Routed to TODO_LIST #12 but
-   not run.
+   `normalizeForJSON`, and COSE helpers is unknown. ~~Routed to TODO_LIST #12 but
+   not run.~~ Coverage reporting shipped in CI (`699fad9`/`f04d158`); 88.0%/88.8%
+   recorded in FEATURES.md.
 
 3. **No fuzz targets run.** The 4 fuzz targets compile and pass seeds under
-   `go test`, but were never run with `-fuzz=` for any duration. Routed to
-   TODO_LIST #11.
+   `go test`, but were never run with `-fuzz=` for any duration. ~~Routed to
+   TODO_LIST #11.~~ Weekly CI fuzz cron (30s × 13 targets × 2 modes) shipped at
+   `699fad9`/`f04d158`.
 
 4. **No AGENTS.md changes.** AGENTS.md was verified as accurate and within size
    budget (5–15 KB sweet spot). No drift detected. But I didn't re-verify every
    cited path — I relied on the prior session's verification.
 
 5. **No CONTRIBUTING.md changes.** It's adequate but could document the
-   snapshot-update flow more explicitly. Routed to TODO_LIST #24.
+   snapshot-update flow more explicitly. ~~Routed to TODO_LIST #24.~~ Snapshot-
+   update dual-mode flow documented (CHANGELOG `[Unreleased]` Changed).
 
 ---
 

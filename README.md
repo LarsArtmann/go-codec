@@ -1,5 +1,6 @@
 # go-codec — Payload Encoding (CBOR / JSON / Raw)
 
+[![CI](https://github.com/larsartmann/go-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larsartmann/go-codec/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/larsartmann/go-codec.svg)](https://pkg.go.dev/github.com/larsartmann/go-codec)
 
 Encoding/decoding for event-sourced payloads. Provides the `Codec` interface used by stores, snapshots, and event construction.

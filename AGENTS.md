@@ -80,6 +80,12 @@ nix run .#lint                        # lint both modes
   (RFC 7049, length-first key sort); `CBORCompactCodec` = CoreDetEncOptions
   (RFC 8949, bytewise-lexical sort) + unknown-field rejection on decode. Different
   sort → different bytes → they cannot read each other's data.
+- **`DeterministicCodec`** (`codec.go`) — `Codec` + unexported `signingSafe()`
+  marker for codecs whose `Encode` is byte-deterministic (signing-safe).
+  `CBORCodec`/`CBORCompactCodec` always satisfy it; `JSONCodec` only in the v2
+  build (v1 map key order is non-deterministic); `RawCodec` never. The sibling
+  `signing` module should accept this interface, not plain `Codec`, so
+  non-deterministic codecs fail at compile time.
 - **COSE layer** (`cose.go`/`cose_helpers.go`) — RFC 9052 structure
   marshal/unmarshal for `COSE_Sign1` and `COSE_Encrypt0`, plus `SigStructure` /
   `EncStructure0` builders. This package does NOT perform crypto; it shapes bytes

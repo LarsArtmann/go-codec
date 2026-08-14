@@ -57,7 +57,8 @@
 
 | Feature                                          | Status                | Notes                                                                  |
 | ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
-| `DeterministicCodec` marker interface            | ⚪ `PLANNED`          | Approved proposal (`docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4): compile-time guard so only deterministic codecs reach signing APIs. No code exists yet — `TODO_LIST.md` #2 |
+| `DeterministicCodec` marker interface            | 🟢 `FULLY_FUNCTIONAL` | `codec.go` — `Codec` plus unexported `signingSafe()` so only in-package codecs can qualify. `CBORCodec` (`cbor.go:23`) and `CBORCompactCodec` (`cbor_compact.go:35`) always satisfy it; `JSONCodec` only in the v2 build (`json_compat_v2.go:42`); `RawCodec` never. Shipped at `2c98116` per the approved proposal (`docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4) |
+
 ## Security hardening
 
 | Feature                                          | Status                | Notes                                                                  |

@@ -806,3 +806,43 @@ func TestBufferEncoder_AllCodecs(t *testing.T) {
 		})
 	}
 }
+
+func TestCBORCodec_AndCBORCompactCodec_ProduceDifferentBytes(t *testing.T) {
+	t.Parallel()
+
+	// Canonical (CBORCodec) sorts map keys by length first; Core Deterministic
+	// (CBORCompactCodec) sorts bytewise over the full encoded key. For integer
+	// keys of different encoded lengths, the two orders can disagree: -1 encodes
+	// to one byte (0x20), while 100 encodes to two bytes (0x18 0x64). Canonical
+	// puts the shorter key first; bytewise puts the smaller first byte first.
+	payload := map[int64]int64{-1: 1, 100: 2}
+
+	canonical, err := codec.CBORCodec{}.Encode(payload)
+	if err != nil {
+		t.Fatalf("CBORCodec.Encode: %v", err)
+	}
+
+	compact, err := codec.CBORCompactCodec{}.Encode(payload)
+	if err != nil {
+		t.Fatalf("CBORCompactCodec.Encode: %v", err)
+	}
+
+	if string(canonical) == string(compact) {
+		t.Errorf("CBORCodec and CBORCompactCodec produced identical bytes %x; expected different bytes", canonical)
+	}
+}
+
+func TestCBORMode_SingletonsReturnIdenticalValues(t *testing.T) {
+	t.Parallel()
+
+	// CBOREncMode / CBORDecMode are process-wide sync.OnceValue singletons.
+	// Multiple calls must return the exact same value so sibling modules that
+	// reuse them produce byte-identical output with CBORCodec.
+	if codec.CBOREncMode() != codec.CBOREncMode() {
+		t.Error("CBOREncMode() returned different values on repeated calls")
+	}
+
+	if codec.CBORDecMode() != codec.CBORDecMode() {
+		t.Error("CBORDecMode() returned different values on repeated calls")
+	}
+}

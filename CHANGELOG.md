@@ -107,6 +107,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   corpus as an artifact — `.github/workflows/ci.yml`.
 - Seed corpus for `FuzzAutoDetectDebug_Consistency` committed under
   `testdata/fuzz/FuzzAutoDetectDebug_Consistency/`.
+- `testdata/fuzz/README.md`: documents the Go fuzz corpus file format (two-line
+  text file with `go test fuzz v1` header and `[]byte(...)` literal) and the
+  CI corpus policy (artifact upload, no auto-commit).
+- `TestCBORCodec_AndCBORCompactCodec_ProduceDifferentBytes`: proves the two
+  CBOR codecs are not wire-compatible by encoding a map with mixed-length integer
+  keys and asserting different bytes.
+- `TestCBORMode_SingletonsReturnIdenticalValues`: proves `CBOREncMode` and
+  `CBORDecMode` are process-wide singletons and return identical values on
+  repeated calls.
+- `DeterministicCodec` (`codec.go`): marker interface (`Codec` plus unexported
+  `signingSafe()`) identifying codecs whose `Encode` output is byte-deterministic
+  and therefore safe for cryptographic signing. Satisfied by `CBORCodec` and
+  `CBORCompactCodec` in every build and by `JSONCodec` in the opt-in v2 build
+  only — signing with non-deterministic v1 JSON becomes a compile-time error.
+  Implements the approved proposal in
+  `docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4.
 
 ### Fixed
 

@@ -128,6 +128,12 @@ var decoded MyPayload
 _ = c.Decode(data, &decoded)
 ```
 
+For compile-time safety, the signing module should accept
+[`codec.DeterministicCodec`](https://pkg.go.dev/github.com/larsartmann/go-codec#DeterministicCodec)
+instead of a plain `codec.Codec`. Only `CBORCodec`, `CBORCompactCodec`, and (in the
+opt-in v2 JSON build) `JSONCodec` satisfy this interface, turning accidental use of
+non-deterministic v1 JSON into a build error.
+
 ### When to Use CBOR vs JSON
 
 **CBOR is the recommended default** for internal serialization — it produces

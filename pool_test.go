@@ -36,6 +36,28 @@ func TestPutBuffer_NilIsSafe(t *testing.T) {
 	codec.PutBuffer(nil) // must not panic
 }
 
+func TestPutBuffer_RejectsOversizedBuffers(t *testing.T) {
+	t.Parallel()
+
+	buf := codec.GetBuffer()
+	buf.Grow(2 << 20) // 2 MiB — above the 1 MiB threshold
+	buf.WriteString("oversized")
+
+	codec.PutBuffer(buf) // must not panic; buffer should be discarded
+
+	// The pool should still return a normal-sized buffer.
+	buf2 := codec.GetBuffer()
+	if buf2 == nil {
+		t.Fatal("GetBuffer returned nil after discarding oversized buffer")
+	}
+
+	if buf2.Len() != 0 {
+		t.Fatalf("buffer not reset: len=%d", buf2.Len())
+	}
+
+	codec.PutBuffer(buf2)
+}
+
 func TestGetBuffer_RoundTrip(t *testing.T) {
 	t.Parallel()
 

@@ -14,7 +14,7 @@ func TestObservableCodec_EncodeDecode_RecordsMetrics(t *testing.T) {
 	t.Parallel()
 
 	obs := codec.ObserveCodec(codec.JSONCodec{})
-	payload := map[string]string{testField: testName}
+	payload := map[string]string{testFieldName: testName}
 
 	data, err := obs.Encode(payload)
 	if err != nil {
@@ -100,7 +100,7 @@ func TestObservableCodec_HookCalled(t *testing.T) {
 		calls = append(calls, hookCall{op, enc, bytesProcessed, err})
 	}))
 
-	payload := map[string]string{testField: testName}
+	payload := map[string]string{testFieldName: testName}
 
 	data, err := obs.Encode(payload)
 	if err != nil {
@@ -160,7 +160,7 @@ func TestObservableCodec_SharedMetrics(t *testing.T) {
 	obs1 := codec.ObserveCodec(codec.JSONCodec{}, codec.WithMetrics(shared))
 	obs2 := codec.ObserveCodec(codec.JSONCodec{}, codec.WithMetrics(shared))
 
-	payload := map[string]string{testField: testName}
+	payload := map[string]string{testFieldName: testName}
 
 	if _, err := obs1.Encode(payload); err != nil {
 		t.Fatalf("obs1 Encode: %v", err)
@@ -190,7 +190,7 @@ func TestObservableCodec_BufferEncoder(t *testing.T) {
 	// wrapped codec does.
 	var _ codec.BufferEncoder = obs
 
-	payload := map[string]string{testField: testName}
+	payload := map[string]string{testFieldName: testName}
 	buf := &bytes.Buffer{}
 
 	if err := obs.EncodeToBuffer(payload, buf); err != nil {
@@ -243,7 +243,7 @@ func TestObservableCodec_Reset(t *testing.T) {
 
 	obs := codec.ObserveCodec(codec.JSONCodec{})
 
-	if _, err := obs.Encode(map[string]string{testField: testName}); err != nil {
+	if _, err := obs.Encode(map[string]string{testFieldName: testName}); err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
 
@@ -274,7 +274,7 @@ func TestObservableCodec_ConcurrentStress(t *testing.T) {
 	hook := stressHook(t, &hookCalls)
 	obs := codec.ObserveCodec(codec.JSONCodec{}, codec.WithMetrics(shared), codec.WithMetricsHook(hook))
 
-	payload := map[string]string{testField: testName}
+	payload := map[string]string{testFieldName: testName}
 
 	var wg sync.WaitGroup
 
@@ -394,7 +394,7 @@ func TestObservableCodec_HookPanicPropagates(t *testing.T) {
 		}
 	}()
 
-	_, _ = obs.Encode(map[string]string{testField: testName})
+	_, _ = obs.Encode(map[string]string{testFieldName: testName})
 
 	t.Fatal("unreachable: Encode should have panicked")
 }
@@ -421,4 +421,293 @@ func (c failingCodec) Encode(any) ([]byte, error) {
 
 func (c failingCodec) Decode([]byte, any) error {
 	return c.decodeErr
+}
+
+// failingBufferEncoder implements both Codec and BufferEncoder, failing
+// EncodeToBuffer with a configurable error.
+type failingBufferEncoder struct {
+	encodeErr error
+	decodeErr error
+}
+
+func (c failingBufferEncoder) Encoding() codec.Encoding { return codec.EncodingCBOR }
+
+func (c failingBufferEncoder) Encode(any) ([]byte, error) {
+	return nil, c.encodeErr
+}
+
+func (c failingBufferEncoder) Decode([]byte, any) error { return c.decodeErr }
+
+func (c failingBufferEncoder) EncodeToBuffer(any, *bytes.Buffer) error {
+	return c.encodeErr
+}
+
+// TestObservableCodec_WrapsCBORCompactCodec verifies the decorator works
+// with CBORCompactCodec (which has different encoding modes than CBORCodec).
+func TestObservableCodec_WrapsCBORCompactCodec(t *testing.T) {
+	t.Parallel()
+
+	obs := codec.ObserveCodec(codec.CBORCompactCodec{})
+
+	type payload struct {
+		Name string
+	}
+
+	data, err := obs.Encode(payload{Name: testName})
+	if err != nil {
+		t.Fatalf("Encode: %v", err)
+	}
+
+	var got payload
+	if err := obs.Decode(data, &got); err != nil {
+		t.Fatalf("Decode: %v", err)
+	}
+
+	if got.Name != testName {
+		t.Fatalf("got %q, want %q", got.Name, testName)
+	}
+
+	m := obs.Metrics().Snapshot()
+	if m.EncodeCalls != 1 || m.DecodeCalls != 1 {
+		t.Errorf("calls = encode:%d decode:%d, want 1:1", m.EncodeCalls, m.DecodeCalls)
+	}
+}
+
+// TestObservableCodec_EncodeToBufferInnerErrorPropagation verifies that when
+// the wrapped codec's EncodeToBuffer fails, the error propagates and metrics
+// record the failure with zero bytes processed.
+func TestObservableCodec_EncodeToBufferInnerErrorPropagation(t *testing.T) {
+	t.Parallel()
+
+	errSentinel := errors.New("inner encode failure")
+	obs := codec.ObserveCodec(failingBufferEncoder{encodeErr: errSentinel})
+
+	buf := &bytes.Buffer{}
+	err := obs.EncodeToBuffer(map[string]string{testFieldName: testName}, buf)
+	if !errors.Is(err, errSentinel) {
+		t.Fatalf("got %v, want %v", err, errSentinel)
+	}
+
+	if buf.Len() != 0 {
+		t.Errorf("buffer should be empty, got %d bytes", buf.Len())
+	}
+
+	m := obs.Metrics().Snapshot()
+	if m.EncodeCalls != 1 {
+		t.Errorf("EncodeCalls = %d, want 1", m.EncodeCalls)
+	}
+
+	if m.EncodeErrors != 1 {
+		t.Errorf("EncodeErrors = %d, want 1", m.EncodeErrors)
+	}
+
+	if m.EncodeBytes != 0 {
+		t.Errorf("EncodeBytes = %d, want 0 (failed before writing)", m.EncodeBytes)
+	}
+
+	if !errors.Is(m.LastEncodeError, errSentinel) {
+		t.Errorf("LastEncodeError = %v, want %v", m.LastEncodeError, errSentinel)
+	}
+}
+
+// TestObservableCodec_BufWriteFailureFallback verifies the non-BufferEncoder
+// fallback path: when the wrapped codec does NOT implement BufferEncoder,
+// ObservableCodec calls Encode then buf.Write. This test confirms the
+// fallback works correctly for RawCodec (which lacks BufferEncoder).
+func TestObservableCodec_BufWriteFailureFallback(t *testing.T) {
+	t.Parallel()
+
+	obs := codec.ObserveCodec(codec.RawCodec{})
+	buf := &bytes.Buffer{}
+
+	err := obs.EncodeToBuffer([]byte(testGreeting), buf)
+	if err != nil {
+		t.Fatalf("RawCodec fallback EncodeToBuffer: %v", err)
+	}
+
+	if !bytes.Equal(buf.Bytes(), []byte(testGreeting)) {
+		t.Errorf("buffer = %q, want %q", buf.Bytes(), testGreeting)
+	}
+
+	m := obs.Metrics().Snapshot()
+	if m.EncodeCalls != 1 {
+		t.Errorf("EncodeCalls = %d, want 1", m.EncodeCalls)
+	}
+
+	if m.EncodeBytes != int64(len(testGreeting)) {
+		t.Errorf("EncodeBytes = %d, want %d", m.EncodeBytes, len(testGreeting))
+	}
+}
+
+// TestObservableCodec_MetricsSnapshotImmutability verifies that mutating the
+// returned MetricsSnapshot does not affect the live metrics, and that
+// subsequent operations don't change previously-returned snapshots.
+func TestObservableCodec_MetricsSnapshotImmutability(t *testing.T) {
+	t.Parallel()
+
+	obs := codec.ObserveCodec(codec.JSONCodec{})
+
+	_, _ = obs.Encode(map[string]string{testFieldName: testName})
+
+	snap1 := obs.Metrics().Snapshot()
+	if snap1.EncodeCalls != 1 {
+		t.Fatalf("snap1 EncodeCalls = %d, want 1", snap1.EncodeCalls)
+	}
+
+	// Mutate the snapshot — must not affect live metrics.
+	snap1.EncodeCalls = 999
+	snap1.EncodeBytes = -1
+
+	// Perform another operation.
+	_, _ = obs.Encode(map[string]string{testFieldName: testName})
+
+	snap2 := obs.Metrics().Snapshot()
+	if snap2.EncodeCalls != 2 {
+		t.Errorf("snap2 EncodeCalls = %d, want 2", snap2.EncodeCalls)
+	}
+
+	if snap2.EncodeBytes <= 0 {
+		t.Errorf("snap2 EncodeBytes = %d, want > 0", snap2.EncodeBytes)
+	}
+}
+
+// TestObservableCodec_NestedNoDoubleCount verifies that wrapping an already-
+// observed codec in another ObservableCodec does not double-count metrics.
+// The inner wrapper records once, the outer wrapper records once — both see
+// the operation. This is the expected composition behavior.
+func TestObservableCodec_NestedNoDoubleCount(t *testing.T) {
+	t.Parallel()
+
+	inner := codec.ObserveCodec(codec.JSONCodec{})
+	outer := codec.ObserveCodec(inner)
+
+	_, _ = outer.Encode(map[string]string{testFieldName: testName})
+
+	innerMetrics := inner.Metrics().Snapshot()
+	outerMetrics := outer.Metrics().Snapshot()
+
+	// Both wrappers see the operation — this is correct composition, not a bug.
+	if innerMetrics.EncodeCalls != 1 {
+		t.Errorf("inner EncodeCalls = %d, want 1", innerMetrics.EncodeCalls)
+	}
+
+	if outerMetrics.EncodeCalls != 1 {
+		t.Errorf("outer EncodeCalls = %d, want 1", outerMetrics.EncodeCalls)
+	}
+}
+
+// TestObservableCodec_ObserveNilCodec verifies the behavior when wrapping a
+// nil codec. The wrapper itself is non-nil, but any operation that delegates
+// to the wrapped codec panics with a nil pointer dereference — this is the
+// idiomatic Go contract (fail fast on nil, don't silently swallow).
+func TestObservableCodec_ObserveNilCodec(t *testing.T) {
+	t.Parallel()
+
+	obs := codec.ObserveCodec(nil)
+	if obs == nil {
+		t.Fatal("ObserveCodec(nil) should return a non-nil wrapper")
+	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("Encoding() on nil codec should panic")
+		}
+	}()
+
+	_ = obs.Encoding()
+}
+
+// TestObservableCodec_EncodePooledComposition verifies that ObservableCodec
+// works with EncodePooled — the pooled buffer lifecycle is compatible with
+// the decorator's EncodeToBuffer path.
+func TestObservableCodec_EncodePooledComposition(t *testing.T) {
+	t.Parallel()
+
+	obs := codec.ObserveCodec(codec.CBORCodec{})
+
+	type payload struct {
+		Name string
+	}
+
+	var encoded []byte
+
+	err := codec.EncodePooled(obs, payload{Name: testName}, func(data []byte) error {
+		encoded = make([]byte, len(data))
+		copy(encoded, data)
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("EncodePooled: %v", err)
+	}
+
+	var got payload
+	if err := (codec.CBORCodec{}).Decode(encoded, &got); err != nil {
+		t.Fatalf("Decode: %v", err)
+	}
+
+	if got.Name != testName {
+		t.Fatalf("got %q, want %q", got.Name, testName)
+	}
+
+	m := obs.Metrics().Snapshot()
+	if m.EncodeCalls != 1 {
+		t.Errorf("EncodeCalls = %d, want 1", m.EncodeCalls)
+	}
+
+	if m.EncodeBytes != int64(len(encoded)) {
+		t.Errorf("EncodeBytes = %d, want %d", m.EncodeBytes, len(encoded))
+	}
+}
+
+// TestObservableCodec_HookByteCountOnErrorPaths verifies that the hook
+// receives correct byte counts on error paths — zero for encode errors,
+// input length for decode errors.
+func TestObservableCodec_HookByteCountOnErrorPaths(t *testing.T) {
+	t.Parallel()
+
+	var hookCalls []hookCall
+
+	errSentinel := errors.New("encode failed")
+	obs := codec.ObserveCodec(failingCodec{encodeErr: errSentinel},
+		codec.WithMetricsHook(func(op codec.Operation, enc codec.Encoding, bytes int, err error) {
+			hookCalls = append(hookCalls, hookCall{op, enc, bytes, err})
+		}))
+
+	_, _ = obs.Encode(map[string]string{testFieldName: testName})
+
+	if len(hookCalls) != 1 {
+		t.Fatalf("hook calls = %d, want 1", len(hookCalls))
+	}
+
+	hc := hookCalls[0]
+	if hc.bytesProcessed != 0 {
+		t.Errorf("encode error bytesProcessed = %d, want 0", hc.bytesProcessed)
+	}
+
+	if !errors.Is(hc.err, errSentinel) {
+		t.Errorf("hook err = %v, want %v", hc.err, errSentinel)
+	}
+
+	// Test decode error path.
+	decodeErr := errors.New("decode failed")
+	obs2 := codec.ObserveCodec(failingCodec{decodeErr: decodeErr},
+		codec.WithMetricsHook(func(op codec.Operation, enc codec.Encoding, bytes int, err error) {
+			hookCalls = append(hookCalls, hookCall{op, enc, bytes, err})
+		}))
+
+	inputData := []byte{0x01, 0x02, 0x03, 0x04, 0x05}
+	_ = obs2.Decode(inputData, &[]byte{})
+
+	if len(hookCalls) != 2 {
+		t.Fatalf("hook calls = %d, want 2", len(hookCalls))
+	}
+
+	dc := hookCalls[1]
+	if dc.bytesProcessed != len(inputData) {
+		t.Errorf("decode error bytesProcessed = %d, want %d", dc.bytesProcessed, len(inputData))
+	}
+
+	if !errors.Is(dc.err, decodeErr) {
+		t.Errorf("hook err = %v, want %v", dc.err, decodeErr)
+	}
 }

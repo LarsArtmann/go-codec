@@ -19,6 +19,7 @@ import (
 type CBORCodec struct{}
 
 var _ Codec = CBORCodec{}
+var _ DeterministicCodec = CBORCodec{}
 
 // canonicalEncMode is computed once via sync.OnceValue. The options are
 // hardcoded valid constants from fxamacker/cbor, so EncMode() cannot fail
@@ -61,6 +62,11 @@ func CBOREncMode() cbor.EncMode { return canonicalEncMode() }
 func CBORDecMode() cbor.DecMode { return canonicalDecMode() }
 
 func (CBORCodec) Encoding() Encoding { return EncodingCBOR }
+
+// signingSafe marks CBORCodec as deterministic. Canonical CBOR produces
+// byte-identical output for equal inputs, making it safe for cryptographic
+// signing. Implements DeterministicCodec.
+func (CBORCodec) signingSafe() {}
 
 // Encode marshals a value to canonical CBOR bytes with deterministic map ordering.
 func (CBORCodec) Encode(v any) ([]byte, error) {

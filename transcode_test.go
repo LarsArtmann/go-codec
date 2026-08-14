@@ -12,7 +12,7 @@ import (
 func TestTranscodeToJSON_CBOR_Map(t *testing.T) {
 	t.Parallel()
 
-	in := map[string]any{testField: testUserName, testCount: 42.0}
+	in := map[string]any{testFieldName: testUserName, testCount: 42.0}
 
 	cborData, err := (codec.CBORCodec{}).Encode(in)
 	if err != nil {
@@ -29,8 +29,8 @@ func TestTranscodeToJSON_CBOR_Map(t *testing.T) {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
-	if got[testField] != testUserName {
-		t.Errorf("name = %v, want alice", got[testField])
+	if got[testFieldName] != testUserName {
+		t.Errorf("name = %v, want alice", got[testFieldName])
 	}
 
 	if got[testCount] != float64(42) {
@@ -169,7 +169,7 @@ func TestTranscodeToJSON_CBORCompactCodec(t *testing.T) {
 	// CBORCompactCodec reports EncodingCBOR too (ADR-CODEC). Its wire format
 	// must be decodable by the canonical decoder TranscodeToJSON uses, so the
 	// two CBOR variants share one transcode path.
-	in := map[string]any{testField: "compact", testCount: 7.0}
+	in := map[string]any{testFieldName: "compact", testCount: 7.0}
 
 	cborData, err := (codec.CBORCompactCodec{}).Encode(in)
 	if err != nil {
@@ -186,8 +186,8 @@ func TestTranscodeToJSON_CBORCompactCodec(t *testing.T) {
 		t.Fatalf("decode JSON: %v\njson: %s", err, out)
 	}
 
-	if got[testField] != "compact" {
-		t.Errorf("name = %v, want compact", got[testField])
+	if got[testFieldName] != "compact" {
+		t.Errorf("name = %v, want compact", got[testFieldName])
 	}
 
 	if got[testCount] != float64(7) {

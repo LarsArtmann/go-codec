@@ -31,6 +31,7 @@ import (
 type CBORCompactCodec struct{}
 
 var _ Codec = CBORCompactCodec{}
+var _ DeterministicCodec = CBORCompactCodec{}
 
 // compactEncMode and compactDecMode use sync.OnceValue for the same reason
 // as canonicalEncMode/canonicalDecMode in cbor.go — the options are hardcoded
@@ -62,6 +63,11 @@ var compactDecMode = sync.OnceValue(func() cbor.DecMode { //nolint:gochecknoglob
 })
 
 func (CBORCompactCodec) Encoding() Encoding { return EncodingCBOR }
+
+// signingSafe marks CBORCompactCodec as deterministic. Core Deterministic
+// CBOR (RFC 8949) produces byte-identical output for equal inputs, making it
+// safe for cryptographic signing. Implements DeterministicCodec.
+func (CBORCompactCodec) signingSafe() {}
 
 // Encode marshals a value to compact CBOR bytes with deterministic ordering.
 func (CBORCompactCodec) Encode(v any) ([]byte, error) {

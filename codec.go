@@ -63,3 +63,23 @@ type Codec interface {
 type BufferEncoder interface {
 	EncodeToBuffer(v any, buf *bytes.Buffer) error
 }
+
+// DeterministicCodec is a marker interface implemented by codecs whose Encode
+// produces byte-identical output for equal inputs on every call. Codecs that
+// satisfy this interface are safe for cryptographic signing: the signing
+// module can assert this at compile time, turning silent signature corruption
+// (e.g. using JSONCodec in v1 mode, whose map key order is non-deterministic)
+// into a build error.
+//
+// The unexported method prevents external packages from implementing the
+// interface — only the built-in codecs in this package can be signing-safe.
+//
+// CBORCodec and CBORCompactCodec always implement DeterministicCodec.
+// JSONCodec implements it only in the v2 build (encoding/json/v2 with
+// Deterministic mode); the v1 default does not because map key ordering is
+// non-deterministic. RawCodec never implements it because it performs no
+// encoding at all.
+type DeterministicCodec interface {
+	Codec
+	signingSafe()
+}

@@ -16,8 +16,8 @@ func BenchmarkNormalizeForJSON(b *testing.B) {
 	c := codec.JSONCodec{}
 
 	payload := map[string]any{
-		testField:  testName,
-		testFieldE: testEmail,
+		testFieldName:  testName,
+		testFieldEmail: testEmail,
 		testNested: map[string]any{testMapKey: testMapVal},
 		"items":    []any{1, "two", true},
 	}

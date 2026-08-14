@@ -51,7 +51,7 @@ func FuzzCBORCodec_Roundtrip(f *testing.F) {
 	c := codec.CBORCodec{}
 
 	seeds := []any{
-		map[string]any{testField: testName, "age": uint64(30)},
+		map[string]any{testFieldName: testName, "age": uint64(30)},
 		map[string]any{},
 		nil,
 		[]any{},
@@ -298,7 +298,7 @@ func FuzzCBORCodec_CanonicalFidelity(f *testing.F) {
 	c := codec.CBORCodec{}
 
 	seeds := []any{
-		map[string]any{testField: testName, "age": uint64(30)},
+		map[string]any{testFieldName: testName, "age": uint64(30)},
 		map[string]any{},
 		[]any{uint64(1), uint64(2), uint64(3)},
 		testGreeting,

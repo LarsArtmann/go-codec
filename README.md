@@ -94,11 +94,14 @@ _ = c.Decode(data, &decoded)
 
 ### When to Use CBOR vs JSON
 
-**CBOR is the recommended default** for internal serialization — it is
-smaller (19-43%), faster to encode/decode (25-72%), and deterministic (same bytes
-every time — safe for signing). JSON is fully supported and remains the right
-choice for external interop, debugging, and human-readable payloads. Both codecs
-work everywhere in the library; pick one per use case.
+**CBOR is the recommended default** for internal serialization — it produces
+smaller payloads and faster encode/decode times than JSON (run
+`BenchmarkTagTradeoffs_Encode`/`BenchmarkTagTradeoffs_Decode` and
+`BenchmarkRealisticPayload_Encode` for measured numbers on your hardware).
+CBOR is also deterministic: the same input always produces the same bytes,
+making it safe for signing. JSON is fully supported and remains the right
+choice for external interop, debugging, and human-readable payloads. Both
+codecs work everywhere in the library; pick one per use case.
 
 | Scenario                                | Recommended Codec  | Why                                 |
 | --------------------------------------- | ------------------ | ----------------------------------- |

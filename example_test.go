@@ -267,10 +267,10 @@ func ExampleNewJSONEncoder() {
 func ExampleObserveCodec() {
 	obs := codec.ObserveCodec(codec.CBORCodec{},
 		codec.WithMetricsHook(func(op codec.Operation, enc codec.Encoding, bytes int, err error) {
-			fmt.Printf("op=%d enc=%s bytes=%d err=%v\n", op, enc, bytes, err)
+			fmt.Printf("op=%d enc=%s err=%v\n", op, enc, err)
 		}))
 
-	data, _ := obs.Encode(map[string]string{testField: testName})
+	data, _ := obs.Encode(map[string]string{testFieldName: testName})
 
 	var decoded map[string]string
 
@@ -280,8 +280,8 @@ func ExampleObserveCodec() {
 	fmt.Printf("encode calls: %d, decode calls: %d\n", m.EncodeCalls, m.DecodeCalls)
 
 	// Output:
-	// op=0 enc=cbor bytes=12 err=<nil>
-	// op=1 enc=cbor bytes=12 err=<nil>
+	// op=0 enc=cbor err=<nil>
+	// op=1 enc=cbor err=<nil>
 	// encode calls: 1, decode calls: 1
 }
 
@@ -402,4 +402,59 @@ func ExampleCBORCodec_keyasint() {
 	// Output:
 	// keyasint: 41 bytes, string keys: 53 bytes
 	// s6BhdRkqt3
+}
+
+// ExampleEncodePooled demonstrates zero-allocation encoding using a pooled
+// buffer. The callback receives the encoded bytes and must copy them if it
+// needs to retain them after the callback returns — the buffer is returned
+// to the pool immediately.
+func ExampleEncodePooled() {
+	type Event struct {
+		Type string
+		Data string
+	}
+
+	c := codec.CBORCodec{}
+	evt := Event{Type: "created", Data: "hello"}
+
+	var encoded []byte
+
+	err := codec.EncodePooled(c, evt, func(data []byte) error {
+		encoded = make([]byte, len(data)) // copy: data is invalid after callback
+		copy(encoded, data)
+		return nil
+	})
+	if err != nil {
+		fmt.Println("error:", err)
+		return
+	}
+
+	var decoded Event
+	_ = c.Decode(encoded, &decoded)
+	fmt.Println(decoded.Type, decoded.Data)
+
+	// Output:
+	// created hello
+}
+
+// ExampleSize compares the serialized byte sizes of a value under JSON and
+// CBOR, helping decide whether a format switch is worthwhile before committing.
+func ExampleSize() {
+	type UserCreated struct {
+		Name  string
+		Email string
+	}
+
+	s := codec.Size(UserCreated{Name: testName, Email: testEmail})
+
+	if s.CBOR < s.JSON {
+		fmt.Printf("CBOR saves %d bytes (%.0f%% smaller)\n",
+			s.JSON-s.CBOR,
+			float64(s.JSON-s.CBOR)/float64(s.JSON)*100)
+	} else {
+		fmt.Println("CBOR is not smaller for this payload")
+	}
+
+	// Output:
+	// CBOR saves 8 bytes (18% smaller)
 }

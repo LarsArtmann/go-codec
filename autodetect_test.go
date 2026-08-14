@@ -145,7 +145,7 @@ func TestSize_EncodeError(t *testing.T) {
 func TestAutoDetectDebug_Reasons(t *testing.T) {
 	t.Parallel()
 
-	cborData, err := codec.CBORCodec{}.Encode(map[string]string{testField: testName})
+	cborData, err := codec.CBORCodec{}.Encode(map[string]string{testFieldName: testName})
 	if err != nil {
 		t.Fatalf("CBOR Encode: %v", err)
 	}

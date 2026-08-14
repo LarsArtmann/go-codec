@@ -27,4 +27,8 @@ var (
 		"codec.cose_invalid_algorithm",
 		"COSE algorithm value is not an integer",
 	)
+	ErrNormalizeDepthExceeded = errorfamily.NewRejection(
+		"codec.normalize_depth_exceeded",
+		"codec: normalizeForJSON recursion depth exceeded",
+	)
 )

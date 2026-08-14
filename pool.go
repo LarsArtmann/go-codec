@@ -27,10 +27,20 @@ func GetBuffer() *bytes.Buffer {
 	return b
 }
 
+// maxPoolBufferSize is the maximum buffer capacity that PutBuffer will accept.
+// Buffers larger than this are discarded (left for GC) to prevent one huge
+// payload from pinning a large allocation in the sync.Pool indefinitely.
+const maxPoolBufferSize = 1 << 20 // 1 MiB
+
 // PutBuffer returns a buffer to the pool for reuse. Do not use the buffer
-// after calling PutBuffer.
+// after calling PutBuffer. Buffers larger than 1 MiB are discarded to avoid
+// memory bloat from oversized payloads.
 func PutBuffer(b *bytes.Buffer) {
 	if b == nil {
+		return
+	}
+
+	if b.Cap() > maxPoolBufferSize {
 		return
 	}
 

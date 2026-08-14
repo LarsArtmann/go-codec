@@ -16,7 +16,7 @@ func BenchmarkJSONCodec_Encode(b *testing.B) {
 	b.ReportAllocs()
 
 	c := codec.JSONCodec{}
-	payload := map[string]string{testField: testName, testFieldE: testEmail}
+	payload := map[string]string{testFieldName: testName, testFieldEmail: testEmail}
 
 	b.ResetTimer()
 
@@ -32,7 +32,7 @@ func BenchmarkJSONCodec_Decode(b *testing.B) {
 	b.ReportAllocs()
 
 	c := codec.JSONCodec{}
-	data, _ := c.Encode(map[string]string{testField: testName, testFieldE: testEmail})
+	data, _ := c.Encode(map[string]string{testFieldName: testName, testFieldEmail: testEmail})
 
 	b.ResetTimer()
 
@@ -48,7 +48,7 @@ func BenchmarkCBORCodec_Encode(b *testing.B) {
 	b.ReportAllocs()
 
 	c := codec.CBORCodec{}
-	payload := map[string]string{testField: testName, testFieldE: testEmail}
+	payload := map[string]string{testFieldName: testName, testFieldEmail: testEmail}
 
 	b.ResetTimer()
 
@@ -64,7 +64,7 @@ func BenchmarkCBORCodec_Decode(b *testing.B) {
 	b.ReportAllocs()
 
 	c := codec.CBORCodec{}
-	data, _ := c.Encode(map[string]string{testField: testName, testFieldE: testEmail})
+	data, _ := c.Encode(map[string]string{testFieldName: testName, testFieldEmail: testEmail})
 
 	b.ResetTimer()
 
@@ -81,7 +81,7 @@ func BenchmarkCodecComparison_Encode(b *testing.B) {
 
 	jsonCodec := codec.JSONCodec{}
 	cborCodec := codec.CBORCodec{}
-	payload := map[string]string{testField: testName, testFieldE: testEmail}
+	payload := map[string]string{testFieldName: testName, testFieldEmail: testEmail}
 
 	b.Run(benchNameJSON, func(b *testing.B) {
 		b.ReportAllocs()
@@ -113,7 +113,7 @@ func BenchmarkCodecComparison_Decode(b *testing.B) {
 
 	jsonCodec := codec.JSONCodec{}
 	cborCodec := codec.CBORCodec{}
-	payload := map[string]string{testField: testName, testFieldE: testEmail}
+	payload := map[string]string{testFieldName: testName, testFieldEmail: testEmail}
 
 	jsonData, _ := jsonCodec.Encode(payload)
 	cborData, _ := cborCodec.Encode(payload)
@@ -461,14 +461,14 @@ func sampleSmallEvent() smallEvent {
 
 // realisticOrderKeyInt uses keyasint for integer-keyed CBOR encoding.
 type realisticOrderKeyInt struct {
-	_          struct{} `cbor:",keyasint"`
-	OrderID    string   `cbor:"1,keyasint"`
-	CustomerID string   `cbor:"2,keyasint"`
-	Items      []orderItem
-	TotalCents int64  `cbor:"4,keyasint"`
-	Currency   string `cbor:"5,keyasint"`
-	Status     string `cbor:"6,keyasint"`
-	CreatedAt  int64  `cbor:"7,keyasint"`
+	_          struct{}    `cbor:",keyasint"`
+	OrderID    string      `cbor:"1,keyasint"`
+	CustomerID string      `cbor:"2,keyasint"`
+	Items      []orderItem `cbor:"3,keyasint"`
+	TotalCents int64       `cbor:"4,keyasint"`
+	Currency   string      `cbor:"5,keyasint"`
+	Status     string      `cbor:"6,keyasint"`
+	CreatedAt  int64       `cbor:"7,keyasint"`
 }
 
 // largeEvent is a wide 12-field event for measuring overhead on larger payloads.
@@ -729,6 +729,74 @@ func BenchmarkCBORReflectionCache(b *testing.B) {
 		for b.Loop() {
 			var result realisticOrder
 			if err := cborCodec.Decode(data, &result); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
+
+// BenchmarkObserveCodec quantifies the overhead of the ObservableCodec
+// decorator vs. the raw codec. The decorator adds a mutex lock + counter
+// increment per operation. This benchmark informs the atomics-vs-RWMutex
+// refactor decision.
+func BenchmarkObserveCodec(b *testing.B) {
+	cborCodec := codec.CBORCodec{}
+	obs := codec.ObserveCodec(cborCodec)
+	order := sampleOrder()
+	data, _ := cborCodec.Encode(order)
+
+	b.Run("encode/raw", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			if _, err := cborCodec.Encode(order); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+
+	b.Run("encode/observed", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			if _, err := obs.Encode(order); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+
+	b.Run("decode/raw", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			var result realisticOrder
+			if err := cborCodec.Decode(data, &result); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+
+	b.Run("decode/observed", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			var result realisticOrder
+			if err := obs.Decode(data, &result); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+
+	b.Run("encode_pooled/observed", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			if err := codec.EncodePooled(obs, order, func([]byte) error { return nil }); err != nil {
 				b.Fatal(err)
 			}
 		}

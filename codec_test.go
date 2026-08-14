@@ -543,8 +543,8 @@ func TestCBORCodec_SmallerThanJSON(t *testing.T) {
 	t.Parallel()
 
 	payload := map[string]string{
-		testField:  testName,
-		testFieldE: testEmail,
+		testFieldName:  testName,
+		testFieldEmail: testEmail,
 		"city":     "Berlin",
 	}
 

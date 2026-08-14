@@ -112,7 +112,7 @@ func TestDiagnose(t *testing.T) {
 
 	diag, err := codec.Diagnose(data)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(diag).To(gomega.ContainSubstring(testField))
+	g.Expect(diag).To(gomega.ContainSubstring(testFieldName))
 	g.Expect(diag).To(gomega.ContainSubstring(testValue))
 }
 

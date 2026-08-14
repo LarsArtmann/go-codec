@@ -31,6 +31,16 @@ func jsonMarshalBuf(v any, buf *bytes.Buffer) error {
 
 type rawJSONValue = jsontext.Value
 
+// signingSafe marks JSONCodec as deterministic in the v2 build.
+// encoding/json/v2 with Deterministic mode produces byte-identical output for
+// equal inputs, making it safe for cryptographic signing. This method does NOT
+// exist in the v1 build (json_compat_v1.go) because v1 map key ordering is
+// non-deterministic — the absence is intentional and makes v1 JSONCodec fail
+// the DeterministicCodec compile-time check. Implements DeterministicCodec.
+func (JSONCodec) signingSafe() {}
+
+var _ DeterministicCodec = JSONCodec{}
+
 // JSONEncoder streams JSON values to an [io.Writer]. Each call to
 // [JSONEncoder.Encode] writes one JSON value followed by a newline
 // (NDJSON / JSON Lines convention), enabling a reader to consume values
@@ -53,7 +63,7 @@ func (e *JSONEncoder) Encode(v any) error {
 		return err //nolint:wrapcheck // thin wrapper
 	}
 
-	_, err := e.w.Write([]byte{'\n'})
+	_, err := io.WriteString(e.w, "\n")
 
 	return err //nolint:wrapcheck // thin wrapper
 }

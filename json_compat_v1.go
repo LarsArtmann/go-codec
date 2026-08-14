@@ -83,7 +83,7 @@ func normalizeForJSON(v any) (any, error) {
 
 func normalizeForJSONDepth(v any, depth int) (any, error) {
 	if depth > maxNormalizeDepth {
-		return nil, fmt.Errorf("codec: normalizeForJSON depth exceeded %d", maxNormalizeDepth)
+		return nil, fmt.Errorf("%w: %d", ErrNormalizeDepthExceeded, maxNormalizeDepth)
 	}
 
 	switch val := v.(type) {

@@ -12,7 +12,8 @@
 // # Choosing a Codec
 //
 // Both JSON and CBOR are fully supported across the library. CBOR is recommended
-// for internal serialization: smaller (~19-43%), faster to encode and decode,
+// for internal serialization: smaller payloads (see BenchmarkTagTradeoffs for
+// measured size reductions across payload shapes), faster to encode and decode,
 // and deterministic (same input always produces the same output bytes — safe for
 // cryptographic signing). JSON is the right choice for external interop, HTTP
 // APIs, debugging, and any case where human-readability matters.

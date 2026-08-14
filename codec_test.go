@@ -545,7 +545,7 @@ func TestCBORCodec_SmallerThanJSON(t *testing.T) {
 	payload := map[string]string{
 		testFieldName:  testName,
 		testFieldEmail: testEmail,
-		"city":     "Berlin",
+		"city":         "Berlin",
 	}
 
 	cborData, err := codec.CBORCodec{}.Encode(payload)

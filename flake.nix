@@ -92,18 +92,18 @@
             GOWORK = "off";
           };
 
-          packages.default = goModule.overrideAttrs (old: {
+          packages.default = goModule.overrideAttrs (_old: {
             doCheck = false;
           });
 
           checks = {
-            build = goModule.overrideAttrs (old: {
+            build = goModule.overrideAttrs (_old: {
               doCheck = false;
             });
 
             # Runs `go test ./...` in both JSON modes inside the sandbox against
             # the vendored dependency set.
-            test = goModule.overrideAttrs (old: {
+            test = goModule.overrideAttrs (_old: {
               checkPhase = ''
                 runHook preCheck
                 go test ./... -count=1

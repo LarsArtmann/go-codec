@@ -483,6 +483,7 @@ func TestObservableCodec_EncodeToBufferInnerErrorPropagation(t *testing.T) {
 	obs := codec.ObserveCodec(failingBufferEncoder{encodeErr: errSentinel})
 
 	buf := &bytes.Buffer{}
+
 	err := obs.EncodeToBuffer(map[string]string{testFieldName: testName}, buf)
 	if !errors.Is(err, errSentinel) {
 		t.Fatalf("got %v, want %v", err, errSentinel)
@@ -634,6 +635,7 @@ func TestObservableCodec_EncodePooledComposition(t *testing.T) {
 	err := codec.EncodePooled(obs, payload{Name: testName}, func(data []byte) error {
 		encoded = make([]byte, len(data))
 		copy(encoded, data)
+
 		return nil
 	})
 	if err != nil {

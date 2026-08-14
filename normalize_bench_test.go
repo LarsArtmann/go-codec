@@ -18,8 +18,8 @@ func BenchmarkNormalizeForJSON(b *testing.B) {
 	payload := map[string]any{
 		testFieldName:  testName,
 		testFieldEmail: testEmail,
-		testNested: map[string]any{testMapKey: testMapVal},
-		"items":    []any{1, "two", true},
+		testNested:     map[string]any{testMapKey: testMapVal},
+		"items":        []any{1, "two", true},
 	}
 
 	b.ResetTimer()

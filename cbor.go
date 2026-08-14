@@ -18,8 +18,10 @@ import (
 // bytes and breaking existing stored CBOR data + signatures.
 type CBORCodec struct{}
 
-var _ Codec = CBORCodec{}
-var _ DeterministicCodec = CBORCodec{}
+var (
+	_ Codec              = CBORCodec{}
+	_ DeterministicCodec = CBORCodec{}
+)
 
 // canonicalEncMode is computed once via sync.OnceValue. The options are
 // hardcoded valid constants from fxamacker/cbor, so EncMode() cannot fail

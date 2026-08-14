@@ -30,8 +30,10 @@ import (
 //	}
 type CBORCompactCodec struct{}
 
-var _ Codec = CBORCompactCodec{}
-var _ DeterministicCodec = CBORCompactCodec{}
+var (
+	_ Codec              = CBORCompactCodec{}
+	_ DeterministicCodec = CBORCompactCodec{}
+)
 
 // compactEncMode and compactDecMode use sync.OnceValue for the same reason
 // as canonicalEncMode/canonicalDecMode in cbor.go — the options are hardcoded

@@ -422,14 +422,17 @@ func ExampleEncodePooled() {
 	err := codec.EncodePooled(c, evt, func(data []byte) error {
 		encoded = make([]byte, len(data)) // copy: data is invalid after callback
 		copy(encoded, data)
+
 		return nil
 	})
 	if err != nil {
 		fmt.Println("error:", err)
+
 		return
 	}
 
 	var decoded Event
+
 	_ = c.Decode(encoded, &decoded)
 	fmt.Println(decoded.Type, decoded.Data)
 

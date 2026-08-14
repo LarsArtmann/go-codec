@@ -8,6 +8,42 @@ Encoding/decoding for event-sourced payloads. Provides the `Codec` interface use
 go get github.com/larsartmann/go-codec
 ```
 
+## Architecture
+
+go-codec is the serialization contract at the center of an event-sourcing/CQRS stack.
+The `Codec` interface is consumed by storage, event construction, signing, and
+encryption modules:
+
+```mermaid
+flowchart LR
+    subgraph go-codec
+        C[Codec<br/>CBOR / JSON / Raw]
+        BE[BufferEncoder]
+        O[ObservableCodec]
+        AD[AutoDetect / AutoDetectDebug]
+        T[TranscodeToJSON]
+        E[WrapEncode / UnwrapDecode]
+        S[Size / SizeResult]
+    end
+
+    C -->|used by| ST[storage/pebble]
+    C -->|payloads| EV[event]
+    C -->|signs| SI[signing]
+    C -->|encrypts| EN[encryption]
+    C -->|read models| KV[kv]
+    SI -->|requires| D[DeterministicCodec]
+    C -.->|wraps| O
+    C -.->|detects| AD
+```
+
+- `Codec` / `BufferEncoder` — payload serialization and the zero-allocation hot path.
+- `ObservableCodec` — metrics, hooks, and monitoring without changing the codec.
+- `AutoDetectDebug` — best-effort encoding inference for mixed-format streams.
+- `TranscodeToJSON` / `WrapEncode` / `Size` — format conversion, self-describing
+  envelopes, and payload-size diagnostics.
+- Sibling modules in `go-cqrs-lite` consume the contract; the signing module can assert
+  `DeterministicCodec` to reject non-deterministic codecs at compile time.
+
 ## Codecs
 
 | Codec              | Description                                                              |
@@ -179,6 +215,24 @@ if be, ok := codec.(codec.BufferEncoder); ok {
 
 Both `JSONCodec`, `CBORCodec`, and `CBORCompactCodec` implement `BufferEncoder`.
 
+## Pooled Encoding (`EncodePooled`)
+
+For hot paths that encode and immediately process the bytes (e.g., writing to a
+store or sending over the wire), `EncodePooled` manages the
+`GetBuffer` / `EncodeToBuffer` / `PutBuffer` lifecycle for you:
+
+```go
+err := codec.EncodePooled(codec.CBORCodec{}, event, func(data []byte) error {
+    // data is valid only inside this callback — copy it if you need to keep it.
+    _, err := store.Write(data)
+    return err
+})
+```
+
+Compared to `Encode`, this eliminates the per-call `[]byte` allocation. If the
+caller needs to retain the encoded bytes, use `Encode` instead (or `append` a copy
+inside the callback).
+
 ## Streaming CBOR
 
 For encoding/decoding large event batches without materializing the full byte
@@ -203,6 +257,35 @@ for {
 
 The streaming encoder uses the same canonical encoding mode as `CBORCodec`.
 
+## Streaming JSON (NDJSON)
+
+For JSON-based streams, `NewJSONEncoder` and `NewJSONDecoder` write and read
+newline-delimited JSON (NDJSON / JSON Lines). Each `Encode` call writes one JSON
+value followed by a newline, so readers can consume values incrementally without
+waiting for the whole stream:
+
+```go
+// Encode a batch as NDJSON
+var buf bytes.Buffer
+enc := codec.NewJSONEncoder(&buf)
+for _, evt := range events {
+    _ = enc.Encode(evt)
+}
+
+// Decode values one at a time
+dec := codec.NewJSONDecoder(&buf)
+for {
+    var evt MyEvent
+    if err := dec.Decode(&evt); err != nil {
+        break // io.EOF or end of stream
+    }
+}
+```
+
+The NDJSON format is convenient for logs, SSE, and HTTP line-streaming. The v2
+JSON build uses `json.MarshalWrite` per value rather than a streaming encoder
+with separator tokens, keeping the output byte-identical to NDJSON.
+
 ## CBOR Diagnostic Notation
 
 Debug corrupt events or inspect raw CBOR payloads in human-readable form:
@@ -212,6 +295,22 @@ cborData, _ := codec.CBORCodec{}.Encode(event)
 diag, _ := codec.Diagnose(cborData)
 log.Printf("CBOR event: %s", diag)
 ```
+
+## Size Comparison (`Size` / `SizeResult`)
+
+Use `Size` to compare the JSON and CBOR byte sizes of a value before committing to a
+format change. It returns a `SizeResult` with `JSON` and `CBOR` fields:
+
+```go
+s := codec.Size(UserCreated{Name: "Alice", Email: "a@b.c"})
+fmt.Printf("json=%d cbor=%d savings=%.0f%%\n",
+    s.JSON, s.CBOR,
+    float64(s.JSON-s.CBOR)/float64(s.JSON)*100)
+```
+
+If a codec cannot encode the value, that field is reported as `-1`. This is useful
+for payload-size budgets and for justifying a switch from JSON to CBOR on
+size-critical event types.
 
 ## Telemetry (`ObservableCodec`)
 
@@ -236,6 +335,10 @@ m := obs.Metrics().Snapshot() // m.EncodeCalls, m.EncodeBytes, m.EncodeErrors, .
 - **`Snapshot()` / `Reset()`** — point-in-time copy vs. clear counters.
 - **Panic policy:** hook panics propagate (not recovered); metrics are recorded
   before the hook runs, so counters stay consistent.
+
+See [`ExampleMetricsHook`](https://pkg.go.dev/github.com/larsartmann/go-codec#ExampleMetricsHook)
+for a dependency-free counter implementation. In production, replace the map
+with Prometheus, OpenTelemetry, or structured log emission inside the hook.
 
 ## Explainable Format Detection (`AutoDetectDebug`)
 

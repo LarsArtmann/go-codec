@@ -91,6 +91,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   known encoding and reason, and never panic — `autodetect_test.go`.
 - `ExampleObserveCodec` / `ExampleAutoDetectDebug`: godoc examples for the
   observability APIs — `example_test.go`.
+- `ExampleMetricsHook`: dependency-free push-style metrics example using a
+  simple counter map inside a `MetricsHook` — `example_test.go`.
+- Architecture diagram (mermaid) added to README, showing the codec contract and
+  sibling module boundaries (event, signing, encryption, storage/pebble, kv).
+- README sections for Streaming JSON (NDJSON), Pooled Encoding (`EncodePooled`),
+  and Size Comparison (`Size` / `SizeResult`).
+- Streaming benchmarks: `BenchmarkStreamingJSON_Encode/Decode`,
+  `BenchmarkStreamingCBOR_Encode/Decode`, and a v2-only
+  `BenchmarkStreamingJSONV2_DecoderComparison` comparing `jsontext.Decoder` (the
+  path used by `NewJSONDecoder`) against `json.UnmarshalRead` per line —
+  `streaming_benchmark_test.go`, `json_streaming_v2_bench_test.go`.
+- CI fuzz job: weekly cron (`0 2 * * 0`) plus `workflow_dispatch` that runs all
+  fuzz targets for 30s in both JSON v1 and v2 modes and uploads the generated
+  corpus as an artifact — `.github/workflows/ci.yml`.
+- Seed corpus for `FuzzAutoDetectDebug_Consistency` committed under
+  `testdata/fuzz/FuzzAutoDetectDebug_Consistency/`.
 
 ### Fixed
 
@@ -117,6 +133,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - CI workflow hardened: GitHub Actions pinned to commit SHAs, `golangci-lint`
   v2.12.2 installed explicitly, and a `govulncheck` vulnerability-scan job
   added alongside the gitleaks secret scan.
+- CI lint job now produces a JSON report artifact (`lint-report-json-v1` /
+  `lint-report-json-v2`) via `--output.json.path`, uploaded even when lint fails
+  so LSP-vs-CLI diagnostic differences can be resolved from the authoritative
+  CLI output.
+- README telemetry example now links to the dependency-free `ExampleMetricsHook`.
 - `flake.nix`: hermetic `checks.build` / `checks.test` via `buildGoModule`
   (dependencies fetched through the Nix sandbox), plus a `packages.default`
   so plain `nix build` works. Fixes the `/homeless-shelter` sandbox failure

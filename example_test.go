@@ -285,6 +285,35 @@ func ExampleObserveCodec() {
 	// encode calls: 1, decode calls: 1
 }
 
+// ExampleMetricsHook demonstrates a dependency-free push-style metrics hook.
+// The callback updates simple counters; in production, this is where you would
+// emit to Prometheus, OpenTelemetry, or structured logs.
+func ExampleMetricsHook() {
+	type event struct {
+		Type string
+	}
+
+	counters := map[codec.Operation]int64{}
+
+	obs := codec.ObserveCodec(codec.CBORCodec{},
+		codec.WithMetricsHook(func(op codec.Operation, enc codec.Encoding, bytes int, err error) {
+			counters[op]++
+		}),
+	)
+
+	data, _ := obs.Encode(event{Type: testEventCreated})
+
+	var decoded event
+
+	_ = obs.Decode(data, &decoded)
+
+	fmt.Printf("encodes=%d decodes=%d type=%s\n",
+		counters[codec.OpEncode], counters[codec.OpDecode], decoded.Type)
+
+	// Output:
+	// encodes=1 decodes=1 type=created
+}
+
 // ExampleAutoDetectDebug demonstrates explainable format detection: beyond the
 // inferred encoding, it returns a stable DetectionReason to branch on and a
 // human-readable Detail for logs. Detail is NOT a stable contract — never

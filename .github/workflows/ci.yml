@@ -5,6 +5,9 @@ on:
     branches: [master]
     tags: [v*]
   pull_request:
+  schedule:
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
 
 jobs:
   test:
@@ -41,6 +44,17 @@ jobs:
       - name: Install golangci-lint
         run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2
       - run: golangci-lint run --timeout 5m ${{ matrix.json-mode == 'v2' && '--build-tags goexperiment.jsonv2' || '' }}
+      - name: Produce lint JSON report
+        if: always()
+        run: golangci-lint run --timeout 5m ${{ matrix.json-mode == 'v2' && '--build-tags goexperiment.jsonv2' || '' }} --output.json.path lint-report.json
+        shell: bash
+      - name: Upload lint JSON report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lint-report-json-${{ matrix.json-mode }}
+          path: lint-report.json
+          retention-days: 14
 
   secret-scan:
     name: Secret Scan (gitleaks)
@@ -64,3 +78,61 @@ jobs:
       - run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
+
+  fuzz:
+    name: Fuzz (JSON ${{ matrix.json-mode }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        json-mode: [v1, v2]
+    env:
+      GOEXPERIMENT: ${{ matrix.json-mode == 'v2' && 'jsonv2' || '' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      - name: Run fuzz targets
+        run: |
+          if [ "${{ matrix.json-mode }}" = "v1" ]; then
+            targets=(
+              FuzzJSONCodec_Roundtrip
+              FuzzCBORCodec_Roundtrip
+              FuzzRawCodec_Passthrough
+              FuzzCBORCodec_Determinism
+              FuzzCBORCodec_DecodeNeverPanics
+              FuzzJSONCodec_TypedRoundtrip
+              FuzzCBORCodec_TypedRoundtrip
+              FuzzCBORCodec_CanonicalFidelity
+              FuzzAutoDetectDebug_Consistency
+              FuzzNormalizeForJSON
+              FuzzTranscodeToJSON
+            )
+          else
+            targets=(
+              FuzzJSONCodec_Roundtrip
+              FuzzCBORCodec_Roundtrip
+              FuzzRawCodec_Passthrough
+              FuzzCBORCodec_Determinism
+              FuzzCBORCodec_DecodeNeverPanics
+              FuzzJSONCodec_TypedRoundtrip
+              FuzzCBORCodec_TypedRoundtrip
+              FuzzCBORCodec_CanonicalFidelity
+              FuzzAutoDetectDebug_Consistency
+              FuzzTranscodeToJSON
+            )
+          fi
+
+          for target in "${targets[@]}"; do
+            echo "=== Fuzzing $target (JSON ${{ matrix.json-mode }}) ==="
+            go test ./... -run='^$' -fuzz="$target" -fuzztime=30s
+          done
+      - name: Upload fuzz corpus
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fuzz-corpus-${{ matrix.json-mode }}
+          path: testdata/fuzz
+          retention-days: 7

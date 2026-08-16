@@ -106,6 +106,7 @@ there before accepting performance-sensitive changes.
 | Feature                                                | Status                | Notes                                                                                                                               |
 | ------------------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `WrapEncode` / `UnwrapDecode` — codec-stamped envelope | 🟢 `FULLY_FUNCTIONAL` | `envelope.go`; JSON/CBOR round-trip, backward-compat with raw JSON/CBOR, non-JSON data, structure, determinism — `envelope_test.go` |
+| `DecodeEnvelopeOrLegacy[T]` — one-call envelope/raw decode | 🟢 `FULLY_FUNCTIONAL` | `envelope.go`; envelope via stamped codec, raw via configured codec + one JSON↔CBOR cross-retry, custom codecs get configured-codec attempt only — `envelope_legacy_test.go` |
 
 ## Streaming
 

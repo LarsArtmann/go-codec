@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.2.0] — 2026-08-16
+
 ### Security
 
 - `normalizeForJSON` (`json_compat_v1.go`) now enforces a `maxNormalizeDepth`
@@ -26,6 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `DecodeEnvelopeOrLegacy[T]` (`envelope.go`): one-call decode for data that
+  may be envelope-wrapped or raw (pre-envelope). Envelope data decodes via its
+  stamped codec; raw data via the configured codec with exactly one JSON↔CBOR
+  cross-retry, so legacy rows read correctly regardless of which standard codec
+  wrote them or which is configured now. Custom codecs get the configured-codec
+  attempt only. Errors return unwrapped for caller classification —
+  `envelope_legacy_test.go`.
 - `scripts/check-go-version.sh` (+ CI step): single-source tripwire enforcing
   that `go.mod`, `.go-version`, and `.golangci.yml` `run.go` agree on the Go
   version — the same drift-lock pattern as the FEATURES tripwire.

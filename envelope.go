@@ -63,3 +63,54 @@ func UnwrapDecode(data []byte, fallback Codec) (Codec, []byte) {
 
 	return fallback, data
 }
+
+// DecodeEnvelopeOrLegacy decodes data that may be envelope-wrapped or raw
+// (pre-envelope) into T, keeping the permanent-readability guarantee of
+// [UnwrapDecode] while honoring the caller's configured codec:
+//
+//   - Envelope-wrapped data decodes via its stamped codec (first attempt).
+//   - Raw data decodes via the configured codec first.
+//   - If that fails and the codec is one of the two standard codecs, exactly
+//     one cross-retry with the other (JSON↔CBOR) rescues legacy rows written
+//     by a differently-configured store.
+//   - Custom codecs get the configured-codec attempt only — their data only
+//     decodes with themselves.
+//
+// Truly undecodable data returns the primary decode error unwrapped, so
+// callers can classify it (e.g. as Corruption) with their own context.
+func DecodeEnvelopeOrLegacy[T any](data []byte, configured Codec) (T, error) {
+	c, inner := UnwrapDecode(data, configured)
+
+	var val T
+
+	err := c.Decode(inner, &val)
+	if err == nil {
+		return val, nil
+	}
+
+	alt, ok := otherStandardCodec(c)
+	if !ok {
+		return val, err //nolint:wrapcheck // callers classify with their own context
+	}
+
+	var retry T
+
+	if altErr := alt.Decode(inner, &retry); altErr == nil {
+		return retry, nil
+	}
+
+	return val, err //nolint:wrapcheck // callers classify with their own context
+}
+
+// otherStandardCodec returns the opposite built-in codec, or false for
+// envelope-stamped or custom codecs (their data only decodes with themselves).
+func otherStandardCodec(c Codec) (Codec, bool) {
+	switch c.(type) {
+	case CBORCodec:
+		return JSONCodec{}, true
+	case JSONCodec:
+		return CBORCodec{}, true
+	default:
+		return nil, false
+	}
+}

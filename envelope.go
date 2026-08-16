@@ -42,6 +42,17 @@ func WrapEncode(v any, c Codec) ([]byte, error) {
 // new data decodes via the stamped codec. Stores can gradually transition
 // without a full clear-and-rebuild.
 func UnwrapDecode(data []byte, fallback Codec) (Codec, []byte) {
+	// Fast path: the envelope is always a JSON object, so it starts with '{'.
+	// Any first byte >= cborMinMajorType (0x80) — CBOR arrays (0x80-0x9f),
+	// maps (0xa0-0xbf), tags (0xc0-0xdf), simple values — can never begin
+	// valid JSON, so the parse below is doomed. Skip it and fall straight
+	// through to the fallback codec. Bytes below 0x80 stay on the original
+	// path: they are either JSON (envelope or legacy raw JSON) or CBOR
+	// scalars/strings, which the parse-fail branch already handles.
+	if len(data) > 0 && data[0] >= cborMinMajorType {
+		return fallback, data
+	}
+
 	var env envelope
 	if err := jsonUnmarshal(data, &env); err == nil &&
 		env.Magic == envelopeMagic && len(env.Data) > 0 {

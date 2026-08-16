@@ -559,6 +559,10 @@ func TestObservableCodec_MetricsSnapshotImmutability(t *testing.T) {
 	snap1.EncodeCalls = 999
 	snap1.EncodeBytes = -1
 
+	if snap1.EncodeCalls != 999 || snap1.EncodeBytes != -1 {
+		t.Fatalf("snap1 = {%d, %d}, want mutated {999, -1}", snap1.EncodeCalls, snap1.EncodeBytes)
+	}
+
 	// Perform another operation.
 	_, _ = obs.Encode(map[string]string{testFieldName: testName})
 

@@ -2,8 +2,8 @@ package codec
 
 // SizeResult reports the serialized byte sizes of a value under each codec.
 type SizeResult struct {
-	JSON int
-	CBOR int
+	JSON int `json:"json"`
+	CBOR int `json:"cbor"`
 }
 
 // Size encodes v with both JSON and CBOR and returns the byte sizes. This is

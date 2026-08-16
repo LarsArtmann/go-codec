@@ -16,9 +16,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `AutoDetect` (`autodetect.go`) now skips trial-decode for payloads over
   `maxAutoDetectSize` (1 MiB), returning `EncodingRaw` for oversized ambiguous
   input. First-byte heuristic remains O(1) for any size.
+- Go toolchain raised 1.26.5 → 1.26.6 (`go.mod`, `.go-version`,
+  `.golangci.yml`): closes the `GO-2026-5972` stdlib vulnerability
+  (`encoding/asn1` recursion, reachable via the fxamacker/cbor `EncMode` path
+  from `CBORCodec.EncodeToBuffer`) that had the CI `govulncheck` job failing
+  every push. Consumers now need a ≥1.26.6 toolchain (auto-downloaded under
+  default `GOTOOLCHAIN=auto`). Hermetic Nix checks stay on 1.26.5 until nixpkgs
+  packages 1.26.6 — tracked in `TODO_LIST.md`.
 
 ### Added
 
+- `scripts/check-go-version.sh` (+ CI step): single-source tripwire enforcing
+  that `go.mod`, `.go-version`, and `.golangci.yml` `run.go` agree on the Go
+  version — the same drift-lock pattern as the FEATURES tripwire.
+- CI now validates `lint-report.json` with `jq` before uploading, closing the
+  artifact-validity gap (recovered 20-07 follow-up item #34).
+- `docs/benchmark-baseline.md`: 10-run benchstat reference baseline (v1 mode,
+  go1.26.5, 67 sub-benchmarks). FEATURES performance figures upgraded from
+  indicative `~` values to baseline-cited means.
+- `TODO_LIST.md`: recovered lost mermaid-diagram CI render-check item (20-07
+  follow-up item #36, never shipped nor routed); closed the 2026-08-12 `gosec`
+  item as already covered — `.golangci.yml` enables `gosec` (G304/G115
+  excluded) and the lint matrix runs it on every push.
 - `ObservableCodec` / `ObserveCodec` / `CodecMetrics` / `MetricsSnapshot` /
   `MetricsHook` (`observability.go`): opt-in, decorator-based telemetry for any
   `Codec`. Records per-operation encode/decode call counts, byte totals, error
@@ -173,6 +192,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `TestObservableCodec_MetricsSnapshotImmutability` now asserts the mutated
+  snapshot fields are visible on the returned copy (the writes were previously
+  never read — `unusedwrite` smell at `observability_test.go:560`).
 - **Default (v1 JSON) build was broken at HEAD**: `json_compat_v1.go` and
   `json_helpers_v1_test.go` had been corrupted to import `encoding/json/v2`
   while retaining `!goexperiment.jsonv2` build tags, so the default toolchain
@@ -185,6 +207,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- `SizeResult` (`size.go`) now carries explicit JSON tags (`json` / `cbor`):
+  JSON-serialized keys change from `JSON` / `CBOR` to lowercase. The type is a
+  sizing diagnostic; no stored-format impact.
 - `makezero` config reverted to `always: true` with targeted `//nolint` on the
   one legitimate false positive (`raw.go:46` copy pattern).
 - `goconst` and `tagliatelle` re-enabled for `_test.go` files: extracted shared
@@ -217,6 +242,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `docs/DOMAIN_LANGUAGE.md` compat-helper count corrected (five helpers, was
   four names); forward-looking items harvested from the 20:47/20:58 reports
   into `TODO_LIST.md` and `ROADMAP.md`.
+
+### Performance
+
+- `UnwrapDecode` (`envelope.go`) now sniffs the first byte: any value ≥
+  `cborMinMajorType` (0x80 — CBOR arrays, maps, tags, simple values) can never
+  begin valid JSON, so the doomed envelope parse is skipped and the data falls
+  straight through to the fallback codec. The backward-compat read path for
+  blind stores holding pre-envelope CBOR drops from ~181ns / 184B / 6 allocs to
+  ~1.6ns / 0B / 0 allocs per read (-99% time, -100% allocs, n=10 benchstat);
+  the wrapped-envelope path is statistically unchanged (p=0.912). Behavior is
+  byte-identical by construction — a successful envelope parse requires a JSON
+  object, which always starts with `{` (0x7B). New benchmark:
+  `BenchmarkUnwrapDecode_FallbackRawCBOR`; sniff pinned by
+  `TestUnwrapDecode_FirstByteSniff` (all 128 high bytes), plus
+  `_EmptyData` and `_RawCBORScalarsBelowSniffThreshold` edge cases.
 
 ## [0.1.0] - 2026-08-12
 

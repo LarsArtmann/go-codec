@@ -139,6 +139,95 @@ func TestUnwrapDecode_NonJSONData(t *testing.T) {
 	}
 }
 
+func TestUnwrapDecode_FirstByteSniff(t *testing.T) {
+	t.Parallel()
+
+	fallback := codec.JSONCodec{}
+
+	// Every first byte >= 0x80 can never begin valid JSON, so the envelope
+	// parse must be skipped entirely — even when the tail is crafted to look
+	// envelope-shaped.
+	crafted := append([]byte{0xA2}, []byte(`{"$":"gcdc","enc":"json","dat":"eA=="}`)...)
+
+	c, inner := codec.UnwrapDecode(crafted, fallback)
+	if c.Encoding() != codec.EncodingJSON {
+		t.Fatalf("expected fallback codec for CBOR-prefixed data")
+	}
+
+	if string(inner) != string(crafted) {
+		t.Fatalf("data should be unchanged")
+	}
+
+	for b := byte(0x80); b != 0; b++ { // wraps at 0xFF -> 0x00 terminates
+		data := []byte{b, '{', '"', '$'}
+
+		c, inner := codec.UnwrapDecode(data, fallback)
+		if c.Encoding() != codec.EncodingJSON {
+			t.Fatalf("first byte 0x%02x: expected fallback codec", b)
+		}
+
+		if string(inner) != string(data) {
+			t.Fatalf("first byte 0x%02x: data should be unchanged", b)
+		}
+	}
+}
+
+func TestUnwrapDecode_EmptyData(t *testing.T) {
+	t.Parallel()
+
+	fallback := codec.CBORCodec{}
+
+	c, inner := codec.UnwrapDecode(nil, fallback)
+	if c.Encoding() != codec.EncodingCBOR {
+		t.Fatalf("expected fallback codec for empty data")
+	}
+
+	if len(inner) != 0 {
+		t.Fatalf("data should be unchanged")
+	}
+}
+
+func TestUnwrapDecode_RawCBORScalarsBelowSniffThreshold(t *testing.T) {
+	t.Parallel()
+
+	// CBOR text strings (0x60-0x7f) and ints (0x00-0x1b) sit below the 0x80
+	// sniff threshold: they stay on the parse-fail path but must still fall
+	// back unchanged.
+	fallback := codec.CBORCodec{}
+
+	rawString, err := (codec.CBORCodec{}).Encode(testName)
+	if err != nil {
+		t.Fatalf("encode cbor string: %v", err)
+	}
+
+	if rawString[0] >= 0x80 {
+		t.Fatalf("fixture must start below 0x80, got 0x%02x", rawString[0])
+	}
+
+	c, inner := codec.UnwrapDecode(rawString, fallback)
+	if c.Encoding() != codec.EncodingCBOR {
+		t.Fatalf("expected fallback codec for raw CBOR scalar")
+	}
+
+	if string(inner) != string(rawString) {
+		t.Fatalf("data should be unchanged")
+	}
+
+	rawInt, err := (codec.CBORCodec{}).Encode(int64(42))
+	if err != nil {
+		t.Fatalf("encode cbor int: %v", err)
+	}
+
+	c, inner = codec.UnwrapDecode(rawInt, fallback)
+	if c.Encoding() != codec.EncodingCBOR {
+		t.Fatalf("expected fallback codec for raw CBOR int")
+	}
+
+	if string(inner) != string(rawInt) {
+		t.Fatalf("data should be unchanged")
+	}
+}
+
 func TestWrapEncode_EnvelopeStructure(t *testing.T) {
 	t.Parallel()
 

@@ -33,6 +33,9 @@ jobs:
       - name: FEATURES.md drift check (PLANNED symbols must not resolve)
         if: matrix.json-mode == 'v1'
         run: bash scripts/check-features-planned.sh
+      - name: Go version single-source check (declarations must agree)
+        if: matrix.json-mode == 'v1'
+        run: bash scripts/check-go-version.sh
 
   lint:
     name: Lint (JSON ${{ matrix.json-mode }})
@@ -55,6 +58,9 @@ jobs:
         if: always()
         run: golangci-lint run --timeout 5m ${{ matrix.json-mode == 'v2' && '--build-tags goexperiment.jsonv2' || '' }} --output.json.path lint-report.json
         shell: bash
+      - name: Validate lint JSON report
+        if: always()
+        run: jq -e . lint-report.json > /dev/null
       - name: Upload lint JSON report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

@@ -111,7 +111,9 @@ nix run .#lint                        # lint both modes
   `sync.Map` (cold ~117us to warm ~340ns, 344x faster). Code generation is NOT
   needed. Benchmarks: `BenchmarkTagTradeoffs_Encode/Decode` (map vs toarray vs
   keyasint across small/medium/large payloads), `BenchmarkCBORReflectionCache`
-  (cold vs warm), `BenchmarkEncodePooled` (pool vs plain Encode).
+  (cold vs warm), `BenchmarkEncodePooled` (pool vs plain Encode). A 10-run
+  benchstat reference baseline lives in `docs/benchmark-baseline.md` — re-run
+  and compare there before accepting performance-sensitive changes.
 
 ## Conventions
 
@@ -163,6 +165,13 @@ nix run .#lint                        # lint both modes
 - **`RawCodec` copies on Decode.** The target `*[]byte` receives a fresh copy so
   callers can't mutate the input buffer. Encode accepts only `[]byte` or
   `rawJSONValue`.
+- **nixpkgs lags Go patch releases.** After bumping the Go version (go.mod,
+  `.go-version`, `.golangci.yml` — kept in sync by `scripts/check-go-version.sh`),
+  hermetic checks (`nix flake check`: format/build/test) go RED until nixpkgs
+  unstable packages that patch: the sandbox cannot download the newer toolchain
+  (`go: downloading go1.26.x … connection refused`, goimports exit 2). Local
+  `nix fmt` still shows real drift (0 changed = none). Fix: `nix flake update
+  nixpkgs` once available — tracked in TODO_LIST at bump time.
 
 ## Dependencies
 
@@ -181,3 +190,5 @@ nix run .#lint                        # lint both modes
 | `codec.go`       | `Codec`/`BufferEncoder`/`DeterministicCodec` contracts    |
 | `errors.go`      | Stable error sentinels and codes                          |
 | `scripts/check-features-planned.sh` | FEATURES.md drift tripwire (PLANNED symbols must not resolve via `go doc`); runs in CI |
+| `scripts/check-go-version.sh` | Go-version single-source tripwire (go.mod / .go-version / .golangci.yml must agree); runs in CI |
+| `docs/benchmark-baseline.md` | 10-run benchstat reference baseline (v1 mode) — re-run and diff there before accepting perf-sensitive changes |

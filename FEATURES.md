@@ -25,15 +25,20 @@
 | --- | --- | --- |
 | `BenchmarkNormalizeForJSON` / `BenchmarkJSONCodec_MarshalUnmarshal` | v1 vs v2 JSON paths (incl. normalizer) | v2: 35-40% lower latency, ~50-63% fewer allocations |
 | `BenchmarkTagTradeoffs_Encode/Decode` | map vs toarray vs keyasint across small/medium/large payloads | toarray smallest (23-41% size reduction); keyasint close behind (18-37%) |
-| `BenchmarkCBORReflectionCache` | Cold (first encode) vs warm (cached) CBOR encode | Cold ~117µs/104 allocs; warm ~340ns/2 allocs — 344x faster after cache. No codegen needed |
+| `BenchmarkCBORReflectionCache` | Cold (first encode) vs warm (cached) CBOR encode | Cold ~117µs/104 allocs (one-off, not in the baseline suite); warm 332ns ± 6%/2 allocs (baseline). No codegen needed |
 | `BenchmarkEncodePooled` | Pool-backed encode vs plain Encode | Eliminates per-call []byte allocation via sync.Pool callback |
 | `BenchmarkTranscodeToJSON_*` | CBOR→JSON transcoding vs JSON passthrough | Nested-deep and passthrough paths quantified |
-| `BenchmarkAutoDetect` / `BenchmarkAutoDetectDebug` | Format-detection cost (JSON/CBOR/unknown payloads) | ~70-105ns when the first byte decides; ~170ns + 4 allocs when trial-decode fires |
-| `BenchmarkWrapEncode` / `BenchmarkUnwrapDecode` | Envelope wrap/unwrap overhead vs bare encode | ~290ns wrap / ~840ns unwrap on a 3-field payload |
-| `BenchmarkSize` | JSON-vs-CBOR size comparison helper | ~240ns, 2 allocs |
-| `BenchmarkCBORCompact_vs_Canon_Decode` | Compact vs canonical CBOR decode cost | Parity (~320ns both) — key-sort choice costs nothing at decode |
-| `BenchmarkRealisticPayload_Encode/Decode` | CBOR vs JSON on a realistic 7-field order payload (map vs `toarray` vs `keyasint` shapes) | Run on your hardware — README `When to Use CBOR vs JSON` cites these |
+| `BenchmarkAutoDetect` / `BenchmarkAutoDetectDebug` | Format-detection cost (JSON/CBOR/unknown payloads) | First-byte decide 81-99ns; trial-decode path 135ns + 4 allocs (baseline) |
+| `BenchmarkWrapEncode` / `BenchmarkUnwrapDecode` | Envelope wrap/unwrap overhead vs bare encode | 275ns ± 12% wrap / 772ns ± 14% unwrap on a 3-field payload (baseline) |
+| `BenchmarkSize` | JSON-vs-CBOR size comparison helper | 370ns ± 41%, 2 allocs (baseline; noisy on the reference machine) |
+| `BenchmarkCBORCompact_vs_Canon_Decode` | Compact vs canonical CBOR decode cost | Parity — 265ns canonical vs 261ns compact (baseline); key-sort choice costs nothing at decode |
+| `BenchmarkRealisticPayload_Encode/Decode` | CBOR vs JSON on a realistic 7-field order payload (map vs `toarray` vs `keyasint` shapes) | Baseline (encode): JSON 860ns, CBOR 513ns, compact `toarray` 280ns; decode 2.23µs / 1.05µs / 671ns. README `When to Use CBOR vs JSON` cites these; re-run on your hardware for absolute numbers |
 | `BenchmarkObserveCodec` | `ObservableCodec` decorator overhead vs the raw codec (encode/decode/pooled sub-benchmarks) | Sizes the telemetry cost when wrapping a codec |
+
+Figures marked "baseline" are 10-run benchstat means from the v1-mode reference
+baseline (2026-08-15, go1.26.5, AMD Ryzen AI MAX+ 395) recorded in
+[`docs/benchmark-baseline.md`](docs/benchmark-baseline.md) — re-run and compare
+there before accepting performance-sensitive changes.
 
 ## Codecs
 

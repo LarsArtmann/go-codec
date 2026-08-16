@@ -63,8 +63,8 @@
    inline (the live backlog). Corrected the "Bottom line" closer. Every item
    routed to `TODO_LIST #N` or `ROADMAP`.
 10. **Annotated `docs/planning/2026-08-12_09-07_…`** — resolved all 50 F-items
-    + 22 M-items + 16 Pareto-step items inline. Tiers 1–3 marked done; Tiers
-    4–8 routed to TODO_LIST/ROADMAP.
+    - 22 M-items + 16 Pareto-step items inline. Tiers 1–3 marked done; Tiers
+      4–8 routed to TODO_LIST/ROADMAP.
 11. **Annotated + archived `docs/planning/2026-08-11_23-45_…`** — resolved all
     41 F-items + 17 M-items + 18 Pareto-step items inline (every single one
     shipped in v0.1.0). Changed status from "PLANNING" to "EXECUTED". `git mv`'d
@@ -203,98 +203,98 @@
 
 ### P0 — Existential (do first)
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 1 | ~~**Fix README "works on Go 1.23+" → "Go 1.26.5+"** (contradicts `go.mod`)                   ~~ done at `094de50` | Factual error in user-facing doc — I missed it     | 1min  |
-| 2 | ~~Add depth cap (`maxDepth`) to `normalizeForJSON` — return error past limit                 ~~ done at `094de50` | Stack overflow on adversarial CBOR — security      | 15min |
-| 3 | ~~Add depth/size guard to `AutoDetect` before trial-decode                                   ~~ done at `094de50` | Same DoS class                                     | 15min |
+| # | Task                                                                                              | Why                                            | Est   |
+| - | ------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ----- |
+| 1 | ~~**Fix README "works on Go 1.23+" → "Go 1.26.5+"** (contradicts `go.mod`) ~~ done at `094de50`   | Factual error in user-facing doc — I missed it | 1min  |
+| 2 | ~~Add depth cap (`maxDepth`) to `normalizeForJSON` — return error past limit ~~ done at `094de50` | Stack overflow on adversarial CBOR — security  | 15min |
+| 3 | ~~Add depth/size guard to `AutoDetect` before trial-decode ~~ done at `094de50`                   | Same DoS class                                 | 15min |
 
 ### P1 — High impact
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 4 | ~~Run `golangci-lint` in both modes as part of every quality gate                            ~~ done at `ef1f4f4` (lint matrix) — both modes run in every session since | I skipped it this session — can't confirm 88→0     | 5min  |
-| 5 | ~~Create GitHub Release for `v0.1.0` (`gh release create`)                                   ~~ **still open — `TODO_LIST.md` #1 (release decision)** | Tag exists but release page is empty               | 5min  |
-| 6 | ~~Add `gosec` + `gitleaks` steps to CI                                                       ~~ done at `ef1f4f4` (gitleaks + govulncheck; gosec superseded) | Security + secret scanning missing                 | 15min |
-| 7 | ~~Add v2-mode lint job to CI (`--build-tags goexperiment.jsonv2`)                             ~~ done at `ef1f4f4` | v2 compat files compiled but never linted          | 10min |
-| 8 | ~~Revert `makezero` to `always: true`, add targeted `//nolint` in `raw.go`                    ~~ done at `094de50` | Global weakening was wrong                         | 5min  |
-| 9 | ~~Re-enable `testpackage`; migrate 10 white-box test files to `codec_test`                    ~~ done at `094de50` | Test package inconsistency (10 codec / 8 _test)    | 30min |
-| 10 | ~~Re-enable `paralleltest` in tests; add `t.Parallel()`                                       ~~ done at `094de50` | 19 test funcs lack it; suite slower than needed    | 20min |
+| #  | Task                                                                                                                                         | Why                                             | Est   |
+| -- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ----- |
+| 4  | ~~Run `golangci-lint` in both modes as part of every quality gate ~~ done at `ef1f4f4` (lint matrix) — both modes run in every session since | I skipped it this session — can't confirm 88→0  | 5min  |
+| 5  | ~~Create GitHub Release for `v0.1.0` (`gh release create`) ~~ **still open — `TODO_LIST.md` #1 (release decision)**                          | Tag exists but release page is empty            | 5min  |
+| 6  | ~~Add `gosec` + `gitleaks` steps to CI ~~ done at `ef1f4f4` (gitleaks + govulncheck; gosec superseded)                                       | Security + secret scanning missing              | 15min |
+| 7  | ~~Add v2-mode lint job to CI (`--build-tags goexperiment.jsonv2`) ~~ done at `ef1f4f4`                                                       | v2 compat files compiled but never linted       | 10min |
+| 8  | ~~Revert `makezero` to `always: true`, add targeted `//nolint` in `raw.go` ~~ done at `094de50`                                              | Global weakening was wrong                      | 5min  |
+| 9  | ~~Re-enable `testpackage`; migrate 10 white-box test files to `codec_test` ~~ done at `094de50`                                              | Test package inconsistency (10 codec / 8 _test) | 30min |
+| 10 | ~~Re-enable `paralleltest` in tests; add `t.Parallel()` ~~ done at `094de50`                                                                 | 19 test funcs lack it; suite slower than needed | 20min |
 
 ### P2 — Verification gaps
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 11 | ~~Run all 4 fuzz targets 60s each in v1 and v2 modes                                         ~~ **still open — 10s runs only; CI fuzz job pending (`TODO_LIST.md` #3)** | Never fuzzed with `-fuzz=`                         | 10min |
-| 12 | ~~Generate coverage report (both modes); add % to FEATURES/README                            ~~ done at `094de50` (82.4/81.9 measured; refreshed to 85.3/85.4 at `d871122`) | Coverage unknown                                   | 15min |
-| 13 | ~~Verify `flake.nix` works: `nix build`, `nix run .#test`, `nix run .#lint`, `nix flake check`~~ **done — apps verified at `d871122`; `nix flake check` green after this session's hermetic flake fix** | flake.nix never executed                           | 20min |
-| 14 | ~~Add `TestNormalizeForJSON` — table-driven (nil, scalar, map, nested, cycle-like)            ~~ done at `094de50` | Only exercised transitively today                  | 20min |
-| 15 | ~~Add `FuzzNormalizeForJSON` fuzz target                                                      ~~ done at `094de50` | Recursive normalizer = textbook fuzz target        | 15min |
-| 16 | ~~Verify `go-cqrs-lite` consumes `go-codec@v0.1.0`                                            ~~ done at `d871122` (go-cqrs-lite/codec/v4 builds against the proxy tag) | No consumer wired yet                              | 15min |
-| 17 | ~~Measure README benchmark claims ("19-43% smaller / 25-72% faster") or remove them           ~~ **still open — `TODO_LIST.md` #13** | Unverified numbers in user-facing doc              | 30min |
+| #  | Task                                                                                                                                                                                                    | Why                                         | Est   |
+| -- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ----- |
+| 11 | ~~Run all 4 fuzz targets 60s each in v1 and v2 modes ~~ **still open — 10s runs only; CI fuzz job pending (`TODO_LIST.md` #3)**                                                                         | Never fuzzed with `-fuzz=`                  | 10min |
+| 12 | ~~Generate coverage report (both modes); add % to FEATURES/README ~~ done at `094de50` (82.4/81.9 measured; refreshed to 85.3/85.4 at `d871122`)                                                        | Coverage unknown                            | 15min |
+| 13 | ~~Verify `flake.nix` works: `nix build`, `nix run .#test`, `nix run .#lint`, `nix flake check`~~ **done — apps verified at `d871122`; `nix flake check` green after this session's hermetic flake fix** | flake.nix never executed                    | 20min |
+| 14 | ~~Add `TestNormalizeForJSON` — table-driven (nil, scalar, map, nested, cycle-like) ~~ done at `094de50`                                                                                                 | Only exercised transitively today           | 20min |
+| 15 | ~~Add `FuzzNormalizeForJSON` fuzz target ~~ done at `094de50`                                                                                                                                           | Recursive normalizer = textbook fuzz target | 15min |
+| 16 | ~~Verify `go-cqrs-lite` consumes `go-codec@v0.1.0` ~~ done at `d871122` (go-cqrs-lite/codec/v4 builds against the proxy tag)                                                                            | No consumer wired yet                       | 15min |
+| 17 | ~~Measure README benchmark claims ("19-43% smaller / 25-72% faster") or remove them ~~ **still open — `TODO_LIST.md` #13**                                                                              | Unverified numbers in user-facing doc       | 30min |
 
 ### P3 — API polish
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 18 | ~~`Size` → `SizeResult{JSON, CBOR int}` struct; update callers, tests, `doc.go`              ~~ done at `094de50` | Positional `(int, int)` is ambiguous               | 30min |
-| 19 | ~~Add `TranscodeToCBOR` or document the one-way contract explicitly                           ~~ done at `094de50` | Asymmetry undocumented                             | 30min |
-| 20 | ~~Add `sync.Pool[*bytes.Buffer]` helper for `BufferEncoder` hot paths                         ~~ done at `094de50` | No pool helper for callers                         | 20min |
-| 21 | ~~Benchmark v1 vs v2 JSON paths + `normalizeForJSON` allocation count                         ~~ done at `094de50` | Dual-build perf cost unquantified                  | 30min |
+| #  | Task                                                                                                 | Why                                  | Est   |
+| -- | ---------------------------------------------------------------------------------------------------- | ------------------------------------ | ----- |
+| 18 | ~~`Size` → `SizeResult{JSON, CBOR int}` struct; update callers, tests, `doc.go` ~~ done at `094de50` | Positional `(int, int)` is ambiguous | 30min |
+| 19 | ~~Add `TranscodeToCBOR` or document the one-way contract explicitly ~~ done at `094de50`             | Asymmetry undocumented               | 30min |
+| 20 | ~~Add `sync.Pool[*bytes.Buffer]` helper for `BufferEncoder` hot paths ~~ done at `094de50`           | No pool helper for callers           | 20min |
+| 21 | ~~Benchmark v1 vs v2 JSON paths + `normalizeForJSON` allocation count ~~ done at `094de50`           | Dual-build perf cost unquantified    | 30min |
 
 ### P4 — Test polish
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 22 | ~~Remove dead `testJSONMarshal` from `json_helpers_v1_test.go` + `json_helpers_v2_test.go`   ~~ done at `094de50` | Defined, never called — dead code                  | 1min  |
-| 23 | ~~Extract test string constants (`testName`, `testEmail`) to dedupe goconst findings          ~~ done at `094de50` | 20+ repeated-literal findings suppressed           | 10min |
-| 24 | ~~Re-enable `tagliatelle` in tests (fix `created_at` → `created-at` or add nolint)            ~~ done at `094de50` | JSON tag convention enforcement                    | 5min  |
+| #  | Task                                                                                                            | Why                                      | Est   |
+| -- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ----- |
+| 22 | ~~Remove dead `testJSONMarshal` from `json_helpers_v1_test.go` + `json_helpers_v2_test.go` ~~ done at `094de50` | Defined, never called — dead code        | 1min  |
+| 23 | ~~Extract test string constants (`testName`, `testEmail`) to dedupe goconst findings ~~ done at `094de50`       | 20+ repeated-literal findings suppressed | 10min |
+| 24 | ~~Re-enable `tagliatelle` in tests (fix `created_at` → `created-at` or add nolint) ~~ done at `094de50`         | JSON tag convention enforcement          | 5min  |
 
 ### P5 — Docs & repo hygiene
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 25 | ~~Add `CODEOWNERS`, `SECURITY.md`, issue/PR templates                                        ~~ done at `094de50` | None exist                                         | 15min |
-| 26 | ~~Add `docs/TIMEZONE_HANDLING.md` or accept the inline README section as sufficient           ~~ done at `094de50` | README references it; no dedicated page             | 10min |
-| 27 | ~~Flesh out `CONTRIBUTING.md` with snapshot-update flow details                              ~~ done at `094de50` | Covers basics but could be more explicit           | 15min |
-| 28 | ~~Add a real architecture diagram (codec → store/event/signing/encryption)                    ~~ **still open — `TODO_LIST.md` #19** | README is text-only                                | 20min |
+| #  | Task                                                                                                              | Why                                      | Est   |
+| -- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ----- |
+| 25 | ~~Add `CODEOWNERS`, `SECURITY.md`, issue/PR templates ~~ done at `094de50`                                        | None exist                               | 15min |
+| 26 | ~~Add `docs/TIMEZONE_HANDLING.md` or accept the inline README section as sufficient ~~ done at `094de50`          | README references it; no dedicated page  | 10min |
+| 27 | ~~Flesh out `CONTRIBUTING.md` with snapshot-update flow details ~~ done at `094de50`                              | Covers basics but could be more explicit | 15min |
+| 28 | ~~Add a real architecture diagram (codec → store/event/signing/encryption) ~~ **still open — `TODO_LIST.md` #19** | README is text-only                      | 20min |
 
 ### P6 — ROADMAP ideas (raw, unrefined)
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 29 | ~~Streaming JSON encoder/decoder (parity with CBOR streaming)                                 ~~ done at `eba9f80` (`NewJSONEncoder`/`NewJSONDecoder`, NDJSON) | Format coverage                                    | 2h    |
-| 30 | ~~Custom-codec registration table for `ForEncoding`                                           ~~ still open — `ROADMAP.md` theme 1 | Drop hardcoded switch; user-pluggable              | 45min |
-| 31 | ~~MessagePack codec                                                                           ~~ still open — `ROADMAP.md` theme 1 | Format coverage                                    | 2h    |
-| 32 | ~~Protocol Buffers / FlatBuffers adapter                                                      ~~ still open — `ROADMAP.md` theme 1 | Format coverage                                    | 3h    |
-| 33 | ~~Schema-diff tooling (detect reorder/rename before breaking stored data)                     ~~ still open — `ROADMAP.md` theme 3 | Drift detection                                    | 3h    |
-| 34 | ~~Migration helper pairing `UnwrapDecode` with codec swap                                     ~~ still open — `ROADMAP.md` theme 3 | Incremental store re-encoding                      | 2h    |
-| 35 | ~~`toarray` field-order lint (block reordering array-encoded structs)                         ~~ still open — `ROADMAP.md` theme 3 | Wire-format safety                                 | 1h    |
-| 36 | ~~Encode/decode counters + metrics hooks                                                      ~~ done at `eba9f80`, `d871122` (`ObservableCodec` + stress/panic tests) | Per-codec telemetry                                | 1h    |
-| 37 | ~~"Why was this detected as X?" debug mode for `AutoDetect`                                   ~~ done at `93e68f3` (`AutoDetectDebug`) | Triage aid                                         | 30min |
-| 38 | ~~Website launch via `website-launch` skill                                                   ~~ still open — `ROADMAP.md` theme 5 | Public presence                                    | 1h    |
-| 39 | ~~Worked end-to-end example consuming `go-codec` from `go-cqrs-lite`                          ~~ still open — `ROADMAP.md` theme 5 | Adoption proof                                     | 30min |
-| 40 | ~~pkg.go.dev polish: godoc example for every exported symbol                                  ~~ still open — `ROADMAP.md` theme 5 | Discoverability                                    | 30min |
+| #  | Task                                                                                                                           | Why                                   | Est   |
+| -- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ----- |
+| 29 | ~~Streaming JSON encoder/decoder (parity with CBOR streaming) ~~ done at `eba9f80` (`NewJSONEncoder`/`NewJSONDecoder`, NDJSON) | Format coverage                       | 2h    |
+| 30 | ~~Custom-codec registration table for `ForEncoding` ~~ still open — `ROADMAP.md` theme 1                                       | Drop hardcoded switch; user-pluggable | 45min |
+| 31 | ~~MessagePack codec ~~ still open — `ROADMAP.md` theme 1                                                                       | Format coverage                       | 2h    |
+| 32 | ~~Protocol Buffers / FlatBuffers adapter ~~ still open — `ROADMAP.md` theme 1                                                  | Format coverage                       | 3h    |
+| 33 | ~~Schema-diff tooling (detect reorder/rename before breaking stored data) ~~ still open — `ROADMAP.md` theme 3                 | Drift detection                       | 3h    |
+| 34 | ~~Migration helper pairing `UnwrapDecode` with codec swap ~~ still open — `ROADMAP.md` theme 3                                 | Incremental store re-encoding         | 2h    |
+| 35 | ~~`toarray` field-order lint (block reordering array-encoded structs) ~~ still open — `ROADMAP.md` theme 3                     | Wire-format safety                    | 1h    |
+| 36 | ~~Encode/decode counters + metrics hooks ~~ done at `eba9f80`, `d871122` (`ObservableCodec` + stress/panic tests)              | Per-codec telemetry                   | 1h    |
+| 37 | ~~"Why was this detected as X?" debug mode for `AutoDetect` ~~ done at `93e68f3` (`AutoDetectDebug`)                           | Triage aid                            | 30min |
+| 38 | ~~Website launch via `website-launch` skill ~~ still open — `ROADMAP.md` theme 5                                               | Public presence                       | 1h    |
+| 39 | ~~Worked end-to-end example consuming `go-codec` from `go-cqrs-lite` ~~ still open — `ROADMAP.md` theme 5                      | Adoption proof                        | 30min |
+| 40 | ~~pkg.go.dev polish: godoc example for every exported symbol ~~ still open — `ROADMAP.md` theme 5                              | Discoverability                       | 30min |
 
 ### P7 — Performance
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 41 | ~~Benchmark `toarray` vs map-mode CBOR size/speed                                             ~~ done at `eba9f80` (`BenchmarkTagTradeoffs_Encode/Decode`) | Document tradeoff                                  | 20min |
-| 42 | ~~Profile `TranscodeToJSON` under realistic payload shapes                                    ~~ done at `eba9f80` (`BenchmarkTranscodeToJSON_*`) | Hot-path characterization                          | 30min |
-| 43 | ~~Consider lazy normalization (only convert keys when marshaler chokes)                       ~~ still open — `ROADMAP.md` theme 2 (lazy normalization) | Reduce normalizer allocations                      | 1h    |
+| #  | Task                                                                                                                              | Why                           | Est   |
+| -- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ----- |
+| 41 | ~~Benchmark `toarray` vs map-mode CBOR size/speed ~~ done at `eba9f80` (`BenchmarkTagTradeoffs_Encode/Decode`)                    | Document tradeoff             | 20min |
+| 42 | ~~Profile `TranscodeToJSON` under realistic payload shapes ~~ done at `eba9f80` (`BenchmarkTranscodeToJSON_*`)                    | Hot-path characterization     | 30min |
+| 43 | ~~Consider lazy normalization (only convert keys when marshaler chokes) ~~ still open — `ROADMAP.md` theme 2 (lazy normalization) | Reduce normalizer allocations | 1h    |
 
 ### P8 — Future / deferred
 
-| #  | Task                                                                                        | Why                                                | Est   |
-|----|---------------------------------------------------------------------------------------------|----------------------------------------------------|-------|
-| 44 | ~~Bump `go.mod` to `go 1.27` when released (drop dual-build)                                  ~~ still open — future (Go 1.27+) | Simplify maintenance                               | 30min |
-| 45 | ~~Add `golangci-lint` v2 `formatters run --diff` to CI                                        ~~ still open — future (CI formatting enforcement) | Enforce formatting in CI                           | 10min |
-| 46 | ~~Evaluate dropping `go-error-family` for stdlib `errors` + code field                        ~~ still open — deferred decision | One fewer direct dep                               | 30min |
-| 47 | ~~Add `Result[T]` pattern to codec Decode (if sibling stack adopts)                           ~~ still open — deferred (conditional on sibling stack) | Error-handling consistency                         | 1h    |
-| 48 | ~~Add `dedup-acceptance.md` if `art-dupl` is used across sibling repos                        ~~ still open — deferred (`art-dupl` not adopted here) | Duplication management                             | 15min |
-| 49 | ~~Property-test `AutoDetect` ↔ `ForEncoding` round-trip on mixed streams                      ~~ still open — table-driven round-trip exists (`resolve_test.go`); full property version not written | Edge-case coverage                                 | 30min |
-| 50 | ~~Verify `TimeUnixDynamic` float-drift claims (~165ns) against actual test behavior            ~~ done — locked by the `codec_test.go` time-precision test (1µs round-trip tolerance) | README accuracy                                    | 15min |
+| #  | Task                                                                                                                                                                           | Why                        | Est   |
+| -- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- | ----- |
+| 44 | ~~Bump `go.mod` to `go 1.27` when released (drop dual-build) ~~ still open — future (Go 1.27+)                                                                                 | Simplify maintenance       | 30min |
+| 45 | ~~Add `golangci-lint` v2 `formatters run --diff` to CI ~~ still open — future (CI formatting enforcement)                                                                      | Enforce formatting in CI   | 10min |
+| 46 | ~~Evaluate dropping `go-error-family` for stdlib `errors` + code field ~~ still open — deferred decision                                                                       | One fewer direct dep       | 30min |
+| 47 | ~~Add `Result[T]` pattern to codec Decode (if sibling stack adopts) ~~ still open — deferred (conditional on sibling stack)                                                    | Error-handling consistency | 1h    |
+| 48 | ~~Add `dedup-acceptance.md` if `art-dupl` is used across sibling repos ~~ still open — deferred (`art-dupl` not adopted here)                                                  | Duplication management     | 15min |
+| 49 | ~~Property-test `AutoDetect` ↔ `ForEncoding` round-trip on mixed streams ~~ still open — table-driven round-trip exists (`resolve_test.go`); full property version not written | Edge-case coverage         | 30min |
+| 50 | ~~Verify `TimeUnixDynamic` float-drift claims (~165ns) against actual test behavior ~~ done — locked by the `codec_test.go` time-precision test (1µs round-trip tolerance)     | README accuracy            | 15min |
 
 ---
 
@@ -306,6 +306,7 @@ The tag `v0.1.0` points at `3f8ac9d` (library code complete). Three commits
 landed after the tag: CI workflow (`ef1f4f4`), CI fix (`5352889`), and this
 status report's predecessor (`ba73a7e`). A consumer doing `git checkout v0.1.0`
 gets the library code but NOT the CI pipeline. Options:
+
 - **Leave tag at `3f8ac9d`** — CI is repo infrastructure, not library artifact
 - **Move tag to HEAD** — tag includes everything (but it's the 2nd move)
 - **Cut `v0.1.1`** — clean tag at HEAD, properly versioned
@@ -318,6 +319,7 @@ the empty GitHub Release page should be created at `v0.1.0` or `v0.1.1`.
 The function recursively walks CBOR-decoded `any` values to normalize map keys
 for v1 JSON. Deeply nested or adversarial CBOR will recurse deeply (no cap
 exists today). Adding a depth cap is cheap (~5 lines + test). But:
+
 - If all consumers only transcode **internally-generated** events (trusted
   source), the cap is defense-in-depth, not urgent.
 - If any consumer transcodes **user-supplied** data, it's a P0 security fix.
@@ -331,6 +333,7 @@ determines whether TODO_LIST #1/#2 are P0 or P2.
 `normalizeForJSON`, `canonicalEncMode`). 8 use `package codec_test`
 (black-box, test public API). The `testpackage` linter was removed entirely
 instead of resolving the split. Options:
+
 - **Migrate all to `codec_test`** + add `export_test.go` for unexported symbols
 - **Migrate all to `codec`** for simplicity
 - **Keep the split** (intentional white-box vs black-box)
@@ -342,19 +345,19 @@ whichever you choose but can't decide the project's testing philosophy.
 
 ## Session Metrics
 
-| Metric                              | Value                                            |
-|-------------------------------------|--------------------------------------------------|
-| Living docs rebuilt/verified        | 7 (CHANGELOG, FEATURES, TODO_LIST, ROADMAP, README, AGENTS, DOMAIN_LANGUAGE) |
-| Historical docs annotated           | 5 (3 status reports + 2 planning docs)           |
-| Historical docs archived            | 1 (`2026-08-11_23-45_composable-sdk-fixes.md`)   |
-| Numbered items resolved inline      | ~280 (50+50+50+50+41 + questions/pareto steps)   |
-| TODO_LIST items harvested           | 1 → 24 (each verified against code)              |
-| ROADMAP themes                      | 4 → 5 (+ecosystem; +streaming JSON idea)         |
-| Build modes verified                | 2 (v1 + v2, both green with `-race`)             |
-| Lint modes run                      | 0 (skipped — see section D.2)                    |
-| Health score (Accuracy / Fitness)   | 9.25 / 10                                        |
-| Source files modified               | 0 (docs-only session)                            |
-| Findings I missed during audit      | 1 (README "Go 1.23+" error — caught in self-review) |
+| Metric                            | Value                                                                        |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| Living docs rebuilt/verified      | 7 (CHANGELOG, FEATURES, TODO_LIST, ROADMAP, README, AGENTS, DOMAIN_LANGUAGE) |
+| Historical docs annotated         | 5 (3 status reports + 2 planning docs)                                       |
+| Historical docs archived          | 1 (`2026-08-11_23-45_composable-sdk-fixes.md`)                               |
+| Numbered items resolved inline    | ~280 (50+50+50+50+41 + questions/pareto steps)                               |
+| TODO_LIST items harvested         | 1 → 24 (each verified against code)                                          |
+| ROADMAP themes                    | 4 → 5 (+ecosystem; +streaming JSON idea)                                     |
+| Build modes verified              | 2 (v1 + v2, both green with `-race`)                                         |
+| Lint modes run                    | 0 (skipped — see section D.2)                                                |
+| Health score (Accuracy / Fitness) | 9.25 / 10                                                                    |
+| Source files modified             | 0 (docs-only session)                                                        |
+| Findings I missed during audit    | 1 (README "Go 1.23+" error — caught in self-review)                          |
 
 ---
 

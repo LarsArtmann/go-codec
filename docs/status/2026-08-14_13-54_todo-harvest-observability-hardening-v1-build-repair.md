@@ -17,18 +17,18 @@ All verification is green at session end: `go build`, `go test -race`, `golangci
 
 ## a) FULLY DONE
 
-| Item | What was done | Evidence |
-| ---- | ------------- | -------- |
-| **Item 3 — "stale diagnostics" (Critical, was BLOCKED)** | Root-caused to committed v1-file import corruption, NOT an LSP cache bug. Restored `encoding/json` imports in `json_compat_v1.go` (incl. `rawJSONValue = json.RawMessage`) and `json_helpers_v1_test.go`. | Default `go build ./...` green (was: "build constraints exclude all Go files"); `nix run .#test` green; `TestDualJSONContract_Imports` passes; LSP and CLI now agree |
-| **Item 6 — concurrent stress test** | `TestObservableCodec_ConcurrentStress`: 16,000 goroutines, one encode+decode each, shared `CodecMetrics` + validating `MetricsHook`, exact assertions on call counts, byte totals, hook invocations. Race-clean. | `go test -race` green both modes |
-| **Item 7 — MetricsHook panic policy** | Documented on `MetricsHook`: panics propagate (not recovered — idiomatic; library must not swallow panics), metrics recorded BEFORE the hook so counters stay consistent. Locked by `TestObservableCodec_HookPanicPropagates`. | godoc + test green |
-| **Item 8 — Detail contract** | `AutoDetectResult` doc: `Reason` = stable machine-readable contract; `Detail` = unstable human-readable prose, never parse it. Stated on the struct, on `AutoDetectDebug`, in README, and demonstrated by branching on `Reason` in the example. | godoc + README |
-| **Item 9 — property/fuzz for AutoDetect ↔ AutoDetectDebug** | `TestProperty_AutoDetectDelegatesToDebug` (rapid, random byte slices) + `FuzzAutoDetectDebug_Consistency` (native fuzz, 5 seeds, 10s run clean): lockstep delegation, known encoding, known reason, non-empty Detail, no panics. | Tests green; fuzz 10s no findings |
-| **Item 5 — README + examples discoverability** | README sections "Telemetry (ObservableCodec)" and "Explainable Format Detection (AutoDetectDebug)"; godoc `ExampleObserveCodec` + `ExampleAutoDetectDebug` (run as tests); `doc.go` gained Observability + Format Detection overview sections. | Example output verified |
-| **Item 4 — coverage refresh** | Re-measured: **85.3% (v1) / 85.4% (v2)** statements (was 82.4/81.9). FEATURES.md updated; Observability rows enriched with stress/panic/delegation evidence. | `go tool cover -func` |
-| **Item 1 — downstream adoption proof** | `go-cqrs-lite/codec/v4` go.mod requires `go-codec v0.1.0` with proxy checksums; `GOWORK=off go list -m` + `go build ./...` green inside that module. Recorded in AGENTS.md. | Module cache at `~/go/pkg/mod/go-codec@v0.1.0` |
-| **Docs maintenance** | CHANGELOG `[Unreleased]`: new Added/Fixed entries (incl. the build-fix disclosure); TODO_LIST rewritten (items 3-9 closed, item 2 renumbered with v0.1.1 recommendation); AGENTS.md gotcha expanded with the corruption incident + adoption proof. ROADMAP §4 verified already current. | File diffs |
-| **Full verification matrix** | build + race-test + lint (0 issues) in v1 and v2; `nix run .#test` both modes green. | Session-end run |
+| Item                                                        | What was done                                                                                                                                                                                                                                                                           | Evidence                                                                                                                                                             |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Item 3 — "stale diagnostics" (Critical, was BLOCKED)**    | Root-caused to committed v1-file import corruption, NOT an LSP cache bug. Restored `encoding/json` imports in `json_compat_v1.go` (incl. `rawJSONValue = json.RawMessage`) and `json_helpers_v1_test.go`.                                                                               | Default `go build ./...` green (was: "build constraints exclude all Go files"); `nix run .#test` green; `TestDualJSONContract_Imports` passes; LSP and CLI now agree |
+| **Item 6 — concurrent stress test**                         | `TestObservableCodec_ConcurrentStress`: 16,000 goroutines, one encode+decode each, shared `CodecMetrics` + validating `MetricsHook`, exact assertions on call counts, byte totals, hook invocations. Race-clean.                                                                        | `go test -race` green both modes                                                                                                                                     |
+| **Item 7 — MetricsHook panic policy**                       | Documented on `MetricsHook`: panics propagate (not recovered — idiomatic; library must not swallow panics), metrics recorded BEFORE the hook so counters stay consistent. Locked by `TestObservableCodec_HookPanicPropagates`.                                                          | godoc + test green                                                                                                                                                   |
+| **Item 8 — Detail contract**                                | `AutoDetectResult` doc: `Reason` = stable machine-readable contract; `Detail` = unstable human-readable prose, never parse it. Stated on the struct, on `AutoDetectDebug`, in README, and demonstrated by branching on `Reason` in the example.                                         | godoc + README                                                                                                                                                       |
+| **Item 9 — property/fuzz for AutoDetect ↔ AutoDetectDebug** | `TestProperty_AutoDetectDelegatesToDebug` (rapid, random byte slices) + `FuzzAutoDetectDebug_Consistency` (native fuzz, 5 seeds, 10s run clean): lockstep delegation, known encoding, known reason, non-empty Detail, no panics.                                                        | Tests green; fuzz 10s no findings                                                                                                                                    |
+| **Item 5 — README + examples discoverability**              | README sections "Telemetry (ObservableCodec)" and "Explainable Format Detection (AutoDetectDebug)"; godoc `ExampleObserveCodec` + `ExampleAutoDetectDebug` (run as tests); `doc.go` gained Observability + Format Detection overview sections.                                          | Example output verified                                                                                                                                              |
+| **Item 4 — coverage refresh**                               | Re-measured: **85.3% (v1) / 85.4% (v2)** statements (was 82.4/81.9). FEATURES.md updated; Observability rows enriched with stress/panic/delegation evidence.                                                                                                                            | `go tool cover -func`                                                                                                                                                |
+| **Item 1 — downstream adoption proof**                      | `go-cqrs-lite/codec/v4` go.mod requires `go-codec v0.1.0` with proxy checksums; `GOWORK=off go list -m` + `go build ./...` green inside that module. Recorded in AGENTS.md.                                                                                                             | Module cache at `~/go/pkg/mod/go-codec@v0.1.0`                                                                                                                       |
+| **Docs maintenance**                                        | CHANGELOG `[Unreleased]`: new Added/Fixed entries (incl. the build-fix disclosure); TODO_LIST rewritten (items 3-9 closed, item 2 renumbered with v0.1.1 recommendation); AGENTS.md gotcha expanded with the corruption incident + adoption proof. ROADMAP §4 verified already current. | File diffs                                                                                                                                                           |
+| **Full verification matrix**                                | build + race-test + lint (0 issues) in v1 and v2; `nix run .#test` both modes green.                                                                                                                                                                                                    | Session-end run                                                                                                                                                      |
 
 ### Verification commands (all green)
 
@@ -46,11 +46,11 @@ $ go test -fuzz FuzzAutoDetectDebug_Consistency -fuzztime=10s  # no findings
 
 ## b) PARTIALLY DONE
 
-| Item | What remains |
-| ---- | ------------ |
+| Item                         | What remains                                                                                                                                       |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Telemetry docs for exporters | README shows the hook pattern but no concrete Prometheus/OpenTelemetry example (old report item 27/28). Deferred — needs a metrics-backend choice. |
-| Fuzz hardening | `FuzzAutoDetectDebug_Consistency` ran 10s locally only. No committed interesting corpus entries, no CI fuzz job. |
-| Verification breadth | Raw toolchain + `nix run .#test` verified; `nix flake check` (full checks incl. treefmt) not re-run this session. |
+| Fuzz hardening               | `FuzzAutoDetectDebug_Consistency` ran 10s locally only. No committed interesting corpus entries, no CI fuzz job.                                   |
+| Verification breadth         | Raw toolchain + `nix run .#test` verified; `nix flake check` (full checks incl. treefmt) not re-run this session.                                  |
 
 ---
 
@@ -82,7 +82,7 @@ My first CHANGELOG edit matched a non-unique anchor (`### Added`), splicing my n
 
 ### 3. Initial misdiagnosis of the build failure
 
-When the first `go test ./...` failed with "build constraints exclude all Go files in .../encoding/json/v2", I burned ~7 tool calls blaming the environment: `go env GOEXPERIMENT/GOFLAGS`, nix dev shells, stdlib source listings, the wrapper binary — before the `TestDualJSONContract_Imports` failure pointed at the truth. The error message *literally named the import path*; with `goexperiment.jsonv2` off, only a mis-tagged v1 file could import it. `grep -rn 'encoding/json/v2' json_compat_v1.go` was a one-command diagnosis.
+When the first `go test ./...` failed with "build constraints exclude all Go files in .../encoding/json/v2", I burned ~7 tool calls blaming the environment: `go env GOEXPERIMENT/GOFLAGS`, nix dev shells, stdlib source listings, the wrapper binary — before the `TestDualJSONContract_Imports` failure pointed at the truth. The error message _literally named the import path_; with `goexperiment.jsonv2` off, only a mis-tagged v1 file could import it. `grep -rn 'encoding/json/v2' json_compat_v1.go` was a one-command diagnosis.
 
 **Lesson (now encoded in AGENTS.md):** when build constraints fail in the default mode, grep the v1 compat files' imports FIRST — suspect committed corruption before toolchain/config drift.
 
@@ -105,40 +105,40 @@ Even after the corruption fix and an LSP restart, `golangci_lint_ls` shows 2 war
 
 ## f) Up to 50 things we should get done next
 
-| # | Task | Impact | Effort |
-| - | ---- | ------ | ------ |
-| 1 | ~~Decide release strategy: cut `v0.1.1` (recommended — v0.1.0 predates the v1-build fix) vs move tag~~ **still open — awaiting user decision (`TODO_LIST.md` #1)** | Critical | 5min |
-| 2 | ~~`gh release create` with CHANGELOG notes once strategy decided~~ **still open — `TODO_LIST.md` #1** | High | 5min |
-| 3 | ~~Ensure CI default-mode job runs independently before the v2 matrix job~~ done — already satisfied: the CI test/lint jobs are independent `fail-fast: false` matrix legs, each running its own `go build`; a broken default build cannot hide behind the v2 leg | High | S |
-| 4 | ~~Add CI fuzz job (cron, short fuzztime) for all fuzz targets~~ **still open — `TODO_LIST.md` #3** | Medium | M |
-| 5 | ~~Commit seed corpus for `FuzzAutoDetectDebug_Consistency` under `testdata/fuzz/`~~ **still open — `TODO_LIST.md` #3** | Low | S |
-| 6 | ~~`BenchmarkObserveCodec` — quantifies decorator overhead vs raw codec~~ **still open — `TODO_LIST.md` #5** | Medium | S |
-| 7 | `BenchmarkAutoDetectDebug` — cost of the debug variant on hot paths | Low | S |
-| 8 | Refactor `CodecMetrics` to atomics (drop RWMutex) if benchmarks justify it | Medium | M |
-| 9 | ~~Test: `ObservableCodec` wrapping `CBORCompactCodec`~~ **still open — `TODO_LIST.md` #6** | Low | S |
-| 10 | ~~Test: `EncodeToBuffer` error propagation from inner `BufferEncoder`~~ **still open — `TODO_LIST.md` #6** | Medium | S |
-| 11 | ~~Test: fallback `EncodeToBuffer` when `buf.Write` fails~~ **still open — `TODO_LIST.md` #6** | Medium | S |
-| 12 | ~~Test: `MetricsSnapshot` is an immutable copy (mutating source doesn't change it)~~ **still open — `TODO_LIST.md` #6** | Low | S |
-| 13 | ~~Test: `ObservableCodec` wrapping another `ObservableCodec` (no double-count)~~ **still open — `TODO_LIST.md` #6** | Medium | S |
-| 14 | ~~Test: `ObserveCodec(nil)` — document panic vs error behavior~~ **still open — `TODO_LIST.md` #6** | Low | S |
-| 15 | ~~Test: `ObservableCodec` composes with `EncodePooled` path~~ **still open — `TODO_LIST.md` #6** | Medium | S |
-| 16 | ~~Test: hook byte counts on encode/decode error paths~~ **still open — `TODO_LIST.md` #6** | Medium | S |
-| 17 | ~~Prometheus exporter example in README (or example file)~~ **still open — `TODO_LIST.md` #17 (blocked on exporter-backend choice)** | Medium | S |
-| 18 | ~~OpenTelemetry hook example~~ **still open — `TODO_LIST.md` #17 (blocked on exporter-backend choice)** | Low | M |
-| 19 | ~~Cross-repo PR: `go-cqrs-lite` event store wraps codec in `ObserveCodec`~~ still open — `ROADMAP.md` theme 5 (cross-repo) | High | M |
-| 20 | ~~Cross-repo PR: `go-cqrs-lite` mixed-stream diagnostics use `AutoDetectDebug`~~ still open — `ROADMAP.md` theme 5 (cross-repo) | Medium | M |
-| 21 | ~~Consider exposing `maxAutoDetectSize` as configurable (safe default)~~ still open — `ROADMAP.md` theme 4 | Low | M |
-| 22 | ~~Add `LastEncodeTime`/`LastDecodeTime` to `CodecMetrics`~~ still open — `ROADMAP.md` theme 4 | Low | S |
-| 23 | ~~Per-encoding aggregated metrics helper~~ still open — `ROADMAP.md` theme 4 | Low | M |
-| 24 | ~~Payload-size histogram in metrics~~ still open — `ROADMAP.md` theme 4 | Low | M |
-| 25 | ~~Make `ExampleObserveCodec` output size-independent (print derived values)~~ **still open — `TODO_LIST.md` #10** | Low | S |
-| 26 | ~~Annotate/nolint `json_helpers_v2_test.go` gopls stdversion warnings~~ **still open — `TODO_LIST.md` #15** | Low | S |
-| 27 | ~~CI step: `golangci-lint run --out-format json` artifact to disambiguate LSP vs CLI~~ **still open — `TODO_LIST.md` #18** | Medium | S |
-| 28 | ~~Run `nix flake check` in this working tree (treefmt + checks)~~ done 2026-08-14 — `nix flake check` green after converting checks to hermetic `buildGoModule` | Medium | S |
-| 29 | Re-verify gopls project diagnostics settle to only the known stdversion warnings | Low | S |
-| 30 | ~~Sweep the old 50-item list (2026-08-12 report §f) for anything still worth harvesting into TODO_LIST~~ done 2026-08-14 — all three older 50-item lists (12-42, 13-55, 20-05) swept and annotated in this docs-health pass | Medium | S |
+| #  | Task                                                                                                                                                                                                                                                             | Impact   | Effort |
+| -- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
+| 1  | ~~Decide release strategy: cut `v0.1.1` (recommended — v0.1.0 predates the v1-build fix) vs move tag~~ **still open — awaiting user decision (`TODO_LIST.md` #1)**                                                                                               | Critical | 5min   |
+| 2  | ~~`gh release create` with CHANGELOG notes once strategy decided~~ **still open — `TODO_LIST.md` #1**                                                                                                                                                            | High     | 5min   |
+| 3  | ~~Ensure CI default-mode job runs independently before the v2 matrix job~~ done — already satisfied: the CI test/lint jobs are independent `fail-fast: false` matrix legs, each running its own `go build`; a broken default build cannot hide behind the v2 leg | High     | S      |
+| 4  | ~~Add CI fuzz job (cron, short fuzztime) for all fuzz targets~~ **still open — `TODO_LIST.md` #3**                                                                                                                                                               | Medium   | M      |
+| 5  | ~~Commit seed corpus for `FuzzAutoDetectDebug_Consistency` under `testdata/fuzz/`~~ **still open — `TODO_LIST.md` #3**                                                                                                                                           | Low      | S      |
+| 6  | ~~`BenchmarkObserveCodec` — quantifies decorator overhead vs raw codec~~ **still open — `TODO_LIST.md` #5**                                                                                                                                                      | Medium   | S      |
+| 7  | `BenchmarkAutoDetectDebug` — cost of the debug variant on hot paths                                                                                                                                                                                              | Low      | S      |
+| 8  | Refactor `CodecMetrics` to atomics (drop RWMutex) if benchmarks justify it                                                                                                                                                                                       | Medium   | M      |
+| 9  | ~~Test: `ObservableCodec` wrapping `CBORCompactCodec`~~ **still open — `TODO_LIST.md` #6**                                                                                                                                                                       | Low      | S      |
+| 10 | ~~Test: `EncodeToBuffer` error propagation from inner `BufferEncoder`~~ **still open — `TODO_LIST.md` #6**                                                                                                                                                       | Medium   | S      |
+| 11 | ~~Test: fallback `EncodeToBuffer` when `buf.Write` fails~~ **still open — `TODO_LIST.md` #6**                                                                                                                                                                    | Medium   | S      |
+| 12 | ~~Test: `MetricsSnapshot` is an immutable copy (mutating source doesn't change it)~~ **still open — `TODO_LIST.md` #6**                                                                                                                                          | Low      | S      |
+| 13 | ~~Test: `ObservableCodec` wrapping another `ObservableCodec` (no double-count)~~ **still open — `TODO_LIST.md` #6**                                                                                                                                              | Medium   | S      |
+| 14 | ~~Test: `ObserveCodec(nil)` — document panic vs error behavior~~ **still open — `TODO_LIST.md` #6**                                                                                                                                                              | Low      | S      |
+| 15 | ~~Test: `ObservableCodec` composes with `EncodePooled` path~~ **still open — `TODO_LIST.md` #6**                                                                                                                                                                 | Medium   | S      |
+| 16 | ~~Test: hook byte counts on encode/decode error paths~~ **still open — `TODO_LIST.md` #6**                                                                                                                                                                       | Medium   | S      |
+| 17 | ~~Prometheus exporter example in README (or example file)~~ **still open — `TODO_LIST.md` #17 (blocked on exporter-backend choice)**                                                                                                                             | Medium   | S      |
+| 18 | ~~OpenTelemetry hook example~~ **still open — `TODO_LIST.md` #17 (blocked on exporter-backend choice)**                                                                                                                                                          | Low      | M      |
+| 19 | ~~Cross-repo PR: `go-cqrs-lite` event store wraps codec in `ObserveCodec`~~ still open — `ROADMAP.md` theme 5 (cross-repo)                                                                                                                                       | High     | M      |
+| 20 | ~~Cross-repo PR: `go-cqrs-lite` mixed-stream diagnostics use `AutoDetectDebug`~~ still open — `ROADMAP.md` theme 5 (cross-repo)                                                                                                                                  | Medium   | M      |
+| 21 | ~~Consider exposing `maxAutoDetectSize` as configurable (safe default)~~ still open — `ROADMAP.md` theme 4                                                                                                                                                       | Low      | M      |
+| 22 | ~~Add `LastEncodeTime`/`LastDecodeTime` to `CodecMetrics`~~ still open — `ROADMAP.md` theme 4                                                                                                                                                                    | Low      | S      |
+| 23 | ~~Per-encoding aggregated metrics helper~~ still open — `ROADMAP.md` theme 4                                                                                                                                                                                     | Low      | M      |
+| 24 | ~~Payload-size histogram in metrics~~ still open — `ROADMAP.md` theme 4                                                                                                                                                                                          | Low      | M      |
+| 25 | ~~Make `ExampleObserveCodec` output size-independent (print derived values)~~ **still open — `TODO_LIST.md` #10**                                                                                                                                                | Low      | S      |
+| 26 | ~~Annotate/nolint `json_helpers_v2_test.go` gopls stdversion warnings~~ **still open — `TODO_LIST.md` #15**                                                                                                                                                      | Low      | S      |
+| 27 | ~~CI step: `golangci-lint run --out-format json` artifact to disambiguate LSP vs CLI~~ **still open — `TODO_LIST.md` #18**                                                                                                                                       | Medium   | S      |
+| 28 | ~~Run `nix flake check` in this working tree (treefmt + checks)~~ done 2026-08-14 — `nix flake check` green after converting checks to hermetic `buildGoModule`                                                                                                  | Medium   | S      |
+| 29 | Re-verify gopls project diagnostics settle to only the known stdversion warnings                                                                                                                                                                                 | Low      | S      |
+| 30 | ~~Sweep the old 50-item list (2026-08-12 report §f) for anything still worth harvesting into TODO_LIST~~ done 2026-08-14 — all three older 50-item lists (12-42, 13-55, 20-05) swept and annotated in this docs-health pass                                      | Medium   | S      |
 
-*(30 concrete items — remaining ideas from the prior list were either done this session or are covered above.)*
+_(30 concrete items — remaining ideas from the prior list were either done this session or are covered above.)_
 
 ---
 
@@ -155,19 +155,19 @@ Even after the corruption fix and an LSP restart, `golangci_lint_ls` shows 2 war
 ## Files touched this session
 
 ```
- AGENTS.md               | 13 ++++-   gotcha (corruption incident) + adoption proof
- CHANGELOG.md            | 26 +++++    Added/Fixed entries incl. build-fix disclosure
- FEATURES.md             |  8 +--     coverage 85.3/85.4 + observability evidence
- README.md               | 43 ++++     telemetry + AutoDetectDebug sections
- TODO_LIST.md            | 49 ++++--   items 3-9 closed; v0.1.1 recommendation
- autodetect.go           |  6 ++      Detail/Reason contract docs
- autodetect_test.go      | 80 +++++    property + fuzz + reason checks
- doc.go                  | 21 +++     Observability + Format Detection sections
- example_test.go         | 55 ++++     ExampleObserveCodec + ExampleAutoDetectDebug
- json_compat_v1.go       |   5 +-     FIX: v2 imports → encoding/json
- json_helpers_v1_test.go |   2 +-     FIX: v2 import → encoding/json
- observability.go        |   7 ++     MetricsHook panic policy
- observability_test.go   | 141 +++++   stress test + panic-propagation test
+AGENTS.md               | 13 ++++-   gotcha (corruption incident) + adoption proof
+CHANGELOG.md            | 26 +++++    Added/Fixed entries incl. build-fix disclosure
+FEATURES.md             |  8 +--     coverage 85.3/85.4 + observability evidence
+README.md               | 43 ++++     telemetry + AutoDetectDebug sections
+TODO_LIST.md            | 49 ++++--   items 3-9 closed; v0.1.1 recommendation
+autodetect.go           |  6 ++      Detail/Reason contract docs
+autodetect_test.go      | 80 +++++    property + fuzz + reason checks
+doc.go                  | 21 +++     Observability + Format Detection sections
+example_test.go         | 55 ++++     ExampleObserveCodec + ExampleAutoDetectDebug
+json_compat_v1.go       |   5 +-     FIX: v2 imports → encoding/json
+json_helpers_v1_test.go |   2 +-     FIX: v2 import → encoding/json
+observability.go        |   7 ++     MetricsHook panic policy
+observability_test.go   | 141 +++++   stress test + panic-propagation test
 ```
 
 ---

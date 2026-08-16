@@ -133,6 +133,7 @@ encoder. This was also broken: `jsontext.Encoder` inserts separator tokens
 `{"ID":1}\n{"ID":2}\n`. Verified via a standalone test program.
 
 **Final fix:**
+
 - Encoder: `json.MarshalWrite(w, v)` + `w.Write([]byte{'\n'})` (stateless per
   value, no encoder state corruption)
 - Decoder: `jsontext.NewDecoder(r)` + `json.UnmarshalDecode(dec, v)` (stateful

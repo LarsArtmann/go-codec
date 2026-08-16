@@ -23,60 +23,60 @@ The codebase is green in both JSON builds:
 
 Working-tree changes since the last report:
 
-| File | What changed (this session) |
-| ---- | --------------------------- |
-| `testdata/fuzz/README.md` | New: corpus file format, seed-add workflow, CI corpus policy. |
-| `.github/workflows/ci.yml` | Added comment documenting artifact-only fuzz-corpus policy. |
-| `README.md` | Added explicit `DeterministicCodec` guidance for signing-module consumers. |
-| `codec_test.go` | Added two contract tests: CBOR vs CBORCompact byte incompatibility, and singleton CBOR mode identity. |
-| `CHANGELOG.md` | Logged the new tests, README note, and fuzz corpus README. |
-| `TODO_LIST.md` | Updated #1 with resolved sub-questions and explicit recommendation. |
+| File                       | What changed (this session)                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `testdata/fuzz/README.md`  | New: corpus file format, seed-add workflow, CI corpus policy.                                         |
+| `.github/workflows/ci.yml` | Added comment documenting artifact-only fuzz-corpus policy.                                           |
+| `README.md`                | Added explicit `DeterministicCodec` guidance for signing-module consumers.                            |
+| `codec_test.go`            | Added two contract tests: CBOR vs CBORCompact byte incompatibility, and singleton CBOR mode identity. |
+| `CHANGELOG.md`             | Logged the new tests, README note, and fuzz corpus README.                                            |
+| `TODO_LIST.md`             | Updated #1 with resolved sub-questions and explicit recommendation.                                   |
 
 Pre-existing changes already present in the working tree (from previous sessions):
 
-| File | What was already there |
-| ---- | ---------------------- |
-| `AGENTS.md` | Added `DeterministicCodec` documentation to the architecture/gotchas section. |
-| `FEATURES.md` | Marked `DeterministicCodec` as `FULLY_FUNCTIONAL`. |
+| File          | What was already there                                                        |
+| ------------- | ----------------------------------------------------------------------------- |
+| `AGENTS.md`   | Added `DeterministicCodec` documentation to the architecture/gotchas section. |
+| `FEATURES.md` | Marked `DeterministicCodec` as `FULLY_FUNCTIONAL`.                            |
 
 ---
 
 ## a) Fully Done (22 / 22)
 
-| # | Task | Evidence | Session |
-| - | ---- | -------- | ------- |
-| 1 | Release strategy decision | Documented in `TODO_LIST.md`: recommendation is to **cut `v0.1.1` from HEAD**; moving `v0.1.0` rejected because it would poison the module proxy. Execution is blocked only on remote push/tag. | 3 |
-| 2 | `DeterministicCodec` marker interface | `codec.go` defines the interface; `CBORCodec`/`CBORCompactCodec` implement it in all builds; `JSONCodec` only in `json_compat_v2.go`; `README.md` and `AGENTS.md` document it. | 1 |
-| 3 | CI fuzz job (cron + `workflow_dispatch`) + seed corpus | `.github/workflows/ci.yml` fuzz job runs all targets for 30s in v1/v2 and uploads corpus; `testdata/fuzz/FuzzAutoDetectDebug_Consistency/` has 5 seed files. | 2 |
-| 4 | `normalizeForJSON` depth error as `go-error-family` | `errors.go` adds `ErrNormalizeDepthExceeded` (`codec.normalize_depth_exceeded`). | 1 |
-| 5 | `BenchmarkObserveCodec` | `benchmark_test.go` with raw/observed encode/decode/pooled sub-benchmarks. | 1 |
-| 6 | Observability edge-case tests | 7 new tests in `observability_test.go`. | 1 |
-| 7 | v2 streaming test with non-buffer reader | `TestStreaming_JSONNonBufferReader` and `TestStreaming_JSONByteAtATimeReader` in `streaming_test.go`. | 1 |
-| 8 | `ExampleEncodePooled` | `example_test.go`. | 1 |
-| 9 | `ExampleSize` | `example_test.go`. | 1 |
-| 10 | Size-independent `ExampleObserveCodec` | Hardcoded `bytes=12` removed. | 1 |
-| 11 | Fix v2 `JSONEncoder` newline allocation | `json_compat_v2.go` uses `io.WriteString(e.w, "\n")`. | 1 |
-| 12 | `cbor:"3,keyasint"` on benchmark `Items` | `benchmark_test.go` updated. | 1 |
-| 13 | Soften README/doc.go perf claims | Both files point to `BenchmarkTagTradeoffs_*` / `BenchmarkRealisticPayload_*`. | 1 |
-| 14 | Rename opaque test constants | `testField` → `testFieldName`, `testFieldE` → `testFieldEmail`. | 1 |
-| 15 | Annotate `json_helpers_v2_test.go` stdversion warnings | Replaced invalid `//nolint:stdversion` with explanatory comment. | 1 |
-| 16 | `dependabot.yml` | Created with weekly `gomod` group updates. | 1 |
-| 17 | Prometheus/OpenTelemetry exporter example | Resolved as dependency-free: `ExampleMetricsHook` in `example_test.go`; README telemetry links to it. | 2 |
-| 18 | CI lint JSON artifact | `.github/workflows/ci.yml` produces `lint-report-json-v1` / `lint-report-json-v2` via `--output.json.path`. | 2 |
-| 19 | Architecture diagram | Mermaid diagram in README under `## Architecture`. | 2 |
-| 20 | Streaming benchmarks | `streaming_benchmark_test.go` + `json_streaming_v2_bench_test.go`. | 2 |
-| 21 | `PutBuffer` size guard | `pool.go` rejects buffers with `Cap() > 1 MiB`; test added. | 1 |
-| 22 | README sections for Streaming JSON, `EncodePooled`, `Size` | Dedicated sections in `README.md`. | 2 |
+| #  | Task                                                       | Evidence                                                                                                                                                                                        | Session |
+| -- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 1  | Release strategy decision                                  | Documented in `TODO_LIST.md`: recommendation is to **cut `v0.1.1` from HEAD**; moving `v0.1.0` rejected because it would poison the module proxy. Execution is blocked only on remote push/tag. | 3       |
+| 2  | `DeterministicCodec` marker interface                      | `codec.go` defines the interface; `CBORCodec`/`CBORCompactCodec` implement it in all builds; `JSONCodec` only in `json_compat_v2.go`; `README.md` and `AGENTS.md` document it.                  | 1       |
+| 3  | CI fuzz job (cron + `workflow_dispatch`) + seed corpus     | `.github/workflows/ci.yml` fuzz job runs all targets for 30s in v1/v2 and uploads corpus; `testdata/fuzz/FuzzAutoDetectDebug_Consistency/` has 5 seed files.                                    | 2       |
+| 4  | `normalizeForJSON` depth error as `go-error-family`        | `errors.go` adds `ErrNormalizeDepthExceeded` (`codec.normalize_depth_exceeded`).                                                                                                                | 1       |
+| 5  | `BenchmarkObserveCodec`                                    | `benchmark_test.go` with raw/observed encode/decode/pooled sub-benchmarks.                                                                                                                      | 1       |
+| 6  | Observability edge-case tests                              | 7 new tests in `observability_test.go`.                                                                                                                                                         | 1       |
+| 7  | v2 streaming test with non-buffer reader                   | `TestStreaming_JSONNonBufferReader` and `TestStreaming_JSONByteAtATimeReader` in `streaming_test.go`.                                                                                           | 1       |
+| 8  | `ExampleEncodePooled`                                      | `example_test.go`.                                                                                                                                                                              | 1       |
+| 9  | `ExampleSize`                                              | `example_test.go`.                                                                                                                                                                              | 1       |
+| 10 | Size-independent `ExampleObserveCodec`                     | Hardcoded `bytes=12` removed.                                                                                                                                                                   | 1       |
+| 11 | Fix v2 `JSONEncoder` newline allocation                    | `json_compat_v2.go` uses `io.WriteString(e.w, "\n")`.                                                                                                                                           | 1       |
+| 12 | `cbor:"3,keyasint"` on benchmark `Items`                   | `benchmark_test.go` updated.                                                                                                                                                                    | 1       |
+| 13 | Soften README/doc.go perf claims                           | Both files point to `BenchmarkTagTradeoffs_*` / `BenchmarkRealisticPayload_*`.                                                                                                                  | 1       |
+| 14 | Rename opaque test constants                               | `testField` → `testFieldName`, `testFieldE` → `testFieldEmail`.                                                                                                                                 | 1       |
+| 15 | Annotate `json_helpers_v2_test.go` stdversion warnings     | Replaced invalid `//nolint:stdversion` with explanatory comment.                                                                                                                                | 1       |
+| 16 | `dependabot.yml`                                           | Created with weekly `gomod` group updates.                                                                                                                                                      | 1       |
+| 17 | Prometheus/OpenTelemetry exporter example                  | Resolved as dependency-free: `ExampleMetricsHook` in `example_test.go`; README telemetry links to it.                                                                                           | 2       |
+| 18 | CI lint JSON artifact                                      | `.github/workflows/ci.yml` produces `lint-report-json-v1` / `lint-report-json-v2` via `--output.json.path`.                                                                                     | 2       |
+| 19 | Architecture diagram                                       | Mermaid diagram in README under `## Architecture`.                                                                                                                                              | 2       |
+| 20 | Streaming benchmarks                                       | `streaming_benchmark_test.go` + `json_streaming_v2_bench_test.go`.                                                                                                                              | 2       |
+| 21 | `PutBuffer` size guard                                     | `pool.go` rejects buffers with `Cap() > 1 MiB`; test added.                                                                                                                                     | 1       |
+| 22 | README sections for Streaming JSON, `EncodePooled`, `Size` | Dedicated sections in `README.md`.                                                                                                                                                              | 2       |
 
 Additional work completed this session (not on the original 22-item list):
 
-| Task | Evidence | Why it matters |
-| ---- | -------- | -------------- |
-| Document fuzz corpus format + policy | `testdata/fuzz/README.md` | Prevents the raw-bytes mistake; makes the CI artifact-only policy discoverable. |
-| Codify CI fuzz corpus policy | `.github/workflows/ci.yml` comment | Artifact-only auto-commit decision is now written at the upload step, not just in status reports. |
-| README guidance for signing modules | `README.md` after the CBOR signing example | Tells sibling consumers to assert `DeterministicCodec` at compile time. |
-| Prove CBOR vs CBORCompact byte incompatibility | `TestCBORCodec_AndCBORCompactCodec_ProduceDifferentBytes` | Locks the documented incompatibility in a test. |
-| Prove CBOR mode singleton identity | `TestCBORMode_SingletonsReturnIdenticalValues` | Locks the process-wide singleton contract that sibling modules rely on. |
+| Task                                           | Evidence                                                  | Why it matters                                                                                    |
+| ---------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Document fuzz corpus format + policy           | `testdata/fuzz/README.md`                                 | Prevents the raw-bytes mistake; makes the CI artifact-only policy discoverable.                   |
+| Codify CI fuzz corpus policy                   | `.github/workflows/ci.yml` comment                        | Artifact-only auto-commit decision is now written at the upload step, not just in status reports. |
+| README guidance for signing modules            | `README.md` after the CBOR signing example                | Tells sibling consumers to assert `DeterministicCodec` at compile time.                           |
+| Prove CBOR vs CBORCompact byte incompatibility | `TestCBORCodec_AndCBORCompactCodec_ProduceDifferentBytes` | Locks the documented incompatibility in a test.                                                   |
+| Prove CBOR mode singleton identity             | `TestCBORMode_SingletonsReturnIdenticalValues`            | Locks the process-wide singleton contract that sibling modules rely on.                           |
 
 ---
 
@@ -89,8 +89,8 @@ verified.
 
 ## c) Not Started (1 / 22)
 
-| # | Task | Why not started |
-| - | ---- | --------------- |
+| # | Task                                                        | Why not started                                                                                                                                                         |
+| - | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1 | Execute the release: create `v0.1.1` tag and GitHub Release | **Blocked on user confirmation + remote push/tag.** The decision itself is made (cut `v0.1.1` from HEAD), but I cannot push to the remote without explicit instruction. |
 
 ---

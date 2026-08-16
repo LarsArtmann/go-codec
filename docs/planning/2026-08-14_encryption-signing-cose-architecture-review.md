@@ -16,21 +16,21 @@ in dedicated modules.
 
 ### COSE Layer (RFC 9052)
 
-| Where | What it provides |
-|---|---|
-| `cose.go:75-109` | COSE message types: `COSESign1` (signing) and `COSEEncrypt0` (encryption) |
+| Where             | What it provides                                                                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `cose.go:75-109`  | COSE message types: `COSESign1` (signing) and `COSEEncrypt0` (encryption)                                                                        |
 | `cose.go:162-277` | `MarshalCOSESign1`/`UnmarshalCOSESign1`, `MarshalCOSEEncrypt0`/`UnmarshalCOSEEncrypt0` — strict element-count validation with stable error codes |
-| `cose.go:281-302` | `SigStructure` (RFC 9052 §4.4 — the exact bytes that get signed/verified) and `EncStructure0` (§5.3 — the AAD/KDF input for encrypt/decrypt) |
-| `cose.go:20-73` | Header labels (alg, kid, IV…) and algorithm IDs (AES-GCM, ChaCha20-Poly1305, EdDSA, HMAC) + `NormalizeCOSEAlgorithm` |
-| `cose.go:125-150` | `COSEAlgHeader` and `PrepareCOSESetup` — shared boilerplate explicitly factored out of `signing.SignCOSE1` and `encryption.EncryptCOSE0` |
+| `cose.go:281-302` | `SigStructure` (RFC 9052 §4.4 — the exact bytes that get signed/verified) and `EncStructure0` (§5.3 — the AAD/KDF input for encrypt/decrypt)     |
+| `cose.go:20-73`   | Header labels (alg, kid, IV…) and algorithm IDs (AES-GCM, ChaCha20-Poly1305, EdDSA, HMAC) + `NormalizeCOSEAlgorithm`                             |
+| `cose.go:125-150` | `COSEAlgHeader` and `PrepareCOSESetup` — shared boilerplate explicitly factored out of `signing.SignCOSE1` and `encryption.EncryptCOSE0`         |
 
 ### Shared Helpers
 
-| Where | What it provides |
-|---|---|
+| Where            | What it provides                                                                                                                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `base64_json.go` | JSON marshalling for `encryption.Ciphertext` / `signing.Signature` wrapper types (`MarshalBase64JSON`, `MarshalBase64JSONWithModule`, `AssignBase64JSON`, `UnmarshalBase64JSON`, `WrapCOSEMarshal`) |
-| `cbor.go:13` | Canonical `CBORCodec` is deterministic — the property that makes signing safe |
-| `errors.go` | Stable COSE error sentinels (`ErrInvalidCOSESign1`, `ErrInvalidCOSEEncrypt0`, `ErrCOSEAlgorithmOverflow`, `ErrCOSEInvalidAlgorithm`) |
+| `cbor.go:13`     | Canonical `CBORCodec` is deterministic — the property that makes signing safe                                                                                                                       |
+| `errors.go`      | Stable COSE error sentinels (`ErrInvalidCOSESign1`, `ErrInvalidCOSEEncrypt0`, `ErrCOSEAlgorithmOverflow`, `ErrCOSEInvalidAlgorithm`)                                                                |
 
 ### The Flow
 
@@ -46,10 +46,10 @@ in dedicated modules.
 
 ### The Separation of Concerns
 
-| Layer | Format | Deterministic? |
-|---|---|---|
+| Layer                                                                          | Format                                                                         | Deterministic?       |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | -------------------- |
 | COSE envelope (`COSE_Sign1`, `COSE_Encrypt0`, `SigStructure`, `EncStructure0`) | Always CBOR (RFC 9052 requirement — all marshal functions use `CBOREncMode()`) | Yes (canonical mode) |
-| Payload bytes inside COSE | Whatever the `Codec` produces — JSON, CBOR, or raw | Depends on codec |
+| Payload bytes inside COSE                                                      | Whatever the `Codec` produces — JSON, CBOR, or raw                             | Depends on codec     |
 
 ### Per-Codec Behavior
 
@@ -69,7 +69,7 @@ in dedicated modules.
 
 Signing safety depends on **payload determinism**, not COSE structure
 determinism. The COSE envelope (`SigStructure`) is always canonical CBOR, so
-that part is always deterministic. But the *payload* that gets fed into
+that part is always deterministic. But the _payload_ that gets fed into
 `SigStructure` is the raw output of `Codec.Encode()`:
 
 - **`CBORCodec`** — deterministic (canonical mode, RFC 7049 sorted keys).
@@ -172,13 +172,13 @@ type DeterministicCodec interface {
 
 ### Implementation Matrix
 
-| Codec | Implements `DeterministicCodec`? | Why |
-|---|---|---|
-| `CBORCodec` | Yes, always | Canonical mode (RFC 7049 sorted keys) |
-| `CBORCompactCodec` | Yes, always | CoreDet mode (RFC 8949 bytewise-lexical sort) |
-| `JSONCodec` (v1 build) | **No** | `encoding/json` v1 has non-deterministic map key order |
-| `JSONCodec` (v2 build) | Yes | `json.Deterministic(true)` option |
-| `RawCodec` | **No** | Caller-controlled, can't guarantee determinism |
+| Codec                  | Implements `DeterministicCodec`? | Why                                                    |
+| ---------------------- | -------------------------------- | ------------------------------------------------------ |
+| `CBORCodec`            | Yes, always                      | Canonical mode (RFC 7049 sorted keys)                  |
+| `CBORCompactCodec`     | Yes, always                      | CoreDet mode (RFC 8949 bytewise-lexical sort)          |
+| `JSONCodec` (v1 build) | **No**                           | `encoding/json` v1 has non-deterministic map key order |
+| `JSONCodec` (v2 build) | Yes                              | `json.Deterministic(true)` option                      |
+| `RawCodec`             | **No**                           | Caller-controlled, can't guarantee determinism         |
 
 The v1/v2 split is achieved by putting the `signingSafe()` method on `JSONCodec`
 only in `json_compat_v2.go` (build-tagged `goexperiment.jsonv2`), not in
@@ -192,13 +192,13 @@ error** — exactly what you want.
 
 ### Why This Is the Right Scope
 
-| Concern | Answer |
-|---|---|
-| Does it change behavior? | No — pure type-level marker, zero runtime cost |
-| Does it force v2? | No — JSON still works for non-signing paths (transport, debugging) |
-| Does it handle RawCodec? | No, and it shouldn't — RawCodec determinism is caller-controlled |
-| Where is enforcement? | In the `signing` module (separate repo), by accepting `DeterministicCodec` |
-| Is it Go-idiomatic? | Yes — marker interfaces are the standard pattern for compile-time capability assertions |
+| Concern                  | Answer                                                                                  |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| Does it change behavior? | No — pure type-level marker, zero runtime cost                                          |
+| Does it force v2?        | No — JSON still works for non-signing paths (transport, debugging)                      |
+| Does it handle RawCodec? | No, and it shouldn't — RawCodec determinism is caller-controlled                        |
+| Where is enforcement?    | In the `signing` module (separate repo), by accepting `DeterministicCodec`              |
+| Is it Go-idiomatic?      | Yes — marker interfaces are the standard pattern for compile-time capability assertions |
 
 ### The RawCodec Gap
 
@@ -232,7 +232,7 @@ Only `signing` and `encryption` use COSE — and they already depend on
 
 ### Composability Payoff
 
-No consumer would import COSE *without* the rest of go-codec. Both signing and
+No consumer would import COSE _without_ the rest of go-codec. Both signing and
 encryption need `codec.Codec`, `Encoding`, `MarshalBase64JSON`,
 `AssignBase64JSON`, `WrapCOSEMarshal` **and** COSE. The seam earns nothing.
 
@@ -275,14 +275,14 @@ Verified across all non-test `.go` files.
 
 ### Should They Be 2 Modules or 1? → Keep Them Separate
 
-| Signal | Finding |
-|---|---|
-| Cross-imports (production) | **Zero.** Signing does not import encryption. Encryption does not import signing. |
-| Shared types | **None.** `Signature` vs `Ciphertext` are separate types. `COSESigner` vs `COSEEncrypter` are separate interfaces. They share only `go-codec`'s COSE helpers. |
-| Shared deps | `go-codec`, `go-error-family`, `go-cqrs-lite/event/v4`. That's normal shared infrastructure, not coupling. |
-| Consumers importing both | Only `cqrs-lint` (a static analyzer that catalogs modules). Zero runtime consumers need both in the same binary path. |
-| Co-change frequency | Signing uses Ed25519/HMAC; encryption uses AES-GCM/XChaCha20. Different crypto primitives, different code paths, different test suites. |
-| Composability payoff | A consumer who needs signing without encryption (audit logs, event sourcing without encryption) can import signing alone. A consumer who needs encryption without signing (data at rest) can import encryption alone. **The seam is real.** |
+| Signal                     | Finding                                                                                                                                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cross-imports (production) | **Zero.** Signing does not import encryption. Encryption does not import signing.                                                                                                                                                           |
+| Shared types               | **None.** `Signature` vs `Ciphertext` are separate types. `COSESigner` vs `COSEEncrypter` are separate interfaces. They share only `go-codec`'s COSE helpers.                                                                               |
+| Shared deps                | `go-codec`, `go-error-family`, `go-cqrs-lite/event/v4`. That's normal shared infrastructure, not coupling.                                                                                                                                  |
+| Consumers importing both   | Only `cqrs-lint` (a static analyzer that catalogs modules). Zero runtime consumers need both in the same binary path.                                                                                                                       |
+| Co-change frequency        | Signing uses Ed25519/HMAC; encryption uses AES-GCM/XChaCha20. Different crypto primitives, different code paths, different test suites.                                                                                                     |
+| Composability payoff       | A consumer who needs signing without encryption (audit logs, event sourcing without encryption) can import signing alone. A consumer who needs encryption without signing (data at rest) can import encryption alone. **The seam is real.** |
 
 Merging would create a module with two unrelated concerns — "crypto operations"
 is not one thing, it's two. That's the god-module anti-pattern at the module
@@ -314,27 +314,27 @@ signing                          encryption
 
 **Signing — 12 non-test files:**
 
-| Pure (no cqrs dep) | Event-coupled |
-|---|---|
-| `cose.go` (COSESigner/Verifier interfaces) | `cose_sign1.go` (SignCOSE1/VerifyCOSE1) |
-| `signature.go` (Signature type) | `signer.go` (Signer/Verifier interfaces) |
-| `errors.go` | `payload.go` (canonicalPayload) |
-| `doc.go` | `middleware.go` (publish middleware) |
-| | `event.go` (signing event helpers) |
-| | `ed25519.go`, `hmac.go` (implementations that take event.Event) |
-| | `multisig/*` (4 files — all coupled) |
+| Pure (no cqrs dep)                         | Event-coupled                                                   |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `cose.go` (COSESigner/Verifier interfaces) | `cose_sign1.go` (SignCOSE1/VerifyCOSE1)                         |
+| `signature.go` (Signature type)            | `signer.go` (Signer/Verifier interfaces)                        |
+| `errors.go`                                | `payload.go` (canonicalPayload)                                 |
+| `doc.go`                                   | `middleware.go` (publish middleware)                            |
+|                                            | `event.go` (signing event helpers)                              |
+|                                            | `ed25519.go`, `hmac.go` (implementations that take event.Event) |
+|                                            | `multisig/*` (4 files — all coupled)                            |
 
 **Encryption — 17 non-test files:**
 
-| Pure (no cqrs dep) | Event-coupled |
-|---|---|
-| `cose.go` (COSEEncrypter/Decrypter, EncryptCOSE0/DecryptCOSE0) | `crypto_helpers.go` |
-| `codec.go` (encryptingCodec) | `store.go` (wraps event.Store) |
-| `aesgcm.go`, `xchacha20.go` | `middleware.go` (publish middleware) |
-| `hkdf.go`, `aead_helpers.go` | `event.go` (encryption event helpers) |
-| `ciphertext.go`, `encrypter.go` | `envelope.go` (metadata) |
-| `versioned.go`, `static_resolver.go` | `algorithm.go` (metadata) |
-| `errors.go`, `doc.go` | |
+| Pure (no cqrs dep)                                             | Event-coupled                         |
+| -------------------------------------------------------------- | ------------------------------------- |
+| `cose.go` (COSEEncrypter/Decrypter, EncryptCOSE0/DecryptCOSE0) | `crypto_helpers.go`                   |
+| `codec.go` (encryptingCodec)                                   | `store.go` (wraps event.Store)        |
+| `aesgcm.go`, `xchacha20.go`                                    | `middleware.go` (publish middleware)  |
+| `hkdf.go`, `aead_helpers.go`                                   | `event.go` (encryption event helpers) |
+| `ciphertext.go`, `encrypter.go`                                | `envelope.go` (metadata)              |
+| `versioned.go`, `static_resolver.go`                           | `algorithm.go` (metadata)             |
+| `errors.go`, `doc.go`                                          |                                       |
 
 #### Reasoning
 
@@ -367,13 +367,13 @@ signing                          encryption
 
 ### Actionable Recommendations
 
-| Action | Why |
-|---|---|
-| Keep signing + encryption as 2 separate modules | Zero cross-imports, different crypto primitives, real composability payoff |
-| Keep them depending on `event/v4` | The coupling is structural and correct |
+| Action                                                           | Why                                                                                        |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Keep signing + encryption as 2 separate modules                  | Zero cross-imports, different crypto primitives, real composability payoff                 |
+| Keep them depending on `event/v4`                                | The coupling is structural and correct                                                     |
 | Extract `event/v4` to its own repo if you want smaller dep trees | That's the keystone — signing/encryption transitively pull in 5 cqrs modules through event |
-| Implement `DeterministicCodec` in go-codec | Turns the JSON signing footgun into a compile error |
-| Retire the `codec/v4` shim | 26 files still on it; migration is mechanical sed |
+| Implement `DeterministicCodec` in go-codec                       | Turns the JSON signing footgun into a compile error                                        |
+| Retire the `codec/v4` shim                                       | 26 files still on it; migration is mechanical sed                                          |
 
 ---
 
@@ -388,11 +388,11 @@ deprecated in `doc.go` and `README.md`.
 
 ### Migration Status: Half-Finished
 
-| Status | Count | Examples |
-|---|---|---|
-| Already migrated to `go-codec` directly | 16 prod files | `benchkit`, `cmd/cqrs-gen`, `system`, `transport/grpc`, `transport/http`, `schema` |
-| Still using the deprecated shim | 26 prod files | **`event`** (the keystone), `command`, `decider`, `snapshot`, `kv`, `query`, `stack`, `storage/*`, `watermill` |
-| Test files still on shim | ~30 files | Same modules' tests |
+| Status                                  | Count         | Examples                                                                                                       |
+| --------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------- |
+| Already migrated to `go-codec` directly | 16 prod files | `benchkit`, `cmd/cqrs-gen`, `system`, `transport/grpc`, `transport/http`, `schema`                             |
+| Still using the deprecated shim         | 26 prod files | **`event`** (the keystone), `command`, `decider`, `snapshot`, `kv`, `query`, `stack`, `storage/*`, `watermill` |
+| Test files still on shim                | ~30 files     | Same modules' tests                                                                                            |
 
 ### The Keystone: `event/codec.go`
 
@@ -417,13 +417,13 @@ written against the shim extends the migration surface.
 
 ## Summary Decision Matrix
 
-| Question | Decision | Rationale |
-|---|---|---|
-| Offer COSE envelope for pure JSON (JWS/JWE)? | **No** | COSE already handles JSON payloads. Pure-JSON envelope is a transport concern. Determinism landmine under v1. YAGNI. |
-| Extract COSE from go-codec? | **No** | Circular dep on `CBOREncMode()`. No composability payoff — all consumers need both. 300 LOC, not a god-module. |
-| Extract signing/encryption from go-cqrs-lite? | **Already extracted** — they have own go.mod | The question is whether to move repos, not split modules. |
-| Merge signing + encryption into 1 module? | **No** | Zero cross-imports, different primitives, real composability payoff. Merging = god-module. |
-| Make signing/encryption usable WITHOUT event/v4? | **No** | The API surface IS event-shaped. Decoupling would gut the API and add ceremony without composability. |
-| Extract event/v4 instead? | **Yes, if smaller dep trees are the goal** | That's the keystone. Signing/encryption transitively pull 5 cqrs modules through event. |
-| Add `DeterministicCodec` marker interface? | **Yes** | ~15 lines, zero behavioral change, turns silent signature corruption into a compile error. |
-| Retire `codec/v4` shim? | **Yes** | 26 files still on it. Migration is mechanical sed starting with `event/codec.go`. |
+| Question                                         | Decision                                     | Rationale                                                                                                            |
+| ------------------------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Offer COSE envelope for pure JSON (JWS/JWE)?     | **No**                                       | COSE already handles JSON payloads. Pure-JSON envelope is a transport concern. Determinism landmine under v1. YAGNI. |
+| Extract COSE from go-codec?                      | **No**                                       | Circular dep on `CBOREncMode()`. No composability payoff — all consumers need both. 300 LOC, not a god-module.       |
+| Extract signing/encryption from go-cqrs-lite?    | **Already extracted** — they have own go.mod | The question is whether to move repos, not split modules.                                                            |
+| Merge signing + encryption into 1 module?        | **No**                                       | Zero cross-imports, different primitives, real composability payoff. Merging = god-module.                           |
+| Make signing/encryption usable WITHOUT event/v4? | **No**                                       | The API surface IS event-shaped. Decoupling would gut the API and add ceremony without composability.                |
+| Extract event/v4 instead?                        | **Yes, if smaller dep trees are the goal**   | That's the keystone. Signing/encryption transitively pull 5 cqrs modules through event.                              |
+| Add `DeterministicCodec` marker interface?       | **Yes**                                      | ~15 lines, zero behavioral change, turns silent signature corruption into a compile error.                           |
+| Retire `codec/v4` shim?                          | **Yes**                                      | 26 files still on it. Migration is mechanical sed starting with `event/codec.go`.                                    |

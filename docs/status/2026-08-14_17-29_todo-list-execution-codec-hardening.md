@@ -14,23 +14,23 @@ Two self-inflicted lint regressions were caught and fixed during the sweep (goco
 
 ## a) Fully Done (15 / 20)
 
-| # | Task | Evidence |
-| - | ---- | -------- |
-| 2 | Implement `DeterministicCodec` marker interface | `codec.go` now defines `DeterministicCodec` with unexported `signingSafe()`; `CBORCodec` and `CBORCompactCodec` implement it in all builds; `JSONCodec` implements it only in `json_compat_v2.go` (v2 deterministic mode). Compile-time assertions added. |
-| 4 | Convert `normalizeForJSON` depth error to `go-error-family` | `errors.go` adds `ErrNormalizeDepthExceeded` (`codec.normalize_depth_exceeded`); `json_compat_v1.go` returns `%w` of that sentinel instead of bare `fmt.Errorf`. |
-| 5 | `BenchmarkObserveCodec` | Added to `benchmark_test.go` with sub-benchmarks: `encode/raw`, `encode/observed`, `decode/raw`, `decode/observed`, `encode_pooled/observed`. |
-| 6 | Observability edge-case tests | Added 7 new tests in `observability_test.go`: CBORCompactCodec wrapping, EncodeToBuffer inner-error propagation, non-BufferEncoder fallback, MetricsSnapshot immutability, nested ObservableCodec (no double-count contract), ObserveCodec(nil) behavior, EncodePooled composition, hook byte counts on error paths. |
-| 7 | v2 streaming test with non-buffer reader | Added `TestStreaming_JSONNonBufferReader` (uses `strings.Reader`) and `TestStreaming_JSONByteAtATimeReader` to `streaming_test.go`. Both pass in v1 and v2. |
-| 8 | `ExampleEncodePooled` | Added to `example_test.go` demonstrating pooled CBOR encode + callback copy. |
-| 9 | `ExampleSize` | Added to `example_test.go` showing `SizeResult` and CBOR savings. |
-| 10 | Make `ExampleObserveCodec` size-independent | Removed hardcoded `bytes=12` from hook output; prints only op/encoding/error and call counts. |
-| 11 | Fix v2 `JSONEncoder` per-call `[]byte{'\n'}` allocation | `json_compat_v2.go` now uses `io.WriteString(e.w, "\n")`. |
-| 12 | Add `cbor:"3,keyasint"` to `realisticOrderKeyInt.Items` | `benchmark_test.go:467` now uses integer key for the slice field. |
-| 13 | Soften README/doc.go perf claims | `doc.go` and `README.md` no longer quote unsourced "19-43% / 25-72%" figures; they now point to `BenchmarkTagTradeoffs_*` and `BenchmarkRealisticPayload_*`. |
-| 14 | Rename opaque test constants | `testField` → `testFieldName`, `testFieldE` → `testFieldEmail` across white-box and black-box fixture files. |
-| 15 | Annotate/nolint `json_helpers_v2_test.go` gopls `stdversion` warnings | Replaced invalid `//nolint:stdversion` with an explanatory comment documenting the inherent dual-build warning. |
-| 16 | Add `dependabot.yml` | Created `.github/dependabot.yml` with weekly `gomod` group updates. |
-| 21 | `PutBuffer` size guard | `pool.go` now rejects buffers with `Cap() > 1 MiB` to prevent huge buffers from pinning the pool. Added `TestPutBuffer_RejectsOversizedBuffers`. |
+| #  | Task                                                                  | Evidence                                                                                                                                                                                                                                                                                                             |
+| -- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2  | Implement `DeterministicCodec` marker interface                       | `codec.go` now defines `DeterministicCodec` with unexported `signingSafe()`; `CBORCodec` and `CBORCompactCodec` implement it in all builds; `JSONCodec` implements it only in `json_compat_v2.go` (v2 deterministic mode). Compile-time assertions added.                                                            |
+| 4  | Convert `normalizeForJSON` depth error to `go-error-family`           | `errors.go` adds `ErrNormalizeDepthExceeded` (`codec.normalize_depth_exceeded`); `json_compat_v1.go` returns `%w` of that sentinel instead of bare `fmt.Errorf`.                                                                                                                                                     |
+| 5  | `BenchmarkObserveCodec`                                               | Added to `benchmark_test.go` with sub-benchmarks: `encode/raw`, `encode/observed`, `decode/raw`, `decode/observed`, `encode_pooled/observed`.                                                                                                                                                                        |
+| 6  | Observability edge-case tests                                         | Added 7 new tests in `observability_test.go`: CBORCompactCodec wrapping, EncodeToBuffer inner-error propagation, non-BufferEncoder fallback, MetricsSnapshot immutability, nested ObservableCodec (no double-count contract), ObserveCodec(nil) behavior, EncodePooled composition, hook byte counts on error paths. |
+| 7  | v2 streaming test with non-buffer reader                              | Added `TestStreaming_JSONNonBufferReader` (uses `strings.Reader`) and `TestStreaming_JSONByteAtATimeReader` to `streaming_test.go`. Both pass in v1 and v2.                                                                                                                                                          |
+| 8  | `ExampleEncodePooled`                                                 | Added to `example_test.go` demonstrating pooled CBOR encode + callback copy.                                                                                                                                                                                                                                         |
+| 9  | `ExampleSize`                                                         | Added to `example_test.go` showing `SizeResult` and CBOR savings.                                                                                                                                                                                                                                                    |
+| 10 | Make `ExampleObserveCodec` size-independent                           | Removed hardcoded `bytes=12` from hook output; prints only op/encoding/error and call counts.                                                                                                                                                                                                                        |
+| 11 | Fix v2 `JSONEncoder` per-call `[]byte{'\n'}` allocation               | `json_compat_v2.go` now uses `io.WriteString(e.w, "\n")`.                                                                                                                                                                                                                                                            |
+| 12 | Add `cbor:"3,keyasint"` to `realisticOrderKeyInt.Items`               | `benchmark_test.go:467` now uses integer key for the slice field.                                                                                                                                                                                                                                                    |
+| 13 | Soften README/doc.go perf claims                                      | `doc.go` and `README.md` no longer quote unsourced "19-43% / 25-72%" figures; they now point to `BenchmarkTagTradeoffs_*` and `BenchmarkRealisticPayload_*`.                                                                                                                                                         |
+| 14 | Rename opaque test constants                                          | `testField` → `testFieldName`, `testFieldE` → `testFieldEmail` across white-box and black-box fixture files.                                                                                                                                                                                                         |
+| 15 | Annotate/nolint `json_helpers_v2_test.go` gopls `stdversion` warnings | Replaced invalid `//nolint:stdversion` with an explanatory comment documenting the inherent dual-build warning.                                                                                                                                                                                                      |
+| 16 | Add `dependabot.yml`                                                  | Created `.github/dependabot.yml` with weekly `gomod` group updates.                                                                                                                                                                                                                                                  |
+| 21 | `PutBuffer` size guard                                                | `pool.go` now rejects buffers with `Cap() > 1 MiB` to prevent huge buffers from pinning the pool. Added `TestPutBuffer_RejectsOversizedBuffers`.                                                                                                                                                                     |
 
 ---
 
@@ -44,17 +44,17 @@ Nothing is partially done. Each started item was carried to completion, verified
 
 These items were not started in this session. They are either larger, lower-priority, or require user/CI decisions:
 
-| # | Task | Why not started |
-| - | ---- | --------------- |
-| 1 | Decide release strategy and create GitHub Release | **Blocked on user decision** (cut `v0.1.1` vs move tag). Cannot act autonomously. |
-| 3 | Add CI fuzz job (cron + seed corpus) ~~done at `699fad9` (30s/target cron + seed corpus)~~ | Requires CI design decision on fuzztime, runner budget, and corpus seeding workflow. Non-trivial (~1-2h). |
-| 17 | Prometheus/OpenTelemetry exporter example ~~done at `699fad9` — resolved dependency-free via `ExampleMetricsHook`~~ | **Blocked on user decision** (dependency-free pseudo-metrics vs real `prometheus/client_golang` dev-dep). |
-| 18 | CI step: `golangci-lint run --out-format json` artifact ~~done at `699fad9` (`lint-report-json-v1/v2` artifacts, 14-day retention)~~ | CI-only improvement; lower priority than code changes. |
-| 19 | Add architecture diagram to README ~~done at `699fad9` (mermaid diagram in README §Architecture)~~ | Documentation polish; can be batched with remaining README work. |
-| 20 | Streaming benchmarks ~~done at `699fad9` (`streaming_benchmark_test.go` + v2 decoder comparison)~~ | Lower priority than the streaming tests added in #7; could be done after profiling needs are clearer. |
+| #  | Task                                                                                                                                    | Why not started                                                                                              |
+| -- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 1  | Decide release strategy and create GitHub Release                                                                                       | **Blocked on user decision** (cut `v0.1.1` vs move tag). Cannot act autonomously.                            |
+| 3  | Add CI fuzz job (cron + seed corpus) ~~done at `699fad9` (30s/target cron + seed corpus)~~                                              | Requires CI design decision on fuzztime, runner budget, and corpus seeding workflow. Non-trivial (~1-2h).    |
+| 17 | Prometheus/OpenTelemetry exporter example ~~done at `699fad9` — resolved dependency-free via `ExampleMetricsHook`~~                     | **Blocked on user decision** (dependency-free pseudo-metrics vs real `prometheus/client_golang` dev-dep).    |
+| 18 | CI step: `golangci-lint run --out-format json` artifact ~~done at `699fad9` (`lint-report-json-v1/v2` artifacts, 14-day retention)~~    | CI-only improvement; lower priority than code changes.                                                       |
+| 19 | Add architecture diagram to README ~~done at `699fad9` (mermaid diagram in README §Architecture)~~                                      | Documentation polish; can be batched with remaining README work.                                             |
+| 20 | Streaming benchmarks ~~done at `699fad9` (`streaming_benchmark_test.go` + v2 decoder comparison)~~                                      | Lower priority than the streaming tests added in #7; could be done after profiling needs are clearer.        |
 | 22 | README: add Streaming JSON (NDJSON), `EncodePooled`, and `Size`/`SizeResult` sections ~~done at `699fad9` (dedicated README sections)~~ | README already has some streaming content; full dedicated sections are docs polish that pairs well with #19. |
 
-*(Note: the original list had 20 numbered items; the table above lists 7 not-started items because some were deferred together.)*
+_(Note: the original list had 20 numbered items; the table above lists 7 not-started items because some were deferred together.)_
 
 ---
 
@@ -70,6 +70,7 @@ Nothing is fucked up. The final verification passed:
 - `nix run .#lint` — 0 issues in both v1 and v2
 
 Two transient issues were introduced and fixed during the session:
+
 1. `testEventCreated` constant was placed in the white-box `testdata_test.go` (package `codec`) but used from black-box `codec_test` files. Moved to `testdata_ext_test.go`.
 2. `make([]byte, len(data))` patterns in new `ExampleEncodePooled` and `TestObservableCodec_EncodePooledComposition` triggered `makezero` linter. Rewrote as `append([]byte(nil), data...)`.
 
@@ -114,25 +115,25 @@ High-impact (do soon):
 Medium-impact (do next):
 
 16. Refactor `ObservableCodec` metrics to use atomics instead of `RWMutex` and benchmark the delta (the new `BenchmarkObserveCodec` enables this).
-~~17. Add `MetricsSnapshot` JSON marshal example for operational dashboards.~~ done 2026-08-14 (superb session) — `ExampleMetricsSnapshot`
-~~18. Add a `README.md` example for `TranscodeToJSON` with HTTP/SSE context.~~ done at `699fad9` — README §Transcoding covers SSE + graceful fallback
-~~19. Add a `README.md` example for `AutoDetectDebug` logging.~~ done at `699fad9` — README §AutoDetectDebug shows the logging pattern
-~~20. Add `SizeResult` JSON tag and an example of logging payload size budgets.~~ **NOT-DO — JSON tags are an API change deferred with the release decision; `ExampleSize` covers the example half.**
-~~21. Add test for `PutBuffer` rejecting a buffer that grew due to `Grow` vs `Write`.~~ **NOT-DO/DUPLICATE — `TestPutBuffer_RejectsOversizedBuffers` grows via `Grow`; the guard checks `Cap()` regardless.**
-~~22. Add test for `GetBuffer` returning a zeroed buffer even under pool exhaustion.~~ **NOT-DO/DUPLICATE — `TestGetBuffer_ReturnsResetBuffer` locks the reset; pool exhaustion falls back to fresh zeroed allocation.**
-~~23. Add test for `EncodePooled` callback returning an error — buffer is still returned to the pool.~~ done — `TestEncodePooled_CallbackError` (`2c98116`)
-~~24. Add fuzz target for `normalizeForJSON` depth limit.~~ done at `699fad9` — `FuzzNormalizeForJSON` in the CI corpus
-~~25. Add fuzz target for `JSONEncoder` / `JSONDecoder` NDJSON streams.~~ done 2026-08-14 (superb session) — `FuzzStreamingJSON_NDJSONRoundtrip` + committed `1e700` regression seed
-~~26. Add fuzz target for `ObservableCodec` hook safety (no panic propagation from hook).~~ done 2026-08-14 (superb session) — `FuzzObservableCodec_HookSafety`
-~~27. Add `ExampleCBORCodec` showing `time.Time` UTC normalization.~~ done 2026-08-14 (superb session) — `ExampleCBORCodec_time`
-~~28. Add `ExampleTranscodeToJSON`.~~ done 2026-08-14 (superb session) — `ExampleTranscodeToJSON`
-~~29. Add `ExampleAutoDetect` (non-debug version).~~ done 2026-08-14 (superb session) — `ExampleAutoDetect`
-~~30. Add `ExampleRawCodec` already exists; verify `ExampleCBOREncMode` and `ExampleCBORDecMode` are discoverable from README.~~ done — `ExampleCBOREncMode` exists; README §Shared CBOR Modes documents the modes
-~~31. Add documentation note about `CBORCodec` vs `CBORCompactCodec` byte incompatibility in `doc.go`.~~ done 2026-08-14 (superb session) — `doc.go` package docs
-~~32. Add `CHANGELOG.md` entry for the work completed in this session.~~ done at `699fad9`
-~~33. Remove completed items from `TODO_LIST.md` and log them in `CHANGELOG.md` (per project convention).~~ done — TODO_LIST now holds exactly the blocked release item
-~~34. Run `govulncheck` and verify no new vulnerabilities from dependencies.~~ done at `699fad9` — `vulncheck` job
-~~35. Review `go.mod` for outdated dependencies and open Dependabot PRs.~~ done at `2c98116` — `dependabot.yml` (weekly gomod group)
+    ~~17. Add `MetricsSnapshot` JSON marshal example for operational dashboards.~~ done 2026-08-14 (superb session) — `ExampleMetricsSnapshot`
+    ~~18. Add a `README.md` example for `TranscodeToJSON` with HTTP/SSE context.~~ done at `699fad9` — README §Transcoding covers SSE + graceful fallback
+    ~~19. Add a `README.md` example for `AutoDetectDebug` logging.~~ done at `699fad9` — README §AutoDetectDebug shows the logging pattern
+    ~~20. Add `SizeResult` JSON tag and an example of logging payload size budgets.~~ **NOT-DO — JSON tags are an API change deferred with the release decision; `ExampleSize` covers the example half.**
+    ~~21. Add test for `PutBuffer` rejecting a buffer that grew due to `Grow` vs `Write`.~~ **NOT-DO/DUPLICATE — `TestPutBuffer_RejectsOversizedBuffers` grows via `Grow`; the guard checks `Cap()` regardless.**
+    ~~22. Add test for `GetBuffer` returning a zeroed buffer even under pool exhaustion.~~ **NOT-DO/DUPLICATE — `TestGetBuffer_ReturnsResetBuffer` locks the reset; pool exhaustion falls back to fresh zeroed allocation.**
+    ~~23. Add test for `EncodePooled` callback returning an error — buffer is still returned to the pool.~~ done — `TestEncodePooled_CallbackError` (`2c98116`)
+    ~~24. Add fuzz target for `normalizeForJSON` depth limit.~~ done at `699fad9` — `FuzzNormalizeForJSON` in the CI corpus
+    ~~25. Add fuzz target for `JSONEncoder` / `JSONDecoder` NDJSON streams.~~ done 2026-08-14 (superb session) — `FuzzStreamingJSON_NDJSONRoundtrip` + committed `1e700` regression seed
+    ~~26. Add fuzz target for `ObservableCodec` hook safety (no panic propagation from hook).~~ done 2026-08-14 (superb session) — `FuzzObservableCodec_HookSafety`
+    ~~27. Add `ExampleCBORCodec` showing `time.Time` UTC normalization.~~ done 2026-08-14 (superb session) — `ExampleCBORCodec_time`
+    ~~28. Add `ExampleTranscodeToJSON`.~~ done 2026-08-14 (superb session) — `ExampleTranscodeToJSON`
+    ~~29. Add `ExampleAutoDetect` (non-debug version).~~ done 2026-08-14 (superb session) — `ExampleAutoDetect`
+    ~~30. Add `ExampleRawCodec` already exists; verify `ExampleCBOREncMode` and `ExampleCBORDecMode` are discoverable from README.~~ done — `ExampleCBOREncMode` exists; README §Shared CBOR Modes documents the modes
+    ~~31. Add documentation note about `CBORCodec` vs `CBORCompactCodec` byte incompatibility in `doc.go`.~~ done 2026-08-14 (superb session) — `doc.go` package docs
+    ~~32. Add `CHANGELOG.md` entry for the work completed in this session.~~ done at `699fad9`
+    ~~33. Remove completed items from `TODO_LIST.md` and log them in `CHANGELOG.md` (per project convention).~~ done — TODO_LIST now holds exactly the blocked release item
+    ~~34. Run `govulncheck` and verify no new vulnerabilities from dependencies.~~ done at `699fad9` — `vulncheck` job
+    ~~35. Review `go.mod` for outdated dependencies and open Dependabot PRs.~~ done at `2c98116` — `dependabot.yml` (weekly gomod group)
 
 Low-impact / polish:
 

@@ -78,7 +78,7 @@ Directions for making it discoverable and proving adoption.
 Raw ideas:
 
 - Project website / docs site via the `website-launch` skill (Astro + Starlight
-  + Firebase Hosting pattern used by sibling modules)
+  - Firebase Hosting pattern used by sibling modules)
 - A worked end-to-end example consuming `go-codec` from `go-cqrs-lite` to prove
   the `Codec` contract in a real store
 - pkg.go.dev polish: ensure every exported symbol carries a godoc example

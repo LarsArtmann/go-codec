@@ -30,10 +30,10 @@ diffs in test files (likely import path adjustments).
 
 ### Consumer landscape
 
-| Consumer                  | Go version | go.work has `use ../go-codec`? | In go.mod? |
-| ------------------------- | ---------- | ------------------------------ | ---------- |
-| `go-cqrs-lite`            | 1.26.5     | No (has own `codec/` sub-mod)  | No         |
-| `project-discovery-sdk`   | 1.26.5     | **Yes**                        | No (yet)   |
+| Consumer                | Go version | go.work has `use ../go-codec`? | In go.mod? |
+| ----------------------- | ---------- | ------------------------------ | ---------- |
+| `go-cqrs-lite`          | 1.26.5     | No (has own `codec/` sub-mod)  | No         |
+| `project-discovery-sdk` | 1.26.5     | **Yes**                        | No (yet)   |
 
 Both consumers are on Go 1.26.5. A proper SDK must build on 1.26.5 **without**
 requiring `GOEXPERIMENT=jsonv2` — that's an opt-in, not a prerequisite.
@@ -46,24 +46,24 @@ Reference: `/home/lars/projects/go-branded-id/` uses build tags to support both
 
 **go-codec v2-specific features and their v1 fallbacks:**
 
-| v2 feature                         | Used in                      | v1 fallback                                          |
-| ---------------------------------- | ---------------------------- | ---------------------------------------------------- |
-| `json.Deterministic(true)`         | envelope.go, base64_json.go  | No-op — structs marshal in declaration order (deterministic for fixed structs); single strings are always deterministic |
-| `json.MarshalWrite(buf, v)`        | json.go (EncodeToBuffer)     | `b, _ := json.Marshal(v); buf.Write(b)`              |
-| `json.MatchCaseInsensitiveNames(true)` | json.go, base64_json.go  | No-op — v1 does case-insensitive field matching by default |
-| `jsontext.Value`                   | raw.go                       | `json.RawMessage` (both are `[]byte`)                |
+| v2 feature                             | Used in                     | v1 fallback                                                                                                             |
+| -------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `json.Deterministic(true)`             | envelope.go, base64_json.go | No-op — structs marshal in declaration order (deterministic for fixed structs); single strings are always deterministic |
+| `json.MarshalWrite(buf, v)`            | json.go (EncodeToBuffer)    | `b, _ := json.Marshal(v); buf.Write(b)`                                                                                 |
+| `json.MatchCaseInsensitiveNames(true)` | json.go, base64_json.go     | No-op — v1 does case-insensitive field matching by default                                                              |
+| `jsontext.Value`                       | raw.go                      | `json.RawMessage` (both are `[]byte`)                                                                                   |
 
 All fallbacks are **behaviorally equivalent** for current use cases.
 
 ### Risks (VERSCHLIMMBESSER prevention)
 
-| Risk                                        | Mitigation                                                          |
-| ------------------------------------------- | ------------------------------------------------------------------- |
+| Risk                                        | Mitigation                                                                                                                             |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Dual-build changes wire-format bytes        | Struct marshal in v1 is declaration-order = same as v2 Deterministic for structs. base64 strings identical. **No wire-format change.** |
-| goimports corrupts v1 file to import v2     | Contract test (like go-branded-id's `id_json_contract_test.go`)     |
-| Test files also import json/v2              | Build-tagged test helpers (like go-branded-id's `json_helpers_v*_test.go`) |
-| envelope determinism differs in v1 map mode | Envelope is a struct (not map) — v1 struct marshal IS deterministic |
-| Breaking cqrs-lite consumers                | Module path is `github.com/larsartmann/go-codec` — different from `go-cqrs-lite/codec/v4`. No import path collision. |
+| goimports corrupts v1 file to import v2     | Contract test (like go-branded-id's `id_json_contract_test.go`)                                                                        |
+| Test files also import json/v2              | Build-tagged test helpers (like go-branded-id's `json_helpers_v*_test.go`)                                                             |
+| envelope determinism differs in v1 map mode | Envelope is a struct (not map) — v1 struct marshal IS deterministic                                                                    |
+| Breaking cqrs-lite consumers                | Module path is `github.com/larsartmann/go-codec` — different from `go-cqrs-lite/codec/v4`. No import path collision.                   |
 
 ---
 
@@ -110,25 +110,25 @@ project literally does not compile.
 
 ## Step 2: Comprehensive Plan (Medium Granularity — 30 to 100 min each)
 
-| #   | Task                                                            | Impact | Effort  | Deps     | Category        |
-| --- | --------------------------------------------------------------- | ------ | ------- | -------- | --------------- |
-| M1  | ~~Fix `snaps_clean_test.go` compile error~~ ✅ done `v0.1.0`                         | Exist  | 2min    | —        | Build           |
-| M2  | ~~Create dual-build compat layer (`json_compat_v1.go` + `json_compat_v2.go`)~~ ✅ done `f3e30e9` | Exist | 30min | —        | Build           |
-| M3  | ~~Update source files (`json.go`, `envelope.go`, `base64_json.go`, `raw.go`, `transcode.go`) to use compat helpers~~ ✅ done `f3e30e9` | Exist | 30min | M2 | Build   |
-| M4  | ~~Update test files for dual-build (build-tagged test helpers)~~ ✅ done `f3e30e9`    | Exist  | 30min   | M2       | Build           |
-| M5  | ~~Add dual-json contract test (import-split lockdown)~~ ✅ done `f64abb0`             | High   | 15min   | M3, M4   | Build           |
-| M6  | ~~Verify both modes: `go build`, `go test`, `GOEXPERIMENT=jsonv2`~~ ✅ done `v0.1.0` | Exist  | 15min   | M1-M5    | Verify          |
-| M7  | ~~Fix LICENSE: proprietary → MIT~~ ✅ done `1fde5c5`                                  | High   | 5min    | —        | SDK             |
-| M8  | ~~Clean `doc.go`: remove `stack.Bundle` / `DefaultCodec()` leak~~ ✅ done `1fde5c5`  | High   | 10min   | —        | SDK             |
-| M9  | ~~Add `flake.nix` with dual-mode CI (from go-branded-id pattern)~~ ✅ done `1fde5c5`  | High   | 45min   | M6       | Tooling         |
-| M10 | ~~Add `.golangci.yml` lint config~~ ✅ done `1fde5c5`                                 | Med    | 15min   | —        | Tooling         |
-| M11 | ~~Fix README: remove broken `../` sibling links, add dual-build note~~ ✅ done `9d114ba` | Med | 30min   | M8       | Docs            |
-| M12 | ~~Add missing unit tests (base64_json.go, PrepareCOSESetup)~~ ✅ done `f64abb0`       | Med    | 45min   | M6       | Tests           |
-| M13 | ~~API renames: `envelopeMagic`, `COSE*String` → `*Diagnostic`~~ ✅ done `d144b6f`    | Med    | 30min   | M6       | API             |
-| M14 | ~~Fix `ForEncoding` asymmetry: wire `EncodingRaw` → `RawCodec{}`~~ ✅ done `d144b6f` | Med    | 15min   | M6       | API             |
-| M15 | ~~Improve `CONTRIBUTING.md` (dual-build commands, Go version)~~ ✅ done `9d114ba`    | Low    | 15min   | M9       | Docs            |
-| M16 | ~~Update all living docs (AGENTS, FEATURES, CHANGELOG, TODO_LIST, ROADMAP, DOMAIN_LANGUAGE)~~ ✅ done `9d114ba` | Med | 30min | M1-M14 | Docs |
-| M17 | ~~`go mod tidy` + final verification + tag `v0.1.0`~~ ✅ done `v0.1.0`                | High   | 15min   | M1-M16   | Release         |
+| #   | Task                                                                                                                                   | Impact | Effort | Deps   | Category |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ | ------ | -------- |
+| M1  | ~~Fix `snaps_clean_test.go` compile error~~ ✅ done `v0.1.0`                                                                           | Exist  | 2min   | —      | Build    |
+| M2  | ~~Create dual-build compat layer (`json_compat_v1.go` + `json_compat_v2.go`)~~ ✅ done `f3e30e9`                                       | Exist  | 30min  | —      | Build    |
+| M3  | ~~Update source files (`json.go`, `envelope.go`, `base64_json.go`, `raw.go`, `transcode.go`) to use compat helpers~~ ✅ done `f3e30e9` | Exist  | 30min  | M2     | Build    |
+| M4  | ~~Update test files for dual-build (build-tagged test helpers)~~ ✅ done `f3e30e9`                                                     | Exist  | 30min  | M2     | Build    |
+| M5  | ~~Add dual-json contract test (import-split lockdown)~~ ✅ done `f64abb0`                                                              | High   | 15min  | M3, M4 | Build    |
+| M6  | ~~Verify both modes: `go build`, `go test`, `GOEXPERIMENT=jsonv2`~~ ✅ done `v0.1.0`                                                   | Exist  | 15min  | M1-M5  | Verify   |
+| M7  | ~~Fix LICENSE: proprietary → MIT~~ ✅ done `1fde5c5`                                                                                   | High   | 5min   | —      | SDK      |
+| M8  | ~~Clean `doc.go`: remove `stack.Bundle` / `DefaultCodec()` leak~~ ✅ done `1fde5c5`                                                    | High   | 10min  | —      | SDK      |
+| M9  | ~~Add `flake.nix` with dual-mode CI (from go-branded-id pattern)~~ ✅ done `1fde5c5`                                                   | High   | 45min  | M6     | Tooling  |
+| M10 | ~~Add `.golangci.yml` lint config~~ ✅ done `1fde5c5`                                                                                  | Med    | 15min  | —      | Tooling  |
+| M11 | ~~Fix README: remove broken `../` sibling links, add dual-build note~~ ✅ done `9d114ba`                                               | Med    | 30min  | M8     | Docs     |
+| M12 | ~~Add missing unit tests (base64_json.go, PrepareCOSESetup)~~ ✅ done `f64abb0`                                                        | Med    | 45min  | M6     | Tests    |
+| M13 | ~~API renames: `envelopeMagic`, `COSE*String` → `*Diagnostic`~~ ✅ done `d144b6f`                                                      | Med    | 30min  | M6     | API      |
+| M14 | ~~Fix `ForEncoding` asymmetry: wire `EncodingRaw` → `RawCodec{}`~~ ✅ done `d144b6f`                                                   | Med    | 15min  | M6     | API      |
+| M15 | ~~Improve `CONTRIBUTING.md` (dual-build commands, Go version)~~ ✅ done `9d114ba`                                                      | Low    | 15min  | M9     | Docs     |
+| M16 | ~~Update all living docs (AGENTS, FEATURES, CHANGELOG, TODO_LIST, ROADMAP, DOMAIN_LANGUAGE)~~ ✅ done `9d114ba`                        | Med    | 30min  | M1-M14 | Docs     |
+| M17 | ~~`go mod tidy` + final verification + tag `v0.1.0`~~ ✅ done `v0.1.0`                                                                 | High   | 15min  | M1-M16 | Release  |
 
 **Total estimated effort: ~6.5 hours**
 
@@ -138,69 +138,69 @@ project literally does not compile.
 
 ### Tier 1: Existential (build must work)
 
-| #   | Task                                                        | Est  | Deps   |
-| --- | ----------------------------------------------------------- | ---- | ------ |
-| F1  | ~~Fix `snaps_clean_test.go:12` — change `_ = snaps.Clean(m)` to `snaps.Clean(m)`~~ ✅ done `v0.1.0` | 2min | —      |
-| F2  | ~~Create `json_compat_v1.go` (`//go:build !goexperiment.jsonv2`) with 5 helpers + `rawJSONValue` type alias~~ ✅ done `f3e30e9` | 10min | —   |
-| F3  | ~~Create `json_compat_v2.go` (`//go:build goexperiment.jsonv2`) with same 5 helpers + alias~~ ✅ done `f3e30e9` | 10min | —   |
-| F4  | ~~Update `json.go` — remove `encoding/json/v2` import, use compat helpers~~ ✅ done `f3e30e9` | 8min | F2,F3 |
-| F5  | ~~Update `envelope.go` — remove `encoding/json/v2` import, use compat helpers~~ ✅ done `f3e30e9` | 8min | F2,F3 |
-| F6  | ~~Update `base64_json.go` — remove `encoding/json/v2` import, use compat helpers~~ ✅ done `f3e30e9` | 8min | F2,F3 |
-| F7  | ~~Update `raw.go` — remove `encoding/json/jsontext` import, use `rawJSONValue`~~ ✅ done `f3e30e9` | 5min | F2,F3 |
-| F8  | ~~Update `transcode.go` — remove `encoding/json/v2` import, use compat helper~~ ✅ done `f3e30e9` | 5min | F2,F3 |
-| F9  | ~~Create `json_helpers_v1_test.go` (`//go:build !goexperiment.jsonv2`) test helpers~~ ✅ done `f3e30e9` | 8min | F2    |
-| F10 | ~~Create `json_helpers_v2_test.go` (`//go:build goexperiment.jsonv2`) test helpers~~ ✅ done `f3e30e9` | 8min | F3    |
-| F11 | ~~Update test files that import `json/v2` directly (transcode_test.go, codec_test.go) to use test helpers~~ ✅ done `f3e30e9` | 10min | F9,F10 |
-| F12 | ~~Verify: `go build ./...` passes (v1 mode)~~ ✅ done `v0.1.0`                  | 2min | F1-F11 |
-| F13 | ~~Verify: `GOEXPERIMENT=jsonv2 go build ./...` passes (v2 mode)~~ ✅ done `v0.1.0` | 2min | F1-F11 |
-| F14 | ~~Verify: `go test ./... -count=1` passes (v1 mode)~~ ✅ done `v0.1.0`          | 5min | F12   |
-| F15 | ~~Verify: `GOEXPERIMENT=jsonv2 go test ./... -count=1` passes (v2 mode)~~ ✅ done `v0.1.0` | 5min | F13   |
+| #   | Task                                                                                                                            | Est   | Deps   |
+| --- | ------------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| F1  | ~~Fix `snaps_clean_test.go:12` — change `_ = snaps.Clean(m)` to `snaps.Clean(m)`~~ ✅ done `v0.1.0`                             | 2min  | —      |
+| F2  | ~~Create `json_compat_v1.go` (`//go:build !goexperiment.jsonv2`) with 5 helpers + `rawJSONValue` type alias~~ ✅ done `f3e30e9` | 10min | —      |
+| F3  | ~~Create `json_compat_v2.go` (`//go:build goexperiment.jsonv2`) with same 5 helpers + alias~~ ✅ done `f3e30e9`                 | 10min | —      |
+| F4  | ~~Update `json.go` — remove `encoding/json/v2` import, use compat helpers~~ ✅ done `f3e30e9`                                   | 8min  | F2,F3  |
+| F5  | ~~Update `envelope.go` — remove `encoding/json/v2` import, use compat helpers~~ ✅ done `f3e30e9`                               | 8min  | F2,F3  |
+| F6  | ~~Update `base64_json.go` — remove `encoding/json/v2` import, use compat helpers~~ ✅ done `f3e30e9`                            | 8min  | F2,F3  |
+| F7  | ~~Update `raw.go` — remove `encoding/json/jsontext` import, use `rawJSONValue`~~ ✅ done `f3e30e9`                              | 5min  | F2,F3  |
+| F8  | ~~Update `transcode.go` — remove `encoding/json/v2` import, use compat helper~~ ✅ done `f3e30e9`                               | 5min  | F2,F3  |
+| F9  | ~~Create `json_helpers_v1_test.go` (`//go:build !goexperiment.jsonv2`) test helpers~~ ✅ done `f3e30e9`                         | 8min  | F2     |
+| F10 | ~~Create `json_helpers_v2_test.go` (`//go:build goexperiment.jsonv2`) test helpers~~ ✅ done `f3e30e9`                          | 8min  | F3     |
+| F11 | ~~Update test files that import `json/v2` directly (transcode_test.go, codec_test.go) to use test helpers~~ ✅ done `f3e30e9`   | 10min | F9,F10 |
+| F12 | ~~Verify: `go build ./...` passes (v1 mode)~~ ✅ done `v0.1.0`                                                                  | 2min  | F1-F11 |
+| F13 | ~~Verify: `GOEXPERIMENT=jsonv2 go build ./...` passes (v2 mode)~~ ✅ done `v0.1.0`                                              | 2min  | F1-F11 |
+| F14 | ~~Verify: `go test ./... -count=1` passes (v1 mode)~~ ✅ done `v0.1.0`                                                          | 5min  | F12    |
+| F15 | ~~Verify: `GOEXPERIMENT=jsonv2 go test ./... -count=1` passes (v2 mode)~~ ✅ done `v0.1.0`                                      | 5min  | F13    |
 
 ### Tier 2: SDK Quality
 
-| #   | Task                                                        | Est  | Deps   |
-| --- | ----------------------------------------------------------- | ---- | ------ |
-| F16 | ~~Change LICENSE from proprietary to MIT~~ ✅ done `1fde5c5`                      | 3min | —      |
-| F17 | ~~Remove `stack.Bundle` / `DefaultCodec()` reference from `doc.go`~~ ✅ done `1fde5c5` | 5min | —      |
-| F18 | ~~Create `flake.nix` — copy go-branded-id pattern, adapt for go-codec~~ ✅ done `1fde5c5` | 30min | F15   |
-| F19 | ~~Create `.golangci.yml` with sensible defaults for the project~~ ✅ done `1fde5c5` | 10min | —      |
-| F20 | ~~Fix README: remove/neutralize `../` sibling-module links~~ ✅ done `9d114ba`    | 10min | F17   |
-| F21 | ~~Add dual-build section to README (v1 default, v2 opt-in)~~ ✅ done `9d114ba`    | 10min | F20   |
-| F22 | ~~Add `AUTHORS` file~~ ✅ done `1fde5c5`                                          | 2min | —      |
+| #   | Task                                                                                      | Est   | Deps |
+| --- | ----------------------------------------------------------------------------------------- | ----- | ---- |
+| F16 | ~~Change LICENSE from proprietary to MIT~~ ✅ done `1fde5c5`                              | 3min  | —    |
+| F17 | ~~Remove `stack.Bundle` / `DefaultCodec()` reference from `doc.go`~~ ✅ done `1fde5c5`    | 5min  | —    |
+| F18 | ~~Create `flake.nix` — copy go-branded-id pattern, adapt for go-codec~~ ✅ done `1fde5c5` | 30min | F15  |
+| F19 | ~~Create `.golangci.yml` with sensible defaults for the project~~ ✅ done `1fde5c5`       | 10min | —    |
+| F20 | ~~Fix README: remove/neutralize `../` sibling-module links~~ ✅ done `9d114ba`            | 10min | F17  |
+| F21 | ~~Add dual-build section to README (v1 default, v2 opt-in)~~ ✅ done `9d114ba`            | 10min | F20  |
+| F22 | ~~Add `AUTHORS` file~~ ✅ done `1fde5c5`                                                  | 2min  | —    |
 
 ### Tier 3: API Improvements
 
-| #   | Task                                                        | Est  | Deps   |
-| --- | ----------------------------------------------------------- | ---- | ------ |
-| F23 | ~~Rename `envelopeMagic` from `"cqrs"` to `"gcdc"` (go-codec)~~ ✅ done `d144b6f` | 5min | F15   |
-| F24 | ~~Rename `COSESign1String` → `COSESign1Diagnostic`~~ ✅ done `d144b6f`            | 5min | F15   |
-| F25 | ~~Rename `COSEEncrypt0String` → `COSEEncrypt0Diagnostic`~~ ✅ done `d144b6f`      | 5min | F15   |
+| #   | Task                                                                              | Est   | Deps    |
+| --- | --------------------------------------------------------------------------------- | ----- | ------- |
+| F23 | ~~Rename `envelopeMagic` from `"cqrs"` to `"gcdc"` (go-codec)~~ ✅ done `d144b6f` | 5min  | F15     |
+| F24 | ~~Rename `COSESign1String` → `COSESign1Diagnostic`~~ ✅ done `d144b6f`            | 5min  | F15     |
+| F25 | ~~Rename `COSEEncrypt0String` → `COSEEncrypt0Diagnostic`~~ ✅ done `d144b6f`      | 5min  | F15     |
 | F26 | ~~Update all references to renamed functions in tests + docs~~ ✅ done `d144b6f`  | 10min | F23-F25 |
-| F27 | ~~Wire `EncodingRaw → RawCodec{}` into `ForEncoding`~~ ✅ done `d144b6f`          | 8min | F15   |
-| F28 | ~~Add test for `ForEncoding(EncodingRaw)` returning RawCodec~~ ✅ done `d144b6f`  | 5min | F27   |
+| F27 | ~~Wire `EncodingRaw → RawCodec{}` into `ForEncoding`~~ ✅ done `d144b6f`          | 8min  | F15     |
+| F28 | ~~Add test for `ForEncoding(EncodingRaw)` returning RawCodec~~ ✅ done `d144b6f`  | 5min  | F27     |
 
 ### Tier 4: Test Coverage
 
-| #   | Task                                                        | Est  | Deps   |
-| --- | ----------------------------------------------------------- | ---- | ------ |
-| F29 | ~~Write unit tests for `DecodeBase64String` (URL-safe + std fallback + error)~~ ✅ done `f64abb0` | 10min | F15 |
-| F30 | ~~Write unit tests for `MarshalBase64JSON` + `MarshalBase64JSONWithModule`~~ ✅ done `f64abb0` | 10min | F15 |
-| F31 | ~~Write unit tests for `UnmarshalBase64JSON` + `AssignBase64JSON`~~ ✅ done `f64abb0` | 10min | F15 |
-| F32 | ~~Write unit test for `WrapCOSEMarshal`~~ ✅ done `f64abb0`                       | 8min | F15   |
-| F33 | ~~Write unit test for `PrepareCOSESetup` (generic option-apply)~~ ✅ done `f64abb0` | 10min | F15 |
-| F34 | ~~Add dual-json contract test (lock import split per build mode)~~ ✅ done `f64abb0` | 10min | F15 |
+| #   | Task                                                                                              | Est   | Deps |
+| --- | ------------------------------------------------------------------------------------------------- | ----- | ---- |
+| F29 | ~~Write unit tests for `DecodeBase64String` (URL-safe + std fallback + error)~~ ✅ done `f64abb0` | 10min | F15  |
+| F30 | ~~Write unit tests for `MarshalBase64JSON` + `MarshalBase64JSONWithModule`~~ ✅ done `f64abb0`    | 10min | F15  |
+| F31 | ~~Write unit tests for `UnmarshalBase64JSON` + `AssignBase64JSON`~~ ✅ done `f64abb0`             | 10min | F15  |
+| F32 | ~~Write unit test for `WrapCOSEMarshal`~~ ✅ done `f64abb0`                                       | 8min  | F15  |
+| F33 | ~~Write unit test for `PrepareCOSESetup` (generic option-apply)~~ ✅ done `f64abb0`               | 10min | F15  |
+| F34 | ~~Add dual-json contract test (lock import split per build mode)~~ ✅ done `f64abb0`              | 10min | F15  |
 
 ### Tier 5: Documentation & Release
 
-| #   | Task                                                        | Est  | Deps   |
-| --- | ----------------------------------------------------------- | ---- | ------ |
-| F35 | ~~Update AGENTS.md with dual-build info, corrected commands~~ ✅ done `9d114ba`   | 10min | F18   |
-| F36 | ~~Update FEATURES.md — remove caveat, mark verified green~~ ✅ done `9d114ba`     | 10min | F15   |
+| #   | Task                                                                                                        | Est   | Deps   |
+| --- | ----------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| F35 | ~~Update AGENTS.md with dual-build info, corrected commands~~ ✅ done `9d114ba`                             | 10min | F18    |
+| F36 | ~~Update FEATURES.md — remove caveat, mark verified green~~ ✅ done `9d114ba`                               | 10min | F15    |
 | F37 | ~~Update CHANGELOG.md with all changes under `[Unreleased]`~~ ✅ done `9d114ba` (now promoted to `[0.1.0]`) | 10min | F1-F34 |
-| F38 | ~~Update TODO_LIST.md — remove completed items~~ ✅ done `9d114ba` (rebuilt `ba73a7e`-era) | 5min | F37   |
-| F39 | ~~Update CONTRIBUTING.md with dual-build commands + Go version~~ ✅ done `9d114ba` | 10min | F18   |
-| F40 | ~~`go mod tidy` + final `go build` + `go test` in both modes~~ ✅ done `b6a5a93`  | 5min | F1-F39 |
-| F41 | ~~Tag `v0.1.0`~~ ✅ done `v0.1.0`                                                | 3min | F40   |
+| F38 | ~~Update TODO_LIST.md — remove completed items~~ ✅ done `9d114ba` (rebuilt `ba73a7e`-era)                  | 5min  | F37    |
+| F39 | ~~Update CONTRIBUTING.md with dual-build commands + Go version~~ ✅ done `9d114ba`                          | 10min | F18    |
+| F40 | ~~`go mod tidy` + final `go build` + `go test` in both modes~~ ✅ done `b6a5a93`                            | 5min  | F1-F39 |
+| F41 | ~~Tag `v0.1.0`~~ ✅ done `v0.1.0`                                                                           | 3min  | F40    |
 
 **Total fine tasks: 41 · Total estimated effort: ~6.5 hours**
 

@@ -28,6 +28,7 @@ because I ran lint before the daemon committed). The `SizeResult` change is a
 ## a) FULLY DONE
 
 ### Security (Tier 1 — F1–F11)
+
 - **Depth cap in `normalizeForJSON`**: `maxNormalizeDepth=100` constant,
   signature changed to `(any, error)`, 3 callers wired (`jsonMarshal`,
   `jsonMarshalDet`, `jsonMarshalBuf`). v1-only; v2 unaffected.
@@ -36,6 +37,7 @@ because I ran lint before the daemon committed). The `SizeResult` change is a
 - Both verified: v1 + v2 build + test green.
 
 ### Lint debt payback (Tier 4 — F19–F28)
+
 - `makezero` reverted to `always: true`; targeted `//nolint` on `raw.go:46`.
 - Dead `testJSONMarshal` removed from both compat test helper files.
 - `goconst` re-enabled for tests: extracted 20+ shared constants into
@@ -44,6 +46,7 @@ because I ran lint before the daemon committed). The `SizeResult` change is a
 - Both lint modes clean (at time of my commit).
 
 ### Test package migration (Tier 5 — F29–F42)
+
 - `export_test.go` created: exports `CanonicalEncMode`, `CanonicalDecMode`,
   `JSONUnmarshal`, `EnvelopeMagic`, `Envelope`, `RawJSONValue`.
 - 10 test files migrated from `package codec` → `package codec_test`.
@@ -52,10 +55,12 @@ because I ran lint before the daemon committed). The `SizeResult` change is a
   `testdata_test.go`) carry `//nolint:testpackage`.
 
 ### Parallel tests (Tier 6 — F43–F45)
+
 - `paralleltest` re-enabled; `t.Parallel()` added to all 19 missing functions
   in `cbor_compact_test.go`, `cose_test.go`, `golden_test.go`.
 
 ### Normalizer tests (Tier 7 — F46–F48)
+
 - `TestNormalizeForJSON`: 10 table-driven cases (nil, scalar, int-keyed map,
   string-keyed map, `map[string]any`, empty containers, nested, `[]any`).
 - `TestNormalizeForJSON_DepthCap`: verifies error at >100 depth.
@@ -63,56 +68,62 @@ because I ran lint before the daemon committed). The `SizeResult` change is a
 - `FuzzNormalizeForJSON`: fuzz target with CBOR-decoded random structures.
 
 ### CI hardening (Tier 3 — F15–F18)
+
 - Lint job converted to v1/v2 matrix.
 - `gitleaks/gitleaks-action@v2` secret-scan job added.
 - YAML validated.
 
 ### API polish (Tier 9 — F61–F67)
+
 - `Size` returns `SizeResult{JSON, CBOR}` instead of positional `(int, int)`.
 - `GetBuffer` / `PutBuffer` — `sync.Pool` buffer helper (`pool.go`).
 - `TranscodeToJSON` one-way contract documented in `doc.go`.
 - `Size` doc comment + example updated for `SizeResult`.
 
 ### Benchmarks (Tier 10 — F68–F71)
+
 - `BenchmarkNormalizeForJSON` + `BenchmarkJSONCodec_MarshalUnmarshal` added.
 - Numbers captured: v2 is 35-40% faster, 50-63% fewer allocations.
 
 ### Repo hygiene (Tier 11 — F72–F77)
+
 - `CODEOWNERS`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`,
   `.github/PULL_REQUEST_TEMPLATE.md` created.
 - `CONTRIBUTING.md` updated with snapshot-update flow + test conventions.
 - TIMEZONE_HANDLING: accepted the inline README section as sufficient.
 
 ### Docs (Tier 12 — F78–F81)
+
 - CHANGELOG: full `[Unreleased]` section with Security/Added/Changed.
 - FEATURES.md: coverage %, performance table, new features added.
 - TODO_LIST.md: rebuilt — 22 prior items marked completed, 2 active items remain.
 - AGENTS.md: testing conventions + AutoDetect size guard documented.
 
 ### README fix (Tier 2 — F12–F13)
+
 - `"Go 1.23+"` corrected to `"Go 1.26.5+"`.
 
 ---
 
 ## b) PARTIALLY DONE
 
-| Item | What was done | What's missing |
-| --- | --- | --- |
-| **Tier 8: Fuzz verification** (F49–F53) | Ran `FuzzNormalizeForJSON` + `FuzzCBORCodec_Roundtrip` for 10s each | Plan said 60s each; only ran 10s. Did not run `FuzzTranscodeToJSON` or all v2 fuzz targets individually. |
-| **Tier 8: Nix verification** (F57–F60) | `nix run .#test` ✓, `nix run .#lint` ✓ | `nix flake check` **never run — and it FAILS** (permission denied: `mkdir /homeless-shelter`). `nix build` was run but provides no `default` package — the flake only has `apps`. |
-| **Tier 12: Docs update** (F78–F81) | CHANGELOG, FEATURES, TODO_LIST, AGENTS updated | **ROADMAP.md not updated** (a concurrent daemon session did it instead). **Execution plan document not annotated/archived.** |
-| **Coverage report** (F54–F56) | Generated coverage, reported 82.4%/81.9% | **Number is now stale**: daemon-added `observability.go` (0% covered) dropped actual coverage to 67.6%/65.4%. FEATURES.md still claims the old number. |
+| Item                                    | What was done                                                       | What's missing                                                                                                                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Tier 8: Fuzz verification** (F49–F53) | Ran `FuzzNormalizeForJSON` + `FuzzCBORCodec_Roundtrip` for 10s each | Plan said 60s each; only ran 10s. Did not run `FuzzTranscodeToJSON` or all v2 fuzz targets individually.                                                                          |
+| **Tier 8: Nix verification** (F57–F60)  | `nix run .#test` ✓, `nix run .#lint` ✓                              | `nix flake check` **never run — and it FAILS** (permission denied: `mkdir /homeless-shelter`). `nix build` was run but provides no `default` package — the flake only has `apps`. |
+| **Tier 12: Docs update** (F78–F81)      | CHANGELOG, FEATURES, TODO_LIST, AGENTS updated                      | **ROADMAP.md not updated** (a concurrent daemon session did it instead). **Execution plan document not annotated/archived.**                                                      |
+| **Coverage report** (F54–F56)           | Generated coverage, reported 82.4%/81.9%                            | **Number is now stale**: daemon-added `observability.go` (0% covered) dropped actual coverage to 67.6%/65.4%. FEATURES.md still claims the old number.                            |
 
 ---
 
 ## c) NOT STARTED
 
-| Item | Why |
-| --- | --- |
-| **F14: GitHub Release for v0.1.0** | Listed as BLOCKED in TODO_LIST (awaiting user decision on tag strategy). `gh release view v0.1.0` → "release not found". |
-| **F65: `SizeResult` example in `doc.go`** | Was in the plan. The `Size` doc comment was updated but no `ExampleSize` godoc function was added. |
-| **Verify `go-cqrs-lite` consumes `go-codec@v0.1.0`** | TODO #1 in the rebuilt TODO_LIST. No downstream consumer has been wired. |
-| **Annotate/archive the execution plan** | The plan at `docs/planning/2026-08-12_10-04_post-audit-execution-plan.md` is fully executed but has zero inline annotations marking items as done. It should be archived to `docs/planning/archived/`. |
+| Item                                                 | Why                                                                                                                                                                                                    |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **F14: GitHub Release for v0.1.0**                   | Listed as BLOCKED in TODO_LIST (awaiting user decision on tag strategy). `gh release view v0.1.0` → "release not found".                                                                               |
+| **F65: `SizeResult` example in `doc.go`**            | Was in the plan. The `Size` doc comment was updated but no `ExampleSize` godoc function was added.                                                                                                     |
+| **Verify `go-cqrs-lite` consumes `go-codec@v0.1.0`** | TODO #1 in the rebuilt TODO_LIST. No downstream consumer has been wired.                                                                                                                               |
+| **Annotate/archive the execution plan**              | The plan at `docs/planning/2026-08-12_10-04_post-audit-execution-plan.md` is fully executed but has zero inline annotations marking items as done. It should be archived to `docs/planning/archived/`. |
 
 ---
 
@@ -130,6 +141,7 @@ daemon committed. **FEATURES.md now lies.**
 
 My "final comprehensive verification" showed 0 issues — but the daemon
 committed `eba9f80` AFTER my verification. The daemon's code has:
+
 - 2 `goconst` violations in `benchmark_test.go` (`"JSON"`, `"CBOR"` repeated)
 - 1 `golines` formatting issue in `autodetect.go`
 - 1 `lll` line-length violation in `autodetect.go`
@@ -173,6 +185,7 @@ it will fail.** Still, I should have verified.
 
 I used a blind regex to prefix all exported identifiers with `codec.` across
 10 test files. It worked, but:
+
 - Local variables named `codec` shadowed the import (required manual fixes).
 - The `.codec.` → `.` fix for method access was a second regex pass.
 - Some files needed manual import merging via `goimports`.
@@ -219,12 +232,14 @@ I used a blind regex to prefix all exported identifiers with `codec.` across
 ## f) Next 50 things to get done
 
 ### Critical (blocks CI / lies in docs)
+
 1. ~~Fix 4 lint issues on HEAD (`benchmark_test.go` goconst, `autodetect.go` golines/lll)~~ done at `f6aff00`, `93e68f3`
 2. ~~Re-measure coverage, update FEATURES.md with real numbers~~ done at `d871122` (85.3% / 85.4%; re-verified 2026-08-14)
 3. ~~Add tests for `observability.go` (currently 0% — 236 lines uncovered)~~ done at `93e68f3`, `d871122` (9 tests + 16k-op race stress)
 4. ~~Decide version strategy for `SizeResult` breaking change~~ **still open — awaiting user (`TODO_LIST.md` #1); `v0.1.1` recommended**
 
 ### High impact
+
 5. ~~Create GitHub Release for v0.1.0 (or v0.2.0 if breaking changes ship)~~ **still open — `TODO_LIST.md` #1**
 6. ~~Annotate + archive the execution plan document~~ annotated 2026-08-14 (inline verdicts); **not archived — F14/F49-F53/F65 remain open**
 7. ~~Convert `normalizeForJSON` depth error to `go-error-family` with stable code~~ **still open — `TODO_LIST.md` #4**
@@ -233,6 +248,7 @@ I used a blind regex to prefix all exported identifiers with `codec.` across
 10. ~~Verify `nix flake check` — it fails on `mkdir /homeless-shelter`~~ done 2026-08-14 — hermetic `buildGoModule` checks, `nix flake check` green
 
 ### Test quality
+
 11. ~~Rename test constants to self-documenting names~~ **partially done — `testName`/`testEmail` exist; `testField`/`testFieldE`/`testMapKey` remain (`TODO_LIST.md` #14)**
 12. ~~Run all fuzz targets for full 60s (plan said 60s, I ran 10s)~~ **still open — `TODO_LIST.md` #3**
 13. ~~Run `UPDATE_SNAPSHOTS=true go test` in both modes to verify golden snapshots~~ done — golden tests green in both CI modes continuously since, proving snapshot currency
@@ -245,6 +261,7 @@ I used a blind regex to prefix all exported identifiers with `codec.` across
 20. ~~Review the daemon's `AutoDetectDebug` for correctness — never reviewed~~ done at `93e68f3`, `d871122` (tests + property/fuzz delegation lock)
 
 ### Code quality
+
 21. ~~Fix `nix flake check` permission issue (`/homeless-shelter` — missing `HOME`?)~~ done 2026-08-14 — hermetic `buildGoModule` checks
 22. ~~Add `dependabot.yml` or `renovate` config for dependency updates~~ **still open — `TODO_LIST.md` #16**
 23. Add `.go-version` file for `gvm`/`asdf` users
@@ -257,6 +274,7 @@ I used a blind regex to prefix all exported identifiers with `codec.` across
 30. Consider adding `context.Context` support for cancellation
 
 ### Documentation
+
 31. Update `README.md` with `SizeResult` usage example
 32. Update `README.md` with `GetBuffer`/`PutBuffer`/`EncodePooled` mention
 33. Add `SECURITY.md` to README index or table of contents
@@ -269,6 +287,7 @@ I used a blind regex to prefix all exported identifiers with `codec.` across
 40. ~~Update `FEATURES.md` with observability + streaming JSON features~~ done at `93e68f3`, `d871122`
 
 ### Ecosystem / verification
+
 41. ~~Wire `go-cqrs-lite` to consume `go-codec@v0.1.0`~~ done at `d871122` (proxy-consumption verified; deeper `ObservableCodec` wiring is `ROADMAP.md` theme 5)
 42. Verify `pkg.go.dev` renders the package correctly
 43. ~~Add `go ref` links in README to pkg.go.dev~~ done — pkg.go.dev reference badge at README top

@@ -83,7 +83,7 @@
 2. **docs/DOMAIN_LANGUAGE.md** — still says `envelopeMagic = "cqrs"`, still
    names `COSE*String` in the glossary, has no entry for the dual-build
    concept or `normalizeForJSON`. **Stale after renames.**
-3. **Fuzz verification** — I ran `go test` (which includes fuzz *compilation*
+3. **Fuzz verification** — I ran `go test` (which includes fuzz _compilation_
    and the corpus seed-cases), but never ran `go test -fuzz=Fuzz...` for any
    duration. The seeds pass, but I haven't fuzzed the new v1
    `normalizeForJSON` path under arbitrary CBOR maps.
@@ -153,6 +153,7 @@
 ## f) Next 50 things to do
 
 ### Critical — split-brain & unfinished instructions
+
 1. ~~**Push to remote.** Get the GitHub remote URL from the user, `git remote add~~
    ~~origin <url>`, `git push -u origin master --tags`.~~ done — remote `git@github.com:LarsArtmann/go-codec.git` added, master + `v0.1.0` pushed
 2. ~~**Update `docs/DOMAIN_LANGUAGE.md`** — fix `envelopeMagic` value to `"gcdc"`,~~
@@ -164,6 +165,7 @@
    ~~fix any findings, confirm a clean baseline.~~ done at `3f8ac9d` (88→0)
 
 ### Verification gaps
+
 5. **Run fuzz targets** for at least 60s each: `FuzzCBORCodec_Roundtrip`,
    `FuzzTranscodeToJSON` (especially on v1 mode to exercise
    `normalizeForJSON`). **still open — now `TODO_LIST.md` #3 (fuzz job/corpus)**
@@ -175,6 +177,7 @@
    golden output in both JSON modes. ~~verification~~ done — golden snapshot tests green in both CI modes
 
 ### CI / release hygiene
+
 9. ~~**Add `.github/workflows/ci.yml`** — build+test+lint+race in both JSON~~
    ~~modes, mirroring the Nix checks.~~ done at `ef1f4f4`
 10. **Add `gosec` and `govulncheck`** to CI (per how-to-golang policy). ← **partial — `govulncheck` done `ef1f4f4`; `gosec` open → `TODO_LIST.md` #3**
@@ -184,6 +187,7 @@
 14. **Add a `CHANGELOG.md` link** to the release description. ← **still open — blocked on #13 (`TODO_LIST.md` #1)**
 
 ### API polish (from the original brainstorm, deferred)
+
 15. **`Size` → `SizeResult{JSON, CBOR int}`** — self-documenting return. ~~routed, since executed~~ done at `094de50`
 16. **Add `TranscodeToCBOR`** (symmetric to `TranscodeToJSON`) or rename to
     make the one-way contract unmistakable. ~~routed, since executed~~ done at `094de50`
@@ -194,6 +198,7 @@
     (one fewer direct dep for a serialization lib). ← **open — decision deferred**
 
 ### Test & docs polish
+
 21. **Add `TestNormalizeForJSON`** — dedicated table-driven test for the
     recursive normalizer (currently only exercised transitively). ~~routed, since executed~~ done at `094de50`
 22. **Add a fuzz target specifically for `normalizeForJSON`** — adversarial
@@ -210,6 +215,7 @@
     `.github/PULL_REQUEST_TEMPLATE.md`). ~~routed, since executed~~ done at `094de50`
 
 ### Architecture / composable-SDK direction
+
 28. **Add an `ExampleForEncoding`** godoc example showing all three encodings. ← **open — nice-to-have**
 29. **Add an `ExampleTranscodeToJSON`** godoc example. ← **open — nice-to-have**
 30. **Document the wire-format commitment** for `toarray`/`keyasint` in a
@@ -226,6 +232,7 @@
 35. ~~**Consider a streaming JSON codec** (symmetry with CBOR streaming).~~ done at `eba9f80` (`NewJSONEncoder`/`NewJSONDecoder`, NDJSON)
 
 ### Repo hygiene
+
 36. **Run `nix flake check`** to validate the flake. ~~routed, since executed~~ done at `094de50`
 37. ~~**Add `flake.lock`** (go-branded-id has one; this repo doesn't after adding~~
     ~~flake.nix).~~ done — `flake.lock` present
@@ -244,6 +251,7 @@
 45. **Add a `dedup-acceptance.md`** if `art-dupl` is used across sibling repos. ← **open — deferred**
 
 ### Performance
+
 46. **Benchmark v1 vs v2 JSON paths** — confirm the dual-build has no perf
     regression vs the original v2-only code. ~~routed, since executed~~ done at `094de50` (benchmark suite added); headline README citation still open — `TODO_LIST.md` #13
 47. **Benchmark `normalizeForJSON`** — it allocates on every CBOR→JSON

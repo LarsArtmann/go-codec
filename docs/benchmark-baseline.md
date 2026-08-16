@@ -7,12 +7,12 @@ performance-sensitive change.
 
 ## Environment
 
-| Factor    | Value                                                        |
-| --------- | ------------------------------------------------------------ |
-| Date      | 2026-08-15                                                   |
-| Toolchain | go1.26.5 linux/amd64                                         |
-| CPU       | AMD RYZEN AI MAX+ 395 w/ Radeon 8060S                        |
-| JSON mode | v1 (default build; `GOEXPERIMENT` unset)                     |
+| Factor    | Value                                                         |
+| --------- | ------------------------------------------------------------- |
+| Date      | 2026-08-15                                                    |
+| Toolchain | go1.26.5 linux/amd64                                          |
+| CPU       | AMD RYZEN AI MAX+ 395 w/ Radeon 8060S                         |
+| JSON mode | v1 (default build; `GOEXPERIMENT` unset)                      |
 | Command   | `go test -run '^$' -bench . -benchmem -count=10 -timeout 40m` |
 
 Notes:

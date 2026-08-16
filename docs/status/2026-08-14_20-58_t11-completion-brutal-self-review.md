@@ -80,21 +80,21 @@ three user decisions, one of which just went moot.
 
 ## d) TOTALLY FUCKED UP (brutally honest)
 
-1. **(Mine — caught and fixed during this review.)** I wrote an *unverified
-   causal claim* into a historical annotation: "86.3 was measured before the
+1. **(Mine — caught and fixed during this review.)** I wrote an _unverified
+   causal claim_ into a historical annotation: "86.3 was measured before the
    T7–T10 test files landed." That story is not just unverified — it cannot be
-   right, because the 20-47 report was written *after* T7–T10 landed and still
+   right, because the 20-47 report was written _after_ T7–T10 landed and still
    claims 86.3. I pattern-matched to a plausible explanation instead of
    stopping at the verified fact (my fresh measurement = 88.0). Fixed by
    amending the annotation to "cause unverified, do not trust the original v1
-   number." Root cause: wanting the annotation to *explain* rather than just
-   *resolve*. Rule going forward: **verdicts + citations only; no causal
+   number." Root cause: wanting the annotation to _explain_ rather than just
+   _resolve_. Rule going forward: **verdicts + citations only; no causal
    narratives without evidence.**
 2. **(Inherited, prior session, already documented in the 20-47 report.)** The
    18-09 report annotation initially used the wrong numbering (copied list
    order from a different report); recovered via `git restore` and re-annotated
    from the true list. Lesson on record: first spot-check must compare item
-   TEXT, not marker counts. Same failure *class* as d-1: trusting a plausible
+   TEXT, not marker counts. Same failure _class_ as d-1: trusting a plausible
    story over verified content.
 3. **(Process/infrastructure, not mine to fix.)** The auto-commit daemon
    scooped the entire 18-path tree — code, tests, docs, annotations, and my
@@ -130,24 +130,24 @@ three user decisions, one of which just went moot.
 
 ## f) Things we should get done next
 
-| # | Task | Impact | Effort |
-| - | ---- | ------ | ------ |
-| 1 | USER: decide `v0.1.1` release from `f04d158` (tag + GitHub Release + date the `[Unreleased]` section) | Critical | 5min |
-| 2 | USER: fuzz CI budget — 13 targets × 30s × 2 modes weekly cron, acceptable or trim? | Med | — |
-| 3 | USER: daemon commit policy — is one-commit scooping fine, or should docs/reports be committed separately from code? (the preempted question) | Med | — |
-| 4 | Push and watch the first real CI run: coverage step, FEATURES tripwire, new fuzz-matrix entries | High | S |
-| 5 | Sibling `signing` module: accept `DeterministicCodec` (compile-time gate for non-deterministic codecs) | High | M |
-| 6 | Sibling modules: reuse `CBOREncMode()`/`CBORDecMode()` instead of rebuilding modes | Med | M |
-| 7 | Benchstat long-run baseline → record in a docs file; upgrade FEATURES `~` numbers to baseline-grade | Med | 30min |
-| 8 | Fix `observability_test.go:560` unusedwrite: assert `EncodeBytes` or drop the write | Low | 10min |
-| 9 | Remove or use the unused constant set at `testdata_test.go:7` | Low | 10min |
-| 10 | Single source of Go version: point CI at `.go-version` or delete `.go-version` | Low | 10min |
-| 11 | CI bench-regression job (baseline + benchstat; ROADMAP theme 2) | Med | M |
-| 12 | README badges (CI status + pkg.go.dev) | Low | 15min |
-| 13 | `SizeResult` JSON tags — API change, pair with the next release decision | Low | S |
-| 14 | Longer/second fuzz cron once weekly runs are monitored | Low | S |
-| 15 | pkg.go.dev verification after the release (`go get` check against the proxy) | Med | 10min |
-| 16 | Migrate remaining multi-line `~~` spans in older annotated reports to per-line form | Low | 30min |
+| #  | Task                                                                                                                                         | Impact   | Effort |
+| -- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
+| 1  | USER: decide `v0.1.1` release from `f04d158` (tag + GitHub Release + date the `[Unreleased]` section)                                        | Critical | 5min   |
+| 2  | USER: fuzz CI budget — 13 targets × 30s × 2 modes weekly cron, acceptable or trim?                                                           | Med      | —      |
+| 3  | USER: daemon commit policy — is one-commit scooping fine, or should docs/reports be committed separately from code? (the preempted question) | Med      | —      |
+| 4  | Push and watch the first real CI run: coverage step, FEATURES tripwire, new fuzz-matrix entries                                              | High     | S      |
+| 5  | Sibling `signing` module: accept `DeterministicCodec` (compile-time gate for non-deterministic codecs)                                       | High     | M      |
+| 6  | Sibling modules: reuse `CBOREncMode()`/`CBORDecMode()` instead of rebuilding modes                                                           | Med      | M      |
+| 7  | Benchstat long-run baseline → record in a docs file; upgrade FEATURES `~` numbers to baseline-grade                                          | Med      | 30min  |
+| 8  | Fix `observability_test.go:560` unusedwrite: assert `EncodeBytes` or drop the write                                                          | Low      | 10min  |
+| 9  | Remove or use the unused constant set at `testdata_test.go:7`                                                                                | Low      | 10min  |
+| 10 | Single source of Go version: point CI at `.go-version` or delete `.go-version`                                                               | Low      | 10min  |
+| 11 | CI bench-regression job (baseline + benchstat; ROADMAP theme 2)                                                                              | Med      | M      |
+| 12 | README badges (CI status + pkg.go.dev)                                                                                                       | Low      | 15min  |
+| 13 | `SizeResult` JSON tags — API change, pair with the next release decision                                                                     | Low      | S      |
+| 14 | Longer/second fuzz cron once weekly runs are monitored                                                                                       | Low      | S      |
+| 15 | pkg.go.dev verification after the release (`go get` check against the proxy)                                                                 | Med      | 10min  |
+| 16 | Migrate remaining multi-line `~~` spans in older annotated reports to per-line form                                                          | Low      | 30min  |
 
 (16 items — deduped against the 20-47 report's still-open f-items 4–15; those
 remain the routing source. Per the status-report skill, this list is HARVEST
@@ -167,6 +167,6 @@ fuel for the next docs-health run, not a commitment list.)
 
 ---
 
-*Report format note: written as `.md` per the user's explicit instruction —
+_Report format note: written as `.md` per the user's explicit instruction —
 the status-report skill's canonical format is styled HTML; this is a
-deliberate, flagged override, not a new default.*
+deliberate, flagged override, not a new default._

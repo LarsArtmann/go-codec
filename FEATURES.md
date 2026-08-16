@@ -21,19 +21,19 @@
 
 ## Performance
 
-| Benchmark | What it measures | Key finding |
-| --- | --- | --- |
-| `BenchmarkNormalizeForJSON` / `BenchmarkJSONCodec_MarshalUnmarshal` | v1 vs v2 JSON paths (incl. normalizer) | v2: 35-40% lower latency, ~50-63% fewer allocations |
-| `BenchmarkTagTradeoffs_Encode/Decode` | map vs toarray vs keyasint across small/medium/large payloads | toarray smallest (23-41% size reduction); keyasint close behind (18-37%) |
-| `BenchmarkCBORReflectionCache` | Cold (first encode) vs warm (cached) CBOR encode | Cold ~117µs/104 allocs (one-off, not in the baseline suite); warm 332ns ± 6%/2 allocs (baseline). No codegen needed |
-| `BenchmarkEncodePooled` | Pool-backed encode vs plain Encode | Eliminates per-call []byte allocation via sync.Pool callback |
-| `BenchmarkTranscodeToJSON_*` | CBOR→JSON transcoding vs JSON passthrough | Nested-deep and passthrough paths quantified |
-| `BenchmarkAutoDetect` / `BenchmarkAutoDetectDebug` | Format-detection cost (JSON/CBOR/unknown payloads) | First-byte decide 81-99ns; trial-decode path 135ns + 4 allocs (baseline) |
-| `BenchmarkWrapEncode` / `BenchmarkUnwrapDecode` | Envelope wrap/unwrap overhead vs bare encode | 275ns ± 12% wrap / 772ns ± 14% unwrap on a 3-field payload (baseline) |
-| `BenchmarkSize` | JSON-vs-CBOR size comparison helper | 370ns ± 41%, 2 allocs (baseline; noisy on the reference machine) |
-| `BenchmarkCBORCompact_vs_Canon_Decode` | Compact vs canonical CBOR decode cost | Parity — 265ns canonical vs 261ns compact (baseline); key-sort choice costs nothing at decode |
-| `BenchmarkRealisticPayload_Encode/Decode` | CBOR vs JSON on a realistic 7-field order payload (map vs `toarray` vs `keyasint` shapes) | Baseline (encode): JSON 860ns, CBOR 513ns, compact `toarray` 280ns; decode 2.23µs / 1.05µs / 671ns. README `When to Use CBOR vs JSON` cites these; re-run on your hardware for absolute numbers |
-| `BenchmarkObserveCodec` | `ObservableCodec` decorator overhead vs the raw codec (encode/decode/pooled sub-benchmarks) | Sizes the telemetry cost when wrapping a codec |
+| Benchmark                                                           | What it measures                                                                            | Key finding                                                                                                                                                                                     |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BenchmarkNormalizeForJSON` / `BenchmarkJSONCodec_MarshalUnmarshal` | v1 vs v2 JSON paths (incl. normalizer)                                                      | v2: 35-40% lower latency, ~50-63% fewer allocations                                                                                                                                             |
+| `BenchmarkTagTradeoffs_Encode/Decode`                               | map vs toarray vs keyasint across small/medium/large payloads                               | toarray smallest (23-41% size reduction); keyasint close behind (18-37%)                                                                                                                        |
+| `BenchmarkCBORReflectionCache`                                      | Cold (first encode) vs warm (cached) CBOR encode                                            | Cold ~117µs/104 allocs (one-off, not in the baseline suite); warm 332ns ± 6%/2 allocs (baseline). No codegen needed                                                                             |
+| `BenchmarkEncodePooled`                                             | Pool-backed encode vs plain Encode                                                          | Eliminates per-call []byte allocation via sync.Pool callback                                                                                                                                    |
+| `BenchmarkTranscodeToJSON_*`                                        | CBOR→JSON transcoding vs JSON passthrough                                                   | Nested-deep and passthrough paths quantified                                                                                                                                                    |
+| `BenchmarkAutoDetect` / `BenchmarkAutoDetectDebug`                  | Format-detection cost (JSON/CBOR/unknown payloads)                                          | First-byte decide 81-99ns; trial-decode path 135ns + 4 allocs (baseline)                                                                                                                        |
+| `BenchmarkWrapEncode` / `BenchmarkUnwrapDecode`                     | Envelope wrap/unwrap overhead vs bare encode                                                | 275ns ± 12% wrap / 772ns ± 14% unwrap on a 3-field payload (baseline)                                                                                                                           |
+| `BenchmarkSize`                                                     | JSON-vs-CBOR size comparison helper                                                         | 370ns ± 41%, 2 allocs (baseline; noisy on the reference machine)                                                                                                                                |
+| `BenchmarkCBORCompact_vs_Canon_Decode`                              | Compact vs canonical CBOR decode cost                                                       | Parity — 265ns canonical vs 261ns compact (baseline); key-sort choice costs nothing at decode                                                                                                   |
+| `BenchmarkRealisticPayload_Encode/Decode`                           | CBOR vs JSON on a realistic 7-field order payload (map vs `toarray` vs `keyasint` shapes)   | Baseline (encode): JSON 860ns, CBOR 513ns, compact `toarray` 280ns; decode 2.23µs / 1.05µs / 671ns. README `When to Use CBOR vs JSON` cites these; re-run on your hardware for absolute numbers |
+| `BenchmarkObserveCodec`                                             | `ObservableCodec` decorator overhead vs the raw codec (encode/decode/pooled sub-benchmarks) | Sizes the telemetry cost when wrapping a codec                                                                                                                                                  |
 
 Figures marked "baseline" are 10-run benchstat means from the v1-mode reference
 baseline (2026-08-15, go1.26.5, AMD Ryzen AI MAX+ 395) recorded in
@@ -42,76 +42,76 @@ there before accepting performance-sensitive changes.
 
 ## Codecs
 
-| Feature                                      | Status                | Notes                                                                                                          |
-| -------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `CBORCodec` — canonical CBOR (RFC 7049)      | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; round-trip, determinism, signing determinism, time, map/slice/struct/nested, dup-key rejection, smaller-than-JSON — `codec_test.go`, `property_test.go`, `codec_fuzz_test.go` |
-| `JSONCodec` — dual-build `encoding/json` v1/v2 | 🟢 `FULLY_FUNCTIONAL` | `json.go`; round-trip, map, invalid-JSON, nil, raw message — `codec_test.go`, `codec_fuzz_test.go`. v1 default, v2 opt-in via `GOEXPERIMENT=jsonv2` |
-| `CBORCompactCodec` — CoreDet (RFC 8949) + unknown-field rejection | 🟢 `FULLY_FUNCTIONAL` | `cbor_compact.go`; round-trip, rejects unknown fields, not-compatible-with-CBORCodec proven — `cbor_compact_test.go`, `codec_test.go` |
-| `RawCodec` — `[]byte` passthrough            | 🟢 `FULLY_FUNCTIONAL` | `raw.go`; round-trip, wrong-type/wrong-target errors, decode-is-copy — `codec_test.go`, `codec_fuzz_test.go`  |
-| `BufferEncoder` — zero-allocation encoding   | 🟢 `FULLY_FUNCTIONAL` | Implemented by all three non-raw codecs; `TestBufferEncoder_AllCodecs`, `BenchmarkBufferEncoder`               |
+| Feature                                                           | Status                | Notes                                                                                                                                                                                    |
+| ----------------------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CBORCodec` — canonical CBOR (RFC 7049)                           | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; round-trip, determinism, signing determinism, time, map/slice/struct/nested, dup-key rejection, smaller-than-JSON — `codec_test.go`, `property_test.go`, `codec_fuzz_test.go` |
+| `JSONCodec` — dual-build `encoding/json` v1/v2                    | 🟢 `FULLY_FUNCTIONAL` | `json.go`; round-trip, map, invalid-JSON, nil, raw message — `codec_test.go`, `codec_fuzz_test.go`. v1 default, v2 opt-in via `GOEXPERIMENT=jsonv2`                                      |
+| `CBORCompactCodec` — CoreDet (RFC 8949) + unknown-field rejection | 🟢 `FULLY_FUNCTIONAL` | `cbor_compact.go`; round-trip, rejects unknown fields, not-compatible-with-CBORCodec proven — `cbor_compact_test.go`, `codec_test.go`                                                    |
+| `RawCodec` — `[]byte` passthrough                                 | 🟢 `FULLY_FUNCTIONAL` | `raw.go`; round-trip, wrong-type/wrong-target errors, decode-is-copy — `codec_test.go`, `codec_fuzz_test.go`                                                                             |
+| `BufferEncoder` — zero-allocation encoding                        | 🟢 `FULLY_FUNCTIONAL` | Implemented by all three non-raw codecs; `TestBufferEncoder_AllCodecs`, `BenchmarkBufferEncoder`                                                                                         |
 
 ## Codec resolution & format detection
 
-| Feature                                              | Status                | Notes                                                                       |
-| ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| `ForEncoding` — encoding stamp → codec (all 3 encodings) | 🟢 `FULLY_FUNCTIONAL` | `codec.go`; JSON/CBOR/Raw resolve, unknown returns `ErrUnknownEncoding`, round-trips with `AutoDetect` — `resolve_test.go` |
-| `AutoDetect` — infer encoding from raw bytes         | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; empty→raw, JSON/CBOR first-byte + trial decode, 1 MiB size guard on trial-decode — `autodetect_test.go`. Heuristic, not a security boundary |
-| `AutoDetectDebug` — explainable format detection     | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; returns `Encoding`, stable `DetectionReason` (`Detail` is documented human-readable/unstable), human-readable `Detail` for triage and logging; delegation locked by rapid property test + fuzz — `autodetect_test.go` |
+| Feature                                                  | Status                | Notes                                                                                                                                                                                                                                  |
+| -------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ForEncoding` — encoding stamp → codec (all 3 encodings) | 🟢 `FULLY_FUNCTIONAL` | `codec.go`; JSON/CBOR/Raw resolve, unknown returns `ErrUnknownEncoding`, round-trips with `AutoDetect` — `resolve_test.go`                                                                                                             |
+| `AutoDetect` — infer encoding from raw bytes             | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; empty→raw, JSON/CBOR first-byte + trial decode, 1 MiB size guard on trial-decode — `autodetect_test.go`. Heuristic, not a security boundary                                                                           |
+| `AutoDetectDebug` — explainable format detection         | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; returns `Encoding`, stable `DetectionReason` (`Detail` is documented human-readable/unstable), human-readable `Detail` for triage and logging; delegation locked by rapid property test + fuzz — `autodetect_test.go` |
 
 ## Observability
 
-| Feature                                              | Status                | Notes                                                                       |
-| ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| `ObservableCodec` — decorator codec with telemetry   | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; wraps any `Codec`, records per-operation metrics, implements `BufferEncoder` when the inner codec does; goroutine-safety locked by 16k-op race stress test — `observability_test.go` |
-| `CodecMetrics` / `MetricsSnapshot` — counters & last errors | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; goroutine-safe encode/decode call counts, byte totals, error counts, and last errors with `Snapshot()` / `Reset()` — `observability_test.go` |
-| `MetricsHook` — per-operation callback               | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; invoked after each encode/decode with operation, encoding, bytes processed, and error for push-style telemetry; documented panic policy (propagates, metrics recorded pre-hook) tested in `observability_test.go`; arbitrary-payload hook safety locked by `FuzzObservableCodec_HookSafety` — `observability_fuzz_test.go` |
+| Feature                                                     | Status                | Notes                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ObservableCodec` — decorator codec with telemetry          | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; wraps any `Codec`, records per-operation metrics, implements `BufferEncoder` when the inner codec does; goroutine-safety locked by 16k-op race stress test — `observability_test.go`                                                                                                                                       |
+| `CodecMetrics` / `MetricsSnapshot` — counters & last errors | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; goroutine-safe encode/decode call counts, byte totals, error counts, and last errors with `Snapshot()` / `Reset()` — `observability_test.go`                                                                                                                                                                               |
+| `MetricsHook` — per-operation callback                      | 🟢 `FULLY_FUNCTIONAL` | `observability.go`; invoked after each encode/decode with operation, encoding, bytes processed, and error for push-style telemetry; documented panic policy (propagates, metrics recorded pre-hook) tested in `observability_test.go`; arbitrary-payload hook safety locked by `FuzzObservableCodec_HookSafety` — `observability_fuzz_test.go` |
 
 ## Signing safety
 
-| Feature                                          | Status                | Notes                                                                  |
-| ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
-| `DeterministicCodec` marker interface            | 🟢 `FULLY_FUNCTIONAL` | `codec.go` — `Codec` plus unexported `signingSafe()` so only in-package codecs can qualify. `CBORCodec` (`cbor.go:23`) and `CBORCompactCodec` (`cbor_compact.go:35`) always satisfy it; `JSONCodec` only in the v2 build (`json_compat_v2.go:42`); `RawCodec` never. Shipped at `2c98116` per the approved proposal (`docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4); per-build satisfaction locked by runtime matrix — `deterministic_codec_test.go`, `deterministic_codec_v1_test.go`, `deterministic_codec_v2_test.go` |
+| Feature                               | Status                | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DeterministicCodec` marker interface | 🟢 `FULLY_FUNCTIONAL` | `codec.go` — `Codec` plus unexported `signingSafe()` so only in-package codecs can qualify. `CBORCodec` (`cbor.go:23`) and `CBORCompactCodec` (`cbor_compact.go:35`) always satisfy it; `JSONCodec` only in the v2 build (`json_compat_v2.go:42`); `RawCodec` never. Shipped at `2c98116` per the approved proposal (`docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md` §4); per-build satisfaction locked by runtime matrix — `deterministic_codec_test.go`, `deterministic_codec_v1_test.go`, `deterministic_codec_v2_test.go` |
 
 ## Security hardening
 
-| Feature                                          | Status                | Notes                                                                  |
-| ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
-| `normalizeForJSON` depth cap (`maxDepth=100`)   | 🟢 `FULLY_FUNCTIONAL` | `json_compat_v1.go`; prevents stack-exhaustion DoS from adversarial CBOR. Tests + fuzz — `normalize_test.go`, `normalize_fuzz_test.go` |
-| `AutoDetect` size guard (`maxAutoDetectSize=1MiB`) | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; trial-decode skipped for oversized ambiguous input |
+| Feature                                            | Status                | Notes                                                                                                                                  |
+| -------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `normalizeForJSON` depth cap (`maxDepth=100`)      | 🟢 `FULLY_FUNCTIONAL` | `json_compat_v1.go`; prevents stack-exhaustion DoS from adversarial CBOR. Tests + fuzz — `normalize_test.go`, `normalize_fuzz_test.go` |
+| `AutoDetect` size guard (`maxAutoDetectSize=1MiB`) | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; trial-decode skipped for oversized ambiguous input                                                                    |
 
 ## Buffer management
 
-| Feature                                          | Status                | Notes                                                                  |
-| ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
-| `GetBuffer` / `PutBuffer` — `sync.Pool` helper  | 🟢 `FULLY_FUNCTIONAL` | `pool.go`; reusable `*bytes.Buffer` for `BufferEncoder` hot paths     |
+| Feature                                            | Status                | Notes                                                                                                                     |
+| -------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `GetBuffer` / `PutBuffer` — `sync.Pool` helper     | 🟢 `FULLY_FUNCTIONAL` | `pool.go`; reusable `*bytes.Buffer` for `BufferEncoder` hot paths                                                         |
 | `EncodePooled` — callback-based pool-backed encode | 🟢 `FULLY_FUNCTIONAL` | `pool.go`; manages GetBuffer/EncodeToBuffer/PutBuffer lifecycle via callback; CBOR+JSON round-trip tests — `pool_test.go` |
 
 ## Shared CBOR infrastructure
 
-| Feature                                          | Status                | Notes                                                                  |
-| ------------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
-| `CBOREncMode` / `CBORDecMode` — exported modes  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; sibling modules reuse these for byte-identical output — `streaming_test.go` |
-| `Diagnose` — CBOR extended diagnostic notation  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; valid + invalid-CBOR cases — `cbor_compact_test.go`        |
-| `Size` — JSON vs CBOR byte-size comparison       | 🟢 `FULLY_FUNCTIONAL` | `size.go`; returns `SizeResult{JSON, CBOR}` struct; normal + encode-error paths — `autodetect_test.go`         |
-| `toarray` / `keyasint` / `omitzero` tag support | 🟢 `FULLY_FUNCTIONAL` | Via fxamacker/cbor; struct tags + godoc examples — `codec_test.go`, `example_test.go` |
+| Feature                                         | Status                | Notes                                                                                                  |
+| ----------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
+| `CBOREncMode` / `CBORDecMode` — exported modes  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; sibling modules reuse these for byte-identical output — `streaming_test.go`                 |
+| `Diagnose` — CBOR extended diagnostic notation  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; valid + invalid-CBOR cases — `cbor_compact_test.go`                                         |
+| `Size` — JSON vs CBOR byte-size comparison      | 🟢 `FULLY_FUNCTIONAL` | `size.go`; returns `SizeResult{JSON, CBOR}` struct; normal + encode-error paths — `autodetect_test.go` |
+| `toarray` / `keyasint` / `omitzero` tag support | 🟢 `FULLY_FUNCTIONAL` | Via fxamacker/cbor; struct tags + godoc examples — `codec_test.go`, `example_test.go`                  |
 
 ## Cross-format transcoding
 
-| Feature                                        | Status                | Notes                                                                                         |
-| ---------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------- |
-| `TranscodeToJSON` — schema-free CBOR→JSON      | 🟢 `FULLY_FUNCTIONAL` | `transcode.go`; 14 cases (map, toarray→array, JSON/raw passthrough, invalid-CBOR, nested, large numbers, empty containers, map keys, byte→base64, float specials, dup keys, tag 0) + fuzz + benchmarks — `transcode_test.go`, `transcode_fuzz_test.go` |
+| Feature                                   | Status                | Notes                                                                                                                                                                                                                                                  |
+| ----------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `TranscodeToJSON` — schema-free CBOR→JSON | 🟢 `FULLY_FUNCTIONAL` | `transcode.go`; 14 cases (map, toarray→array, JSON/raw passthrough, invalid-CBOR, nested, large numbers, empty containers, map keys, byte→base64, float specials, dup keys, tag 0) + fuzz + benchmarks — `transcode_test.go`, `transcode_fuzz_test.go` |
 
 ## Self-describing envelopes
 
-| Feature                                                | Status                | Notes                                                                    |
-| ------------------------------------------------------ | --------------------- | ----------------------------------------------------------------------- |
+| Feature                                                | Status                | Notes                                                                                                                               |
+| ------------------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `WrapEncode` / `UnwrapDecode` — codec-stamped envelope | 🟢 `FULLY_FUNCTIONAL` | `envelope.go`; JSON/CBOR round-trip, backward-compat with raw JSON/CBOR, non-JSON data, structure, determinism — `envelope_test.go` |
 
 ## Streaming
 
-| Feature                                         | Status                | Notes                                                          |
-| ----------------------------------------------- | --------------------- | -------------------------------------------------------------- |
-| `NewCBOREncoder` / `NewCBORDecoder` — streaming | 🟢 `FULLY_FUNCTIONAL` | `streaming.go`; batch encode/decode, multiple encodes — `streaming_test.go` |
+| Feature                                         | Status                | Notes                                                                                                                                                                                                                                                                     |
+| ----------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NewCBOREncoder` / `NewCBORDecoder` — streaming | 🟢 `FULLY_FUNCTIONAL` | `streaming.go`; batch encode/decode, multiple encodes — `streaming_test.go`                                                                                                                                                                                               |
 | `NewJSONEncoder` / `NewJSONDecoder` — streaming | 🟢 `FULLY_FUNCTIONAL` | `streaming.go` + `json_compat_v1.go` / `json_compat_v2.go`; NDJSON (newline-delimited JSON), dual-build — `streaming_test.go`, `example_test.go`; framing locked under fuzz incl. byte-at-a-time readers and the `1e700` float64-overflow seed — `streaming_fuzz_test.go` |
 
 ## COSE (RFC 9052) structure codec
@@ -119,23 +119,23 @@ there before accepting performance-sensitive changes.
 > This package shapes COSE bytes; it does **not** perform cryptography. The
 > `signing` and `encryption` sibling modules consume these helpers.
 
-| Feature                                              | Status                | Notes                                                                       |
-| ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| `COSE_Sign1` marshal/unmarshal                       | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; incl. detached payload + invalid-length rejection — `cose_test.go` |
-| `COSE_Encrypt0` marshal/unmarshal                    | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; invalid-length rejection — `cose_test.go`                       |
-| `SigStructure` / `EncStructure0` builders            | 🟢 `FULLY_FUNCTIONAL` | `cose.go` — `cose_test.go`                                                  |
-| COSE header marshal/unmarshal + `NormalizeCOSEAlgorithm` | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; constants, protected header, algorithm normalization — `cose_test.go` |
-| `PrepareCOSESetup` (generic option-apply helper)    | 🟢 `FULLY_FUNCTIONAL` | `cose.go:144`; direct unit test verifying option-apply + protected-header output — `base64_json_test.go` |
-| `COSESign1Diagnostic` / `COSEEncrypt0Diagnostic`     | 🟢 `FULLY_FUNCTIONAL` | `cose_helpers.go` — `cose_test.go`                                          |
+| Feature                                                  | Status                | Notes                                                                                                    |
+| -------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------- |
+| `COSE_Sign1` marshal/unmarshal                           | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; incl. detached payload + invalid-length rejection — `cose_test.go`                            |
+| `COSE_Encrypt0` marshal/unmarshal                        | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; invalid-length rejection — `cose_test.go`                                                     |
+| `SigStructure` / `EncStructure0` builders                | 🟢 `FULLY_FUNCTIONAL` | `cose.go` — `cose_test.go`                                                                               |
+| COSE header marshal/unmarshal + `NormalizeCOSEAlgorithm` | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; constants, protected header, algorithm normalization — `cose_test.go`                         |
+| `PrepareCOSESetup` (generic option-apply helper)         | 🟢 `FULLY_FUNCTIONAL` | `cose.go:144`; direct unit test verifying option-apply + protected-header output — `base64_json_test.go` |
+| `COSESign1Diagnostic` / `COSEEncrypt0Diagnostic`         | 🟢 `FULLY_FUNCTIONAL` | `cose_helpers.go` — `cose_test.go`                                                                       |
 
 ## JSON / base64 marshalling helpers
 
-| Feature                                                                 | Status                | Notes                                                                 |
-| ----------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------- |
+| Feature                                                                                                                                     | Status                | Notes                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MarshalBase64JSON` / `UnmarshalBase64JSON` / `AssignBase64JSON` / `MarshalBase64JSONWithModule` / `DecodeBase64String` / `WrapCOSEMarshal` | 🟢 `FULLY_FUNCTIONAL` | `base64_json.go`; 13 direct tests covering URL-safe/standard/invalid base64, marshal/unmarshal round-trip, error wrapping — `base64_json_test.go` |
 
 ## Dual-build infrastructure
 
-| Feature                                              | Status                | Notes                                                                  |
-| ---------------------------------------------------- | --------------------- | --------------------------------------------------------------------- |
-| Dual `encoding/json` v1+v2 build support             | 🟢 `FULLY_FUNCTIONAL` | `json_compat_v1.go` / `json_compat_v2.go`; contract test locks import split — `json_contract_test.go`. Both modes build+test+race green |
+| Feature                                  | Status                | Notes                                                                                                                                   |
+| ---------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Dual `encoding/json` v1+v2 build support | 🟢 `FULLY_FUNCTIONAL` | `json_compat_v1.go` / `json_compat_v2.go`; contract test locks import split — `json_contract_test.go`. Both modes build+test+race green |

@@ -60,7 +60,7 @@ Three user decisions remain standing (§g).
 10. **ANNOTATE — 34 multi-line `~~` spans migrated to per-line form** in 4 old
     reports: `08-11 ×15`, `09-25 ×1`, `03-24 ×15`, `12-42 ×3`. This was tracked open
     in three consecutive reports (18-24 #24, 20-47 §f-15, 20-58 §f-16) — now done.
-    Verified clean afterward: only prose *mentions* of the format remain.
+    Verified clean afterward: only prose _mentions_ of the format remain.
 11. **ANNOTATE — 4 stale "still open / routed to TODO_LIST #N" claims corrected
     inline** with commit evidence (09-58 ×3: coverage CI, fuzz cron, CONTRIBUTING
     snapshot flow; 03-24 ×1: fuzz/coverage). All four asserted open work that had
@@ -120,7 +120,7 @@ Three user decisions remain standing (§g).
    `gosec` CI (#8). A docs audit fixes docs; these are code/CI work.
 6. **`docs/planning/archived/` stale-reference audit** — not touched.
 7. **HARVEST of THIS report's §f** — items 1–11 were routed into TODO_LIST/ROADMAP
-   *live during the audit itself* (before this file existed); nothing here is new
+   _live during the audit itself_ (before this file existed); nothing here is new
    fuel beyond what §f marks as un-routed.
 
 ## d) TOTALLY FUCKED UP
@@ -155,7 +155,7 @@ Three user decisions remain standing (§g).
    process, not in memory.
 3. **`git status` at audit start, newest artifacts first.** The 20-07 report's own
    §e-5 rule ("read the newest 1–2 reports before ANY verification work") half-held:
-   I read the newest *committed* reports but never checked for uncommitted/new files.
+   I read the newest _committed_ reports but never checked for uncommitted/new files.
 4. **Name the trusted-not-checked set at write time, not in retrospect.** When a
    prior session's dedup claim is load-bearing, the report should list exactly which
    items rest on trust (I did list them — but only after being asked what I forgot).
@@ -166,33 +166,33 @@ Three user decisions remain standing (§g).
 
 Routed during the audit (do not re-harvest from here — they live in TODO_LIST/ROADMAP):
 
-| # | Task | Impact | Effort | Routed to |
-| - | ---- | ------ | ------ | --------- |
-| 1 | USER: decide `v0.1.1` release (tag + GitHub Release + CHANGELOG dating) | Critical | 5min | TODO #1 |
-| 2 | USER: daemon commit policy (scoop vs split) | Med | — | TODO #7 |
-| 3 | USER: fuzz CI budget (13×30s×2) trim-or-keep | Med | — | TODO #2 |
-| 4 | Push + watch first real CI run (coverage, tripwire, fuzz matrix, cron) | High | S | TODO #2 |
-| 5 | Benchstat long-run baseline; upgrade FEATURES `~` figures | Med | 30min | TODO #3 |
-| 6 | Fix `observability_test.go:560` unusedwrite | Low | 10min | TODO #5 |
-| 7 | Single Go-version source (`.go-version` vs `go.mod` vs CI) | Low | 10min | TODO #6 |
-| 8 | Add `gosec` to CI | Low | 10min | TODO #8 |
-| 9 | `SizeResult` JSON tags (pair with release) | Low | S | TODO #4 |
-| 10 | Sibling `signing` accepts `DeterministicCodec` | High | M | ROADMAP t5 |
-| 11 | Siblings reuse `CBOREncMode()`/`CBORDecMode()` | Med | M | ROADMAP t5 |
+| #  | Task                                                                    | Impact   | Effort | Routed to  |
+| -- | ----------------------------------------------------------------------- | -------- | ------ | ---------- |
+| 1  | USER: decide `v0.1.1` release (tag + GitHub Release + CHANGELOG dating) | Critical | 5min   | TODO #1    |
+| 2  | USER: daemon commit policy (scoop vs split)                             | Med      | —      | TODO #7    |
+| 3  | USER: fuzz CI budget (13×30s×2) trim-or-keep                            | Med      | —      | TODO #2    |
+| 4  | Push + watch first real CI run (coverage, tripwire, fuzz matrix, cron)  | High     | S      | TODO #2    |
+| 5  | Benchstat long-run baseline; upgrade FEATURES `~` figures               | Med      | 30min  | TODO #3    |
+| 6  | Fix `observability_test.go:560` unusedwrite                             | Low      | 10min  | TODO #5    |
+| 7  | Single Go-version source (`.go-version` vs `go.mod` vs CI)              | Low      | 10min  | TODO #6    |
+| 8  | Add `gosec` to CI                                                       | Low      | 10min  | TODO #8    |
+| 9  | `SizeResult` JSON tags (pair with release)                              | Low      | S      | TODO #4    |
+| 10 | Sibling `signing` accepts `DeterministicCodec`                          | High     | M      | ROADMAP t5 |
+| 11 | Siblings reuse `CBOREncMode()`/`CBORDecMode()`                          | Med      | M      | ROADMAP t5 |
 
 New/un-routed observations from this session:
 
-| # | Task | Impact | Effort |
-| - | ---- | ------ | ------ |
-| 12 | Verify the trusted-not-checked set from the 20-07 follow-up report: #34 lint-artifact-validity CI test, #36 mermaid-render CI check, #43 Envelope fallback test, #44 README-example golden snapshots — grep each against code | Med | S |
-| 13 | Read + verify `CONTRIBUTING.md` freshness (not read this session) | Low | 15min |
-| 14 | Read + verify `SECURITY.md` freshness (not read this session) | Low | 10min |
-| 15 | Audit `docs/planning/archived/` for stale references | Low | 15min |
-| 16 | Strike or annotate the last old-numbering ref at 09-58:323 | Low | 2min |
-| 17 | `git diff` the pre-existing 20-47-report modification (or confirm the daemon committed it) | Low | 5min |
-| 18 | Decide `dprint.json` fate: treefmt drives formatting; is the secondary config still earning its keep? | Low | 10min |
-| 19 | Post-`v0.1.1` docs-health pass: `[Unreleased]`→`[0.1.1]` dating collapses TODO #1; re-measure coverage; next audit can compare against this session's Accuracy/Fitness baseline | Med | 30min |
-| 20 | Post-release: `go get @v0.1.1` + pkg.go.dev rendering check (in TODO #1 runbook; listed for visibility) | High | 10min |
+| #  | Task                                                                                                                                                                                                                          | Impact | Effort |
+| -- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
+| 12 | Verify the trusted-not-checked set from the 20-07 follow-up report: #34 lint-artifact-validity CI test, #36 mermaid-render CI check, #43 Envelope fallback test, #44 README-example golden snapshots — grep each against code | Med    | S      |
+| 13 | Read + verify `CONTRIBUTING.md` freshness (not read this session)                                                                                                                                                             | Low    | 15min  |
+| 14 | Read + verify `SECURITY.md` freshness (not read this session)                                                                                                                                                                 | Low    | 10min  |
+| 15 | Audit `docs/planning/archived/` for stale references                                                                                                                                                                          | Low    | 15min  |
+| 16 | Strike or annotate the last old-numbering ref at 09-58:323                                                                                                                                                                    | Low    | 2min   |
+| 17 | `git diff` the pre-existing 20-47-report modification (or confirm the daemon committed it)                                                                                                                                    | Low    | 5min   |
+| 18 | Decide `dprint.json` fate: treefmt drives formatting; is the secondary config still earning its keep?                                                                                                                         | Low    | 10min  |
+| 19 | Post-`v0.1.1` docs-health pass: `[Unreleased]`→`[0.1.1]` dating collapses TODO #1; re-measure coverage; next audit can compare against this session's Accuracy/Fitness baseline                                               | Med    | 30min  |
+| 20 | Post-release: `go get @v0.1.1` + pkg.go.dev rendering check (in TODO #1 runbook; listed for visibility)                                                                                                                       | High   | 10min  |
 
 (20 items — the honest ceiling of what THIS session observed; padding to 50 would
 violate the no-vague-items rule.)

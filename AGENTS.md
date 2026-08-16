@@ -182,13 +182,13 @@ nix run .#lint                        # lint both modes
 
 ## High-Value References
 
-| File             | Why it matters                                            |
-| ---------------- | --------------------------------------------------------- |
-| `doc.go`         | Package-level overview, codec-choice guidance, tag usage  |
-| `README.md`      | User-facing usage + when-to-use matrix; sibling cross-refs |
-| `FEATURES.md`    | Honest feature inventory with status                      |
-| `codec.go`       | `Codec`/`BufferEncoder`/`DeterministicCodec` contracts    |
-| `errors.go`      | Stable error sentinels and codes                          |
-| `scripts/check-features-planned.sh` | FEATURES.md drift tripwire (PLANNED symbols must not resolve via `go doc`); runs in CI |
-| `scripts/check-go-version.sh` | Go-version single-source tripwire (go.mod / .go-version / .golangci.yml must agree); runs in CI |
-| `docs/benchmark-baseline.md` | 10-run benchstat reference baseline (v1 mode) — re-run and diff there before accepting perf-sensitive changes |
+| File                                | Why it matters                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `doc.go`                            | Package-level overview, codec-choice guidance, tag usage                                                      |
+| `README.md`                         | User-facing usage + when-to-use matrix; sibling cross-refs                                                    |
+| `FEATURES.md`                       | Honest feature inventory with status                                                                          |
+| `codec.go`                          | `Codec`/`BufferEncoder`/`DeterministicCodec` contracts                                                        |
+| `errors.go`                         | Stable error sentinels and codes                                                                              |
+| `scripts/check-features-planned.sh` | FEATURES.md drift tripwire (PLANNED symbols must not resolve via `go doc`); runs in CI                        |
+| `scripts/check-go-version.sh`       | Go-version single-source tripwire (go.mod / .go-version / .golangci.yml must agree); runs in CI               |
+| `docs/benchmark-baseline.md`        | 10-run benchstat reference baseline (v1 mode) — re-run and diff there before accepting perf-sensitive changes |

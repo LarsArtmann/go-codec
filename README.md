@@ -48,15 +48,15 @@ flowchart LR
 Text-only summary of the diagram above:
 
 ```text
-             ┌───────────────────── go-codec ─────────────────────┐
-             │  Codec (CBOR / JSON / Raw) + BufferEncoder         │
-             │  ObservableCodec · AutoDetect · TranscodeToJSON    │
-             │  WrapEncode / UnwrapDecode · Size                  │
-             └──────┬──────────┬──────────┬──────────┬───────────┘
-                    │          │          │          │
-                 storage     event     signing   encryption
-                 (pebble)   payloads   (requires  (wraps any
-                                     DeterministicCodec)  Codec)
+┌───────────────────── go-codec ─────────────────────┐
+│  Codec (CBOR / JSON / Raw) + BufferEncoder         │
+│  ObservableCodec · AutoDetect · TranscodeToJSON    │
+│  WrapEncode / UnwrapDecode · Size                  │
+└──────┬──────────┬──────────┬──────────┬───────────┘
+       │          │          │          │
+    storage     event     signing   encryption
+    (pebble)   payloads   (requires  (wraps any
+                        DeterministicCodec)  Codec)
 ```
 
 ## Codecs
@@ -166,7 +166,7 @@ codecs work everywhere in the library; pick one per use case.
 | Event payloads in PebbleDB              | `CBORCodec`        | Deterministic encoding for signing  |
 | Cryptographic signing of payloads       | `CBORCodec`        | Canonical byte representation       |
 | High-throughput event streams           | `CBORCodec`        | Smaller encoded size, faster decode |
-| Read models / projections               | `CBORCodec`        | Smaller, faster, deterministic |
+| Read models / projections               | `CBORCodec`        | Smaller, faster, deterministic      |
 | New event store with schema drift guard | `CBORCompactCodec` | Unknown-field rejection on decode   |
 | External system interop / HTTP APIs     | `JSONCodec`        | Universal support                   |
 | Debugging / human-readable payloads     | `JSONCodec`        | Readable in logs, curl, DB queries  |
@@ -363,7 +363,7 @@ with Prometheus, OpenTelemetry, or structured log emission inside the hook.
 
 ## Explainable Format Detection (`AutoDetectDebug`)
 
-`AutoDetect` returns just the encoding; `AutoDetectDebug` also explains *why*:
+`AutoDetect` returns just the encoding; `AutoDetectDebug` also explains _why_:
 
 ```go
 result := codec.AutoDetectDebug(payload)

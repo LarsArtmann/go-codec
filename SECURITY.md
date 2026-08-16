@@ -14,6 +14,7 @@ If you discover a security vulnerability, please **do not** open a public issue.
 Email: **security@lars.software**
 
 Include:
+
 - A description of the vulnerability
 - Steps to reproduce or proof of concept
 - Affected versions (if known)

@@ -54,7 +54,7 @@
               root = ./.;
               fileset = lib.fileset.gitTracked ./.;
             };
-            vendorHash = "sha256-+JW5EWwTL68usFvVUq32KKyHb+YX0NR1IyDd6K/ShQc=";
+            vendorHash = "sha256-psCy9VNS9kJrc5oKtVa5XJze9Rj+xE5HPqAVWu7wahY=";
           };
         in
         {

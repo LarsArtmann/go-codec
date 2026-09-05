@@ -30,12 +30,7 @@ func jsonMarshal(v any) ([]byte, error) {
 // current callers marshal structs or scalars, so this is equivalent to v2's
 // Deterministic mode for those types.
 func jsonMarshalDet(v any) ([]byte, error) {
-	normalized, err := normalizeForJSON(v)
-	if err != nil {
-		return nil, err
-	}
-
-	return json.Marshal(normalized) //nolint:wrapcheck // thin wrapper
+	return jsonMarshal(v) //nolint:wrapcheck // thin wrapper
 }
 
 // jsonUnmarshal unmarshals data into v. In v1, struct field matching is

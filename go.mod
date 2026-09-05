@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-codec
 
-go 1.26.6
+go 1.26.7
 
 require (
 	github.com/fxamacker/cbor/v2 v2.9.3

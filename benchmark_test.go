@@ -586,11 +586,17 @@ func sampleLargeEvent() largeEvent {
 	}
 }
 
-// BenchmarkTagTradeoffs_Encode measures encode speed and allocation across
-// default (map), toarray, and keyasint for small, medium, and large payloads.
-func BenchmarkTagTradeoffs_Encode(b *testing.B) {
-	cborCodec := codec.CBORCodec{}
+// tagTradeoffPayloads holds the benchmark fixture matrix: small, medium, and
+// large payloads, each in its three tag-strategy shapes (map, toarray,
+// keyasint). Shared by the encode and decode tag-tradeoff benchmarks so the
+// fixture set cannot drift between them.
+type tagTradeoffPayloads struct {
+	small, smallArr, smallKI any
+	order, orderArr, orderKI any
+	large, largeArr, largeKI any
+}
 
+func newTagTradeoffPayloads() tagTradeoffPayloads {
 	small := sampleSmallEvent()
 	smallArr := smallEventArray{ID: small.ID, Type: small.Type, Data: small.Data}
 	smallKI := smallEventKeyInt{ID: small.ID, Type: small.Type, Data: small.Data}
@@ -619,18 +625,31 @@ func BenchmarkTagTradeoffs_Encode(b *testing.B) {
 		TenantID: large.TenantID, CorrelationID: large.CorrelationID, OccurredAt: large.OccurredAt,
 	}
 
+	return tagTradeoffPayloads{
+		small: small, smallArr: smallArr, smallKI: smallKI,
+		order: order, orderArr: orderArr, orderKI: orderKI,
+		large: large, largeArr: largeArr, largeKI: largeKI,
+	}
+}
+
+// BenchmarkTagTradeoffs_Encode measures encode speed and allocation across
+// default (map), toarray, and keyasint for small, medium, and large payloads.
+func BenchmarkTagTradeoffs_Encode(b *testing.B) {
+	cborCodec := codec.CBORCodec{}
+	p := newTagTradeoffPayloads()
+
 	// Log sizes for all shapes and modes
-	smallMap, _ := cborCodec.Encode(small)
-	smallArrData, _ := cborCodec.Encode(smallArr)
-	smallKIData, _ := cborCodec.Encode(smallKI)
+	smallMap, _ := cborCodec.Encode(p.small)
+	smallArrData, _ := cborCodec.Encode(p.smallArr)
+	smallKIData, _ := cborCodec.Encode(p.smallKI)
 
-	medMap, _ := cborCodec.Encode(order)
-	medArrData, _ := cborCodec.Encode(orderArr)
-	medKIData, _ := cborCodec.Encode(orderKI)
+	medMap, _ := cborCodec.Encode(p.order)
+	medArrData, _ := cborCodec.Encode(p.orderArr)
+	medKIData, _ := cborCodec.Encode(p.orderKI)
 
-	largeMap, _ := cborCodec.Encode(large)
-	largeArrData, _ := cborCodec.Encode(largeArr)
-	largeKIData, _ := cborCodec.Encode(largeKI)
+	largeMap, _ := cborCodec.Encode(p.large)
+	largeArrData, _ := cborCodec.Encode(p.largeArr)
+	largeKIData, _ := cborCodec.Encode(p.largeKI)
 
 	b.Log("--- CBOR tag tradeoff: payload sizes (bytes) ---")
 	b.Logf("  small  (3 fields):  map=%d  toarray=%d  keyasint=%d", len(smallMap), len(smallArrData), len(smallKIData))
@@ -641,15 +660,15 @@ func BenchmarkTagTradeoffs_Encode(b *testing.B) {
 		name string
 		v    any
 	}{
-		{"small/map", small},
-		{"small/toarray", smallArr},
-		{"small/keyasint", smallKI},
-		{"medium/map", order},
-		{"medium/toarray", orderArr},
-		{"medium/keyasint", orderKI},
-		{"large/map", large},
-		{"large/toarray", largeArr},
-		{"large/keyasint", largeKI},
+		{"small/map", p.small},
+		{"small/toarray", p.smallArr},
+		{"small/keyasint", p.smallKI},
+		{"medium/map", p.order},
+		{"medium/toarray", p.orderArr},
+		{"medium/keyasint", p.orderKI},
+		{"large/map", p.large},
+		{"large/toarray", p.largeArr},
+		{"large/keyasint", p.largeKI},
 	}
 
 	for _, tc := range cases {
@@ -670,61 +689,22 @@ func BenchmarkTagTradeoffs_Encode(b *testing.B) {
 // default (map), toarray, and keyasint for small, medium, and large payloads.
 func BenchmarkTagTradeoffs_Decode(b *testing.B) {
 	cborCodec := codec.CBORCodec{}
-
-	small := sampleSmallEvent()
-	smallArr := smallEventArray{ID: small.ID, Type: small.Type, Data: small.Data}
-	smallKI := smallEventKeyInt{ID: small.ID, Type: small.Type, Data: small.Data}
-
-	order := sampleOrder()
-	orderArr := realisticOrderArray{
-		OrderID: order.OrderID, CustomerID: order.CustomerID, Items: order.Items,
-		TotalCents: order.TotalCents, Currency: order.Currency, Status: order.Status, CreatedAt: order.CreatedAt,
-	}
-	orderKI := realisticOrderKeyInt{
-		OrderID: order.OrderID, CustomerID: order.CustomerID, Items: order.Items,
-		TotalCents: order.TotalCents, Currency: order.Currency, Status: order.Status, CreatedAt: order.CreatedAt,
-	}
-
-	large := sampleLargeEvent()
-	largeArr := largeEventArray{
-		EventID: large.EventID, AggregateID: large.AggregateID, EventType: large.EventType,
-		Version: large.Version, Timestamp: large.Timestamp, UserID: large.UserID,
-		TraceID: large.TraceID, SpanID: large.SpanID, Source: large.Source,
-		TenantID: large.TenantID, CorrelationID: large.CorrelationID, OccurredAt: large.OccurredAt,
-	}
-	largeKI := largeEventKeyInt{
-		EventID: large.EventID, AggregateID: large.AggregateID, EventType: large.EventType,
-		Version: large.Version, Timestamp: large.Timestamp, UserID: large.UserID,
-		TraceID: large.TraceID, SpanID: large.SpanID, Source: large.Source,
-		TenantID: large.TenantID, CorrelationID: large.CorrelationID, OccurredAt: large.OccurredAt,
-	}
-
-	smallMap, _ := cborCodec.Encode(small)
-	smallArrData, _ := cborCodec.Encode(smallArr)
-	smallKIData, _ := cborCodec.Encode(smallKI)
-
-	medMap, _ := cborCodec.Encode(order)
-	medArrData, _ := cborCodec.Encode(orderArr)
-	medKIData, _ := cborCodec.Encode(orderKI)
-
-	largeMap, _ := cborCodec.Encode(large)
-	largeArrData, _ := cborCodec.Encode(largeArr)
-	largeKIData, _ := cborCodec.Encode(largeKI)
+	p := newTagTradeoffPayloads()
 
 	cases := []struct {
 		name string
 		data []byte
 		new  func() any
 	}{
-		{"small/map", smallMap, func() any { return &smallEvent{} }},
-		{"small/toarray", smallArrData, func() any { return &smallEventArray{} }},
-		{"small/keyasint", smallKIData, func() any { return &smallEventKeyInt{} }},
-		{"medium/map", medMap, func() any { return &realisticOrder{} }},
-		{"medium/toarray", medArrData, func() any { return &realisticOrderArray{} }},
-		{"medium/keyasint", medKIData, func() any { return &realisticOrderKeyInt{} }},
-		{"large/map", largeMap, func() any { return &largeEvent{} }},
-		{"large/toarray", largeArrData, func() any { return &largeEventArray{} }},
-		{"large/keyasint", largeKIData, func() any { return &largeEventKeyInt{} }},
+		{"small/map", mustEncode(b, cborCodec, p.small), func() any { return &smallEvent{} }},
+		{"small/toarray", mustEncode(b, cborCodec, p.smallArr), func() any { return &smallEventArray{} }},
+		{"small/keyasint", mustEncode(b, cborCodec, p.smallKI), func() any { return &smallEventKeyInt{} }},
+		{"medium/map", mustEncode(b, cborCodec, p.order), func() any { return &realisticOrder{} }},
+		{"medium/toarray", mustEncode(b, cborCodec, p.orderArr), func() any { return &realisticOrderArray{} }},
+		{"medium/keyasint", mustEncode(b, cborCodec, p.orderKI), func() any { return &realisticOrderKeyInt{} }},
+		{"large/map", mustEncode(b, cborCodec, p.large), func() any { return &largeEvent{} }},
+		{"large/toarray", mustEncode(b, cborCodec, p.largeArr), func() any { return &largeEventArray{} }},
+		{"large/keyasint", mustEncode(b, cborCodec, p.largeKI), func() any { return &largeEventKeyInt{} }},
 	}
 
 	for _, tc := range cases {
@@ -739,6 +719,17 @@ func BenchmarkTagTradeoffs_Decode(b *testing.B) {
 			}
 		})
 	}
+}
+
+// mustEncode encodes v for benchmark setup, failing the benchmark on error
+// instead of silently benching against empty bytes.
+func mustEncode(b *testing.B, c codec.CBORCodec, v any) []byte {
+	data, err := c.Encode(v)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	return data
 }
 
 // BenchmarkCBORReflectionCache measures the cost of CBOR encoding with a warm

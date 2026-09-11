@@ -4,8 +4,11 @@
 package codec
 
 import (
+	"errors"
 	"testing"
 
+	errorfamily "github.com/larsartmann/go-error-family"
+)
 	"github.com/onsi/gomega"
 )
 
@@ -159,6 +162,14 @@ func TestNormalizeForJSON_DepthCap(t *testing.T) {
 	_, err := normalizeForJSON(deep)
 	if err == nil {
 		t.Fatal("normalizeForJSON: expected depth-cap error, got nil")
+	}
+
+	if !errors.Is(err, ErrNormalizeDepthExceeded) {
+		t.Errorf("normalizeForJSON: err = %v, want ErrNormalizeDepthExceeded", err)
+	}
+
+	if code := errorfamily.Code(err); code != "codec.normalize_depth_exceeded" {
+		t.Errorf("normalizeForJSON: code = %q, want %q", code, "codec.normalize_depth_exceeded")
 	}
 }
 

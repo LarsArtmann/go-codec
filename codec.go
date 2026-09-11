@@ -17,8 +17,9 @@ const (
 )
 
 // ErrUnknownEncoding is returned by [ForEncoding] when no built-in codec
-// matches the requested encoding.
-var ErrUnknownEncoding = errorfamily.NewRejection(
+// matches the requested encoding. Declared as the `error` interface so
+// errors.Is call sites match the sentinel guard.
+var ErrUnknownEncoding error = errorfamily.NewRejection(
 	"codec.unknown_encoding",
 	"codec: unknown encoding (no built-in codec)",
 )

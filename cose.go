@@ -1,7 +1,6 @@
 package codec
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/fxamacker/cbor/v2"
@@ -156,7 +155,13 @@ func UnmarshalCOSEProtectedHeader(data []byte) (map[int64]any, error) {
 		return map[int64]any{}, nil
 	}
 
-	return decodeCBORRaw[map[int64]any](data, "codec: unmarshal COSE protected header")
+	headers, err := decodeCBORRaw[map[int64]any](data)
+	if err != nil {
+		return nil, errorfamily.WrapCorruptionf(err,
+			"codec.cose_protected_unmarshal", "unmarshal COSE protected header")
+	}
+
+	return headers, nil
 }
 
 // MarshalCOSESign1 encodes a COSE_Sign1 structure to CBOR bytes.
@@ -181,7 +186,8 @@ func UnmarshalCOSESign1(data []byte) (COSESign1, error) {
 	var raw []cbor.RawMessage
 
 	if err := CBORDecMode().Unmarshal(data, &raw); err != nil {
-		return COSESign1{}, fmt.Errorf("codec: unmarshal COSE_Sign1: %w", err)
+		return COSESign1{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_sign1_unmarshal", "unmarshal COSE_Sign1")
 	}
 
 	if len(raw) != coseSign1ElementCount {
@@ -195,22 +201,26 @@ func UnmarshalCOSESign1(data []byte) (COSESign1, error) {
 
 	protected, err := decodeBstr(raw[0])
 	if err != nil {
-		return COSESign1{}, fmt.Errorf("codec: COSE_Sign1 protected: %w", err)
+		return COSESign1{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_sign1_protected", "decode COSE_Sign1 protected header")
 	}
 
 	unprotected, err := decodeIntMap(raw[1])
 	if err != nil {
-		return COSESign1{}, fmt.Errorf("codec: COSE_Sign1 unprotected: %w", err)
+		return COSESign1{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_sign1_unprotected", "decode COSE_Sign1 unprotected header map")
 	}
 
 	payload, err := decodeOptionalBstr(raw[2])
 	if err != nil {
-		return COSESign1{}, fmt.Errorf("codec: COSE_Sign1 payload: %w", err)
+		return COSESign1{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_sign1_payload", "decode COSE_Sign1 payload")
 	}
 
 	signature, err := decodeBstr(raw[3])
 	if err != nil {
-		return COSESign1{}, fmt.Errorf("codec: COSE_Sign1 signature: %w", err)
+		return COSESign1{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_sign1_signature", "decode COSE_Sign1 signature")
 	}
 
 	return COSESign1{
@@ -242,7 +252,8 @@ func UnmarshalCOSEEncrypt0(data []byte) (COSEEncrypt0, error) {
 	var raw []cbor.RawMessage
 
 	if err := CBORDecMode().Unmarshal(data, &raw); err != nil {
-		return COSEEncrypt0{}, fmt.Errorf("codec: unmarshal COSE_Encrypt0: %w", err)
+		return COSEEncrypt0{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_encrypt0_unmarshal", "unmarshal COSE_Encrypt0")
 	}
 
 	if len(raw) != coseEncrypt0ElementCount {
@@ -256,17 +267,20 @@ func UnmarshalCOSEEncrypt0(data []byte) (COSEEncrypt0, error) {
 
 	protected, err := decodeBstr(raw[0])
 	if err != nil {
-		return COSEEncrypt0{}, fmt.Errorf("codec: COSE_Encrypt0 protected: %w", err)
+		return COSEEncrypt0{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_encrypt0_protected", "decode COSE_Encrypt0 protected header")
 	}
 
 	unprotected, err := decodeIntMap(raw[1])
 	if err != nil {
-		return COSEEncrypt0{}, fmt.Errorf("codec: COSE_Encrypt0 unprotected: %w", err)
+		return COSEEncrypt0{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_encrypt0_unprotected", "decode COSE_Encrypt0 unprotected header map")
 	}
 
 	ciphertext, err := decodeOptionalBstr(raw[2])
 	if err != nil {
-		return COSEEncrypt0{}, fmt.Errorf("codec: COSE_Encrypt0 ciphertext: %w", err)
+		return COSEEncrypt0{}, errorfamily.WrapCorruptionf(err,
+			"codec.cose_encrypt0_ciphertext", "decode COSE_Encrypt0 ciphertext")
 	}
 
 	return COSEEncrypt0{

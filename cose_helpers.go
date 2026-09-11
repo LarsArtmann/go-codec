@@ -12,7 +12,7 @@ func decodeBstr(r cbor.RawMessage) ([]byte, error) {
 		return []byte{}, nil
 	}
 
-	return decodeCBORRaw[[]byte](r, "decode bstr")
+	return decodeCBORRaw[[]byte](r)
 }
 
 // decodeOptionalBstr decodes a CBOR byte string or nil value into a byte slice.
@@ -23,7 +23,7 @@ func decodeOptionalBstr(r cbor.RawMessage) ([]byte, error) {
 		return nil, nil
 	}
 
-	return decodeCBORRaw[[]byte](r, "decode optional bstr")
+	return decodeCBORRaw[[]byte](r)
 }
 
 // decodeIntMap decodes a CBOR map with integer keys.
@@ -32,7 +32,7 @@ func decodeIntMap(r cbor.RawMessage) (map[int64]any, error) {
 		return nil, nil //nolint:nilnil // nil represents absent optional header map
 	}
 
-	return decodeCBORRaw[map[int64]any](r, "decode int map")
+	return decodeCBORRaw[map[int64]any](r)
 }
 
 // isNil reports whether r is a CBOR nil value.
@@ -40,15 +40,18 @@ func isNil(r cbor.RawMessage) bool {
 	return len(r) == 1 && r[0] == 0xf6
 }
 
-// decodeCBORRaw decodes r into a fresh T using CBORDecMode, wrapping any
-// failure with msg. Callers handle nil (isNil) before calling so this
-// helper is the pure decode-and-wrap tail shared by decodeBstr,
+// decodeCBORRaw decodes r into a fresh T using CBORDecMode. Failures are
+// returned unwrapped: the COSE boundary functions classify them with the
+// failing message part's stable code (e.g. codec.cose_sign1_protected), so
+// this helper must not add a competing layer. Callers handle nil (isNil)
+// before calling so this helper is the pure decode tail shared by decodeBstr,
 // decodeOptionalBstr, decodeIntMap, and the COSE protected-header decode.
-func decodeCBORRaw[T any](r cbor.RawMessage, msg string) (T, error) {
+func decodeCBORRaw[T any](r cbor.RawMessage) (T, error) {
 	var out T
 
-	if err := CBORDecMode().Unmarshal(r, &out); err != nil {
-		return out, fmt.Errorf("%s: %w", msg, err)
+	err := CBORDecMode().Unmarshal(r, &out) //nolint:wrapcheck // classified at the COSE boundary with the failing part's code
+	if err != nil {
+		return out, err
 	}
 
 	return out, nil

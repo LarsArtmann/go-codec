@@ -11,7 +11,7 @@ const envelopeMagic = "gcdc"
 // envelope wraps serialized data with its encoding format tag, making blind
 // stores self-describing (like events are with evt.Encoding()).
 type envelope struct {
-	Magic    string   `json:"$"`   // always "cqrs" — distinguishes envelope from raw data
+	Magic    string   `json:"$"`   // always "gcdc" (envelopeMagic): distinguishes envelope from raw data
 	Encoding Encoding `json:"enc"` // codec encoding: "json" or "cbor"
 	Data     []byte   `json:"dat"` // inner serialized data
 }

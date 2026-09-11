@@ -235,7 +235,7 @@ race tests (both modes), `nix flake check`, both repo tripwires.
 
 ---
 
-*Verification sources: fresh CLI runs at report time (erraudit exit codes, race tests both modes, golangci-lint 0 issues both modes, nix flake check, both tripwire scripts). No claims taken from cached LSP diagnostics.*
+_Verification sources: fresh CLI runs at report time (erraudit exit codes, race tests both modes, golangci-lint 0 issues both modes, nix flake check, both tripwire scripts). No claims taken from cached LSP diagnostics._
 
 ---
 

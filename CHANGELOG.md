@@ -20,10 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   codec error strings.
 - Behavioral families now classify every wrap: **Rejection** (caller input
   fault: unknown encoding, unencodable values in pooled/envelope encode, raw
-  type mismatches), **Corruption** (undecodable stored/wire bytes: COSE
-  structure and per-part decodes, transcode, normalize depth cap),
-  **Infrastructure** (should-never-fail plumbing: envelope marshal,
-  observable buffer write, base64 failures), **Orchestration** (internal
+  type mismatches, COSE element counts), **Corruption** (undecodable
+  stored/wire bytes: COSE structure and per-part decodes, transcode, base64
+  decode), **Infrastructure** (should-never-fail plumbing: envelope marshal,
+  observable buffer write), **Orchestration** (internal
   dependency-semantics bugs: the four CBOR mode-init panics).
 - `ForEncoding` attaches the offending encoding as structured context
   (`ErrorContext()["encoding"]`) instead of prose only.
@@ -40,10 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- **31 stable error codes** (see `errors_contract_test.go` for the locked
-  table): sentinels `codec.invalid_cose_sign1`,
-  `codec.invalid_cose_encrypt0`, `codec.encode_raw_type`,
-  `codec.decode_raw_type`, `codec.cose_invalid_algorithm`,
+- **32 stable error codes** (registry: `docs/error-codes.md`, enforced by
+  `scripts/check-error-codes.sh` in CI; locked behaviors in
+  `errors_contract_test.go`): sentinels `codec.invalid_cose_sign1`,
+  `codec.invalid_cose_encrypt0`, `codec.raw_encode_type`,
+  `codec.raw_decode_type`, `codec.cose_invalid_algorithm`,
   `codec.cose_algorithm_overflow`, `codec.normalize_depth_exceeded`,
   `codec.unknown_encoding`; wrap/detail codes `codec.cose_sign1_protected`,
   `codec.cose_sign1_unprotected`, `codec.cose_sign1_payload`,

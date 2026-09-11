@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	errorfamily "github.com/larsartmann/go-error-family"
-)
 	"github.com/onsi/gomega"
 )
 

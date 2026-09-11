@@ -92,6 +92,14 @@ nix run .#lint                        # lint both modes
   for the `signing` and `encryption` modules to sign/encrypt.
 - **Errors** use `github.com/larsartmann/go-error-family` with stable codes
   (`codec.raw_encode_type`, `codec.invalid_cose_sign1`, …). See `errors.go`.
+  Every error carries a stable code + behavioral family (Rejection = caller
+  input fault, Corruption = undecodable stored/wire bytes, Infrastructure =
+  system-level plumbing that should not fail, Orchestration = internal
+  dependency-semantics bugs, used for the CBOR mode-init panics). Sentinels
+  are declared as the `error` interface; wraps use `errorfamily.WrapXf` with
+  the SAME code as the sentinel (or a detail code), so `errors.Is` matches
+  via the code+family identity AND the cause chain. The full contract is
+  locked by `errors_contract_test.go`.
 - **Streaming** (`streaming.go`) — `NewCBOREncoder`/`NewCBORDecoder` return
   `*cbor.Encoder`/`*cbor.Decoder` from fxamacker. `NewJSONEncoder`/
   `NewJSONDecoder` return `*JSONEncoder`/`*JSONDecoder` wrapper types (defined
@@ -119,10 +127,18 @@ nix run .#lint                        # lint both modes
 
 - **Indentation:** tabs (see `.editorconfig`). Markdown keeps trailing
   whitespace (`trim_trailing_whitespace = false` for `*.md`).
-- **Error wrapping:** codec methods are thin wrappers over `cbor`/`json` and use
-  `//nolint:wrapcheck` rather than re-wrapping. Public helpers that orchestrate
-  multiple steps (`TranscodeToJSON`, `WrapEncode`, COSE marshal) DO wrap with
-  `fmt.Errorf("codec: ...: %w", err)`.
+- **Error wrapping:** codec methods are thin wrappers over `cbor`/`json` and
+  use `//nolint:wrapcheck` rather than re-wrapping — callers classify with
+  their own context. Public helpers that orchestrate multiple steps
+  (`TranscodeToJSON`, `WrapEncode`, COSE unmarshal) DO wrap, with
+  `errorfamily.WrapXf(err, Family, "codec.<operation>", msg)` — never
+  `fmt.Errorf`. Use `WrapOncef` at orchestration boundaries where the inner
+  error may already be classified (envelope, pooled encode) so codes never
+  stack. Policy: erraudit runs in CI with `--enforce-go-error-family
+  --type-aware`; its `generic_return` check stays OFF deliberately —
+  returning the bare `error` interface is required by the `Codec`/
+  `BufferEncoder` contracts and Go idiom, and type-safe matching is provided
+  by `errors.AsType[*errorfamily.Error]` instead.
 - **Testing stack:** stdlib `testing`; `onsi/gomega` for assertions;
   `pgregory.net/rapid` for property tests; `gkampitakis/go-snaps` for golden
   snapshots (output under `testdata/golden/`); native fuzz targets; godoc

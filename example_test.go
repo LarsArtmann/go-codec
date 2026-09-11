@@ -648,6 +648,6 @@ func ExampleForEncoding_classified() {
 
 	// Output:
 	// code: codec.unknown_encoding
-	// family: Rejection
+	// family: rejection
 	// encoding: encrypted
 }

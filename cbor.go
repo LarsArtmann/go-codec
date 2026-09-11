@@ -2,10 +2,10 @@ package codec
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 
 	"github.com/fxamacker/cbor/v2"
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // CBORCodec implements Codec using fxamacker/cbor with canonical encoding
@@ -33,7 +33,8 @@ var canonicalEncMode = sync.OnceValue(func() cbor.EncMode { //nolint:gochecknogl
 
 	mode, err := opts.EncMode()
 	if err != nil {
-		panic(fmt.Errorf("codec: canonical CBOR EncMode creation failed: %w", err))
+		panic(errorfamily.WrapOrchestrationf(err,
+			"codec.cbor_encmode_init", "canonical CBOR EncMode creation failed"))
 	}
 
 	return mode
@@ -47,7 +48,8 @@ var canonicalDecMode = sync.OnceValue(func() cbor.DecMode { //nolint:gochecknogl
 
 	mode, err := opts.DecMode()
 	if err != nil {
-		panic(fmt.Errorf("codec: canonical CBOR DecMode creation failed: %w", err))
+		panic(errorfamily.WrapOrchestrationf(err,
+			"codec.cbor_decmode_init", "canonical CBOR DecMode creation failed"))
 	}
 
 	return mode

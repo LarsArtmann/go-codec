@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // This file provides JSON helpers backed by encoding/json (v1). The companion
@@ -78,7 +80,11 @@ func normalizeForJSON(v any) (any, error) {
 
 func normalizeForJSONDepth(v any, depth int) (any, error) {
 	if depth > maxNormalizeDepth {
-		return nil, fmt.Errorf("%w: %d", ErrNormalizeDepthExceeded, maxNormalizeDepth)
+		return nil, errorfamily.Wrapf(
+			ErrNormalizeDepthExceeded, errorfamily.Rejection,
+			"codec.normalize_depth_exceeded",
+			"normalizeForJSON recursion depth exceeded",
+		).WithContextf("max_depth", "%d", maxNormalizeDepth)
 	}
 
 	switch val := v.(type) {

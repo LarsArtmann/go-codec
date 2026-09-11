@@ -2,8 +2,9 @@ package codec
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
+
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // Operation identifies the kind of observed codec operation.
@@ -230,7 +231,8 @@ func (obs *ObservableCodec) EncodeToBuffer(v any, buf *bytes.Buffer) error {
 			obs.hook(OpEncode, obs.codec.Encoding(), len(data), writeErr)
 		}
 
-		return fmt.Errorf("codec: observable write to buffer: %w", writeErr)
+		return errorfamily.WrapInfrastructuref(writeErr,
+			"codec.observable_write", "observable write to buffer")
 	}
 
 	obs.metrics.recordEncode(len(data), nil)

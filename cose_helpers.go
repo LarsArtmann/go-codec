@@ -49,9 +49,8 @@ func isNil(r cbor.RawMessage) bool {
 func decodeCBORRaw[T any](r cbor.RawMessage) (T, error) {
 	var out T
 
-	err := CBORDecMode().Unmarshal(r, &out) //nolint:wrapcheck // classified at the COSE boundary with the failing part's code
-	if err != nil {
-		return out, err
+	if err := CBORDecMode().Unmarshal(r, &out); err != nil {
+		return out, err //nolint:wrapcheck // COSE boundary classifies with the part's code
 	}
 
 	return out, nil

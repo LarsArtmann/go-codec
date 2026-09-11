@@ -2,11 +2,11 @@ package codec
 
 import errorfamily "github.com/larsartmann/go-error-family"
 
+// Stable sentinel identities for the codec package. Declared as the `error`
+// interface so errors.Is call sites match the sentinel guard; in-package wraps
+// use errorfamily.Wrapf with the SAME code, so wrapped errors still match via
+// code+family identity.
 var (
-	// Stable sentinel identities. Declared as the `error` interface so
-	// errors.Is call sites match the sentinel guard; every in-package error
-	// wraps these with errorfamily.Wrapf using the SAME code, so wrapped
-	// errors still match via code+family identity.
 	ErrEncodeRawType error = errorfamily.NewRejection(
 		"codec.raw_encode_type",
 		"raw codec: expected []byte",

@@ -1,6 +1,8 @@
 package codec
 
-import "fmt"
+import (
+	errorfamily "github.com/larsartmann/go-error-family"
+)
 
 // TranscodeToJSON converts a payload from its stamped encoding into JSON bytes.
 // It is the generic, schema-free bridge for consumers that must serve JSON to
@@ -39,12 +41,14 @@ func TranscodeToJSON(payload []byte, enc Encoding) ([]byte, error) {
 
 	var v any
 	if err := canonicalDecMode().Unmarshal(payload, &v); err != nil {
-		return nil, fmt.Errorf("codec: decode CBOR for transcode: %w", err)
+		return nil, errorfamily.WrapCorruptionf(err,
+			"codec.transcode_decode", "decode CBOR for transcode")
 	}
 
 	out, err := jsonMarshal(v)
 	if err != nil {
-		return nil, fmt.Errorf("codec: encode JSON for transcode: %w", err)
+		return nil, errorfamily.WrapCorruptionf(err,
+			"codec.transcode_encode", "encode JSON for transcode")
 	}
 
 	return out, nil

@@ -1,6 +1,8 @@
 package codec
 
-import "fmt"
+import (
+	errorfamily "github.com/larsartmann/go-error-family"
+)
 
 // envelopeMagic is the marker value that identifies envelope-wrapped data.
 // Its presence in the Magic field confirms the data is an envelope, not raw.
@@ -21,14 +23,16 @@ type envelope struct {
 func WrapEncode(v any, c Codec) ([]byte, error) {
 	inner, err := c.Encode(v)
 	if err != nil {
-		return nil, fmt.Errorf("codec: encode for envelope: %w", err)
+		return nil, errorfamily.WrapOncef(err, errorfamily.Rejection,
+			"codec.envelope_encode", "encode for envelope")
 	}
 
 	env := envelope{Magic: envelopeMagic, Encoding: c.Encoding(), Data: inner}
 
 	out, err := jsonMarshalDet(env)
 	if err != nil {
-		return nil, fmt.Errorf("codec: marshal envelope: %w", err)
+		return nil, errorfamily.WrapInfrastructuref(err,
+			"codec.envelope_marshal", "marshal envelope")
 	}
 
 	return out, nil

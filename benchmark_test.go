@@ -724,6 +724,8 @@ func BenchmarkTagTradeoffs_Decode(b *testing.B) {
 // mustEncode encodes v for benchmark setup, failing the benchmark on error
 // instead of silently benching against empty bytes.
 func mustEncode(b *testing.B, c codec.CBORCodec, v any) []byte {
+	b.Helper()
+
 	data, err := c.Encode(v)
 	if err != nil {
 		b.Fatal(err)

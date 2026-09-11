@@ -2,10 +2,10 @@ package codec
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 
 	"github.com/fxamacker/cbor/v2"
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // CBORCompactCodec is an opt-in Codec that uses stricter decoding than CBORCodec.
@@ -44,7 +44,8 @@ var compactEncMode = sync.OnceValue(func() cbor.EncMode { //nolint:gochecknoglob
 
 	mode, err := opts.EncMode()
 	if err != nil {
-		panic(fmt.Errorf("codec: compact CBOR EncMode creation failed: %w", err))
+		panic(errorfamily.WrapOrchestrationf(err,
+			"codec.cbor_compact_encmode_init", "compact CBOR EncMode creation failed"))
 	}
 
 	return mode
@@ -58,7 +59,8 @@ var compactDecMode = sync.OnceValue(func() cbor.DecMode { //nolint:gochecknoglob
 
 	mode, err := opts.DecMode()
 	if err != nil {
-		panic(fmt.Errorf("codec: compact CBOR DecMode creation failed: %w", err))
+		panic(errorfamily.WrapOrchestrationf(err,
+			"codec.cbor_compact_decmode_init", "compact CBOR DecMode creation failed"))
 	}
 
 	return mode

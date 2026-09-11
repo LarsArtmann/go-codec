@@ -2,7 +2,6 @@ package codec
 
 import (
 	"bytes"
-	"fmt"
 
 	errorfamily "github.com/larsartmann/go-error-family"
 )
@@ -45,7 +44,11 @@ func ForEncoding(enc Encoding) (Codec, error) {
 	case EncodingRaw:
 		return RawCodec{}, nil
 	default:
-		return nil, fmt.Errorf("%w: %q", ErrUnknownEncoding, enc)
+		return nil, errorfamily.Wrapf(
+			ErrUnknownEncoding, errorfamily.Rejection,
+			"codec.unknown_encoding",
+			"unknown encoding %q", enc,
+		).WithContext("encoding", string(enc))
 	}
 }
 

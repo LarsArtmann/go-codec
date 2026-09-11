@@ -2,8 +2,9 @@ package codec
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
+
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // bufferPool reuse *bytes.Buffer across EncodeToBuffer calls to eliminate
@@ -67,7 +68,8 @@ func EncodePooled(enc BufferEncoder, v any, fn func([]byte) error) error {
 	defer PutBuffer(buf)
 
 	if err := enc.EncodeToBuffer(v, buf); err != nil {
-		return fmt.Errorf("codec: pooled encode failed: %w", err)
+		return errorfamily.WrapOncef(err, errorfamily.Rejection,
+			"codec.pooled_encode", "pooled encode failed")
 	}
 
 	return fn(buf.Bytes())

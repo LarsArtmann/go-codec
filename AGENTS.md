@@ -39,15 +39,19 @@ go-codec/
 ## Commands
 
 Plain Go toolchain (Go 1.26+). The project supports both `encoding/json` v1
-(default) and v2 (opt-in via `GOEXPERIMENT=jsonv2`):
+(default) and v2 (opt-in via `GOEXPERIMENT=jsonv2`). **Mode must be explicit:**
+shells may carry an ambient `GOEXPERIMENT=jsonv2`, which silently flips plain
+invocations to v2 and excludes every v1-tagged file (`json_compat_v1.go`,
+`normalize_test.go`). A broken v1 file once "passed" the suite this way.
+Always pin the mode:
 
 ```bash
-go build ./...                          # build (v1 JSON, default)
+env -u GOEXPERIMENT go build ./...      # build (v1 JSON, TRUE default)
+env -u GOEXPERIMENT go test ./... -race # test with race detector (v1)
 GOEXPERIMENT=jsonv2 go build ./...      # build (v2 JSON)
-go test ./... -race                     # test with race detector (v1)
 GOEXPERIMENT=jsonv2 go test ./... -race # test with race detector (v2)
-golangci-lint run ./...                 # lint (v1)
-golangci-lint run --build-tags goexperiment.jsonv2 ./... # lint (v2)
+env -u GOEXPERIMENT golangci-lint run ./...                 # lint (v1)
+golangci-lint run --build-tags goexperiment.jsonv2 ./...    # lint (v2)
 ```
 
 With flake.nix (preferred in LarsArtmann projects):
@@ -162,6 +166,11 @@ nix run .#lint                        # lint both modes
   were real. If the default `go build ./...` fails with "build constraints
   exclude all Go files" for `encoding/json/v2`/`jsontext`, check the v1 compat
   file imports first — do not blame the toolchain or the LSP cache.
+  **Related trap: ambient `GOEXPERIMENT=jsonv2` in a shell silently excludes all
+  v1-tagged files from "default" runs, so a syntactically broken v1 file cannot
+  fail them.** A broken `normalize_test.go` once produced a green suite this
+  way. Never verify with bare `go ...` here; pin with `env -u GOEXPERIMENT`
+  (see Commands).
 - **`CBORCodec` ≠ `CBORCompactCodec` bytes.** Never assume data written by one
   round-trips through the other (different key sort + compact rejects unknown
   fields). Document per-store which codec owns the data.

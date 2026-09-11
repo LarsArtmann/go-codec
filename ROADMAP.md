@@ -138,3 +138,7 @@ a behavioral family, and structured context. Raw ideas for going further
   (both 1 MiB)
 - Flip the README consumer-side signing example to the family pattern IF the
   stack-wide convention lands (pending the sibling-repo sync)
+- Typed public error returns (typed `ForEncoding`/`Decode` results instead of bare
+  `error`) in a future **v2** — decided 2026-09-11. Until then, bare `error` +
+  `errors.AsType` is the transitional contract and the 7 `generic_return`
+  declines are temporary (the ADR records them as such)

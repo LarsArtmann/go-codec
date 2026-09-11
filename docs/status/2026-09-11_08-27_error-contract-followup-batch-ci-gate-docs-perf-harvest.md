@@ -274,3 +274,20 @@ _Verification sources: fresh CLI runs at report time — build/vet/race-tests bo
 golangci-lint 0 issues both modes, erraudit default+enforced exit 0, actionlint clean, both repo
 tripwires PASS, `nix flake check` all checks passed; benchstat A/B from 10-run same-machine pairs;
 analyzer behavior read from the erraudit v0.4.0 tag source. No claims taken from cached LSP state._
+
+---
+
+## ANSWERS (2026-09-11, post-report)
+
+1. **erraudit access: DEFERRED.** The `error-audit` gate stays dormant (skips with its documented
+   reason) until revisited. Both options remain one step away: add `ERRAUDIT_PAT` (gate
+   self-activates on next push) or publish the repo (secret becomes unnecessary). Recorded in
+   TODO_LIST #2.
+2. **Release version: `v0.3.0`** (minor, for the behavioral break in error-string rendering).
+   Release itself stays deferred until the follow-up batch is done. Runbook updated in
+   TODO_LIST #1 (`## [v0.3.0]` re-date).
+3. **Error contract: typed errors are a future `v2` goal.** Bare `error` + `errors.AsType` is the
+   transitional public contract; the 7 remaining `generic_return` declines are TRANSITIONAL, not
+   permanent policy — the ADR (TODO_LIST #8) must record them as such, and the v2 idea is now in
+   ROADMAP's error-contract maturity theme.
+

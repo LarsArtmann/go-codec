@@ -61,8 +61,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `errors_contract_test.go`: seven black-box tests locking sentinel codes,
   families, structured context, `WrapOncef` no-restack, and per-part codes.
 - `error-audit` CI job running
-  `erraudit lint ./... --enforce-go-error-family --type-aware`.
+  `erraudit lint ./... --enforce-go-error-family --type-aware`, now folded
+  with zero-baselines for the legacy patterns (`--type legacy_as`,
+  `--type legacy_is`) and a no-`//nolint:legacyerrors` suppression rule.
 - `# Errors` godoc section in `doc.go` with an `errors.AsType` example.
+- `docs/error-codes.md`: the error-code registry — every `codec.*` code with
+  family, meaning, emit site, and the classified-vs-passthrough API split.
+  `scripts/check-error-codes.sh` (CI, `test` job) fails when source and
+  registry drift in either direction (renamed/phantom codes break the build).
+- `scripts/check-erraudit-version.sh` (CI): pin-consistency tripwire — the
+  erraudit version in `ci.yml` and `flake.nix` must agree. Dependabot cannot
+  manage `go install` pins and Renovate is not installed, so bumps stay
+  deliberate (ROADMAP: monthly check).
+- `errors_property_test.go`: rapid property test — every error escaping the
+  classified API surface is `*errorfamily.Error` with a `codec.`-prefixed
+  code and a valid family (13 API calls × generated inputs, both JSON modes).
+- `ExampleForEncoding_classified`: godoc example extracting code, family, and
+  structured context from a codec error via `errors.AsType` (doubles as test).
+- `docs/adr/0001-error-taxonomy.md`: the error-contract ADR — classification
+  library choice, families per failure layer, WrapOnce rule, classified vs
+  passthrough split, wrapcheck mechanism, and the locked direction that typed
+  public errors are a future v2 goal (the 7 `generic_return` declines are
+  transitional, not permanent policy).
+- `flake.nix`: `.#erraudit` app + devShell `erraudit` command — runs the
+  pinned erraudit from source at invocation time (private module: needs
+  ambient GitHub credentials; no flake input, so sandboxed checks are
+  unaffected). `GOEXPERIMENT=jsonv2` handled inside the wrapper.
+- CI `mermaid` job: renders every mermaid block in `README.md` via
+  mermaid-cli (@11.17.0, verified latest), catching diagram syntax drift.
+- Sibling sync: go-cqrs-lite's `ci.yml` now carries the same self-activating
+  `error-audit` job (per-module enforcement for its 35 modules). Its repo is
+  not yet at zero findings (baseline 2026-09-11: 253 findings across 22
+  modules) — zeroing is routed to go-cqrs-lite's `TODO_LIST.md` as the
+  gate-activation precondition.
 
 ## [v0.2.0] — 2026-08-16
 

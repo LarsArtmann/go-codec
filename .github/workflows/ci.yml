@@ -39,6 +39,9 @@ jobs:
       - name: Error-code registry drift check (source and docs must agree)
         if: matrix.json-mode == 'v1'
         run: bash scripts/check-error-codes.sh
+      - name: erraudit pin consistency check (ci.yml and flake.nix must agree)
+        if: matrix.json-mode == 'v1'
+        run: bash scripts/check-erraudit-version.sh
 
   lint:
     name: Lint (JSON ${{ matrix.json-mode }})
@@ -126,6 +129,33 @@ jobs:
       - uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  mermaid:
+    name: Docs Diagram Render (mermaid)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+      - name: Render all mermaid blocks in README.md
+        run: |
+          set -euo pipefail
+          awk '
+            /^```mermaid$/ { in_block=1; n++; file=sprintf("/tmp/mermaid-%d.mmd", n); next }
+            /^```$/        { in_block=0; next }
+            in_block       { print > file }
+          ' README.md
+          count=$(find /tmp -maxdepth 1 -name 'mermaid-*.mmd' | wc -l)
+          if [ "$count" -eq 0 ]; then
+            echo "FAIL: no mermaid blocks found in README.md" >&2
+            exit 1
+          fi
+          for f in /tmp/mermaid-*.mmd; do
+            npx -y @mermaid-js/mermaid-cli@11.17.0 -i "$f" -o "${f%.mmd}.svg" > /dev/null
+            echo "ok: rendered $f"
+          done
+          echo "mermaid: PASS ($count diagram(s) rendered)"
 
   vulncheck:
     name: Vulnerability Scan

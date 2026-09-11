@@ -56,6 +56,23 @@
             };
             vendorHash = "sha256-dAL3r3v8GuEmt27mMidcGaAEm7Pb43bITWmEfrE8hxA=";
           };
+
+          # erraudit runner: fetches the pinned version from source at run time.
+          # erraudit is a PRIVATE module (proxy.golang.org 404s), so this needs
+          # ambient GitHub credentials and network — it is therefore NOT a flake
+          # input (that would force auth for every nix command) and NOT part of
+          # any sandboxed check. GOEXPERIMENT=jsonv2 is required because
+          # erraudit v0.4.x imports encoding/json/v2, which go 1.26 only builds
+          # with the experiment enabled. Version must match the ci.yml pin.
+          errauditApp = pkgs.writeShellApplication {
+            name = "erraudit";
+            runtimeInputs = [ goPkg ];
+            text = ''
+              export GOPRIVATE="github.com/larsartmann/*"
+              export GOEXPERIMENT=jsonv2
+              exec go run github.com/larsartmann/erraudit/cmd/erraudit@v0.4.0 "$@"
+            '';
+          };
         in
         {
           treefmt = {
@@ -71,6 +88,7 @@
           devShells.default = pkgs.mkShellNoCC {
             packages = [
               goPkg
+              errauditApp
               pkgs.golangci-lint
               pkgs.gopls
               pkgs.trash-cli
@@ -146,6 +164,11 @@
               go test ./... -coverprofile=coverage.out -covermode=atomic "$@"
               go tool cover -func=coverage.out
             '';
+
+            erraudit = {
+              type = "app";
+              program = "${errauditApp}/bin/erraudit";
+            };
 
             clean = mkApp "clean" [ goPkg pkgs.trash-cli ] ''
               trash-put coverage.out 2>/dev/null || true

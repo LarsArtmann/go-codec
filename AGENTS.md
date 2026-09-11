@@ -197,6 +197,12 @@ nix run .#lint                        # lint both modes
   (`go: downloading go1.26.x … connection refused`, goimports exit 2). Local
   `nix fmt` still shows real drift (0 changed = none). Fix: `nix flake update
   nixpkgs` once available — tracked in TODO_LIST at bump time.
+- **Auto-commit daemon flattens history into `chore: auto-commit N changed
+  file(s)` commits.** Before pushing a shared branch, hand-make one descriptive
+  commit for any human-meaningful change (the error-contract overhaul shipped
+  with no meaningful commit message anywhere in history — CHANGELOG and status
+  reports are the only narrative). The daemon still commits on top; that is
+  expected noise.
 
 ## Dependencies
 

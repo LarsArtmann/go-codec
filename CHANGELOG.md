@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Error contract: every codec error now carries a stable machine-readable
+  code and a behavioral family.** All `fmt.Errorf` sites migrated to
+  `github.com/larsartmann/go-error-family` classified wraps. Error strings now
+  render as `[family:code] message: cause` (previously
+  `codec: message: cause`). Consumers must not match on error strings — match
+  with `errors.Is` against the sentinels (unchanged, still first in every
+  chain) or extract code/family/context via
+  `errors.AsType[*errorfamily.Error]`. Verified: go-cqrs-lite matches no
+  codec error strings.
+- Behavioral families now classify every wrap: **Rejection** (caller input
+  fault: unknown encoding, unencodable values in pooled/envelope encode, raw
+  type mismatches), **Corruption** (undecodable stored/wire bytes: COSE
+  structure and per-part decodes, transcode, normalize depth cap),
+  **Infrastructure** (should-never-fail plumbing: envelope marshal,
+  observable buffer write, base64 failures), **Orchestration** (internal
+  dependency-semantics bugs: the four CBOR mode-init panics).
+- `ForEncoding` attaches the offending encoding as structured context
+  (`ErrorContext()["encoding"]`) instead of prose only.
+- COSE decode paths classify once at the boundary that knows the failing part
+  (per-part codes below); inner CBOR errors propagate unclassified, and
+  orchestration boundaries use `WrapOncef` so codes never stack.
+- The public `Codec`/`BufferEncoder` signatures intentionally keep returning
+  the bare `error` interface (Go idiom, interface-contract stability);
+  type-safe matching is provided by `errors.AsType[*errorfamily.Error]`.
+  Policy documented in `doc.go` (`# Errors`) and AGENTS.md.
+- Go toolchain 1.26.6 → 1.26.7 (`go.mod`, `.go-version`, `.golangci.yml` —
+  tripwire-enforced); `fxamacker/cbor/v2` v2.9.2 → v2.9.3; v1 JSON marshal
+  path simplified.
+
+### Added
+
+- **31 stable error codes** (see `errors_contract_test.go` for the locked
+  table): sentinels `codec.invalid_cose_sign1`,
+  `codec.invalid_cose_encrypt0`, `codec.encode_raw_type`,
+  `codec.decode_raw_type`, `codec.cose_invalid_algorithm`,
+  `codec.cose_algorithm_overflow`, `codec.normalize_depth_exceeded`,
+  `codec.unknown_encoding`; wrap/detail codes `codec.cose_sign1_protected`,
+  `codec.cose_sign1_unprotected`, `codec.cose_sign1_payload`,
+  `codec.cose_sign1_signature`, `codec.cose_sign1_element_count`,
+  `codec.cose_sign1_unmarshal`, `codec.cose_protected_unmarshal`,
+  `codec.cose_marshal_protected`, `codec.cose_encrypt0_protected`,
+  `codec.cose_encrypt0_unprotected`, `codec.cose_encrypt0_ciphertext`,
+  `codec.cose_encrypt0_element_count`, `codec.cose_encrypt0_unmarshal`,
+  `codec.transcode_decode`, `codec.transcode_encode`,
+  `codec.envelope_encode`, `codec.envelope_marshal`,
+  `codec.pooled_encode`, `codec.observable_write`, `codec.base64_decode`,
+  `codec.cbor_encmode_init`, `codec.cbor_decmode_init`,
+  `codec.cbor_compact_encmode_init`, `codec.cbor_compact_decmode_init`.
+- `errors_contract_test.go`: seven black-box tests locking sentinel codes,
+  families, structured context, `WrapOncef` no-restack, and per-part codes.
+- `error-audit` CI job running
+  `erraudit lint ./... --enforce-go-error-family --type-aware`.
+- `# Errors` godoc section in `doc.go` with an `errors.AsType` example.
+
 ## [v0.2.0] — 2026-08-16
 
 ### Security

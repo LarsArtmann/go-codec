@@ -428,6 +428,34 @@ The `transport/http` package (from the sibling CQRS stack) provides
 `http.WithPayloadTransform` — including graceful fallback to the raw payload on
 decode failure, so SSE clients always receive data.
 
+## Error Handling
+
+Every error returned by this package carries a **stable machine-readable code**
+and a **behavioral family** (`github.com/larsartmann/go-error-family`):
+
+| Family           | Meaning                                      | Examples                                    |
+| ---------------- | -------------------------------------------- | ------------------------------------------- |
+| `Rejection`      | Caller input fault                           | unknown encoding, unencodable value         |
+| `Corruption`     | Undecodable stored / wire bytes              | malformed COSE structure, failing CBOR part |
+| `Infrastructure` | System-level plumbing that should not fail   | envelope marshal, buffer write              |
+| `Orchestration`  | Internal dependency-semantics bug            | CBOR mode-init panics                       |
+
+Errors render as `[family:code] message: cause`. **Do not match on the string** —
+match sentinels with `errors.Is` (`ErrUnknownEncoding`, `ErrInvalidCOSESign1`,
+`ErrEncodeRawType`, …) and extract code, family, and structured context via
+`errors.AsType`:
+
+```go
+_, err := codec.ForEncoding(enc)
+if e, ok := errors.AsType[*errorfamily.Error](err); ok {
+    log.Printf("code=%s family=%v encoding=%s",
+        e.Code(), e.ErrorFamily(), e.ErrorContext()["encoding"])
+}
+```
+
+The full code table is locked by `errors_contract_test.go`; see `doc.go`
+(`# Errors`) for the contract and `errors.go` for the sentinel list.
+
 ## Dual JSON Support (v1 and v2)
 
 go-codec supports both `encoding/json` (v1, the default) and `encoding/json/v2`

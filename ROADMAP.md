@@ -113,3 +113,28 @@ Things we are deliberately NOT pursuing and why:
   review, §3).
 - **A security boundary in `AutoDetect`.** Format sniffing is for diagnostics
   and tooling only — it will never gate validation.
+
+### 4. Error-contract maturity
+
+The 2026-09-11 error-management overhaul gave every codec error a stable code,
+a behavioral family, and structured context. Raw ideas for going further
+(refine into TODO_LIST items before acting):
+
+- Snapshot tests of rendered `[family:code]` strings for a curated failure set
+  (accept the churn tradeoff or reject explicitly in the error-taxonomy ADR)
+- Error code as a `CodecMetrics` dimension (count by code) for ops dashboards
+- `errorfamily.RegisterTemplate` per code for consistent user-facing messages
+  at CLI/HTTP boundaries
+- Explicit `errors.Is` behavior table for same-code wraps in `doc.go`
+  (wrap-code == sentinel-code matches WITHOUT walking the cause chain —
+  load-bearing for the sentinel strategy)
+- Classifying `Observability` hook errors before invoking user hooks
+- Explicit classification/confirmation for `AutoDetectDebug`/`Diagnose`
+  `<diagnose failed: …>` string placeholders
+- `erraudit lsp` editor integration; erraudit inside `nix flake check`'s lint
+  phase (needs the devShell packaging first)
+- Monthly erraudit release check (new analyzers) with deliberate CI-pin bumps
+- Documented relationship between `maxPoolBufferSize` and `maxAutoDetectSize`
+  (both 1 MiB)
+- Flip the README consumer-side signing example to the family pattern IF the
+  stack-wide convention lands (pending the sibling-repo sync)

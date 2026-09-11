@@ -72,15 +72,39 @@ jobs:
   error-audit:
     name: Error Audit (erraudit)
     runs-on: ubuntu-latest
+    env:
+      HAS_ERRAUDIT_PAT: ${{ secrets.ERRAUDIT_PAT != '' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version-file: go.mod
       - name: Install erraudit
-        run: go install github.com/larsartmann/erraudit/cmd/erraudit@v0.4.0
+        if: env.HAS_ERRAUDIT_PAT == 'true'
+        env:
+          GOPRIVATE: github.com/larsartmann/*
+          GOEXPERIMENT: jsonv2
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.ERRAUDIT_PAT }}@github.com/".insteadOf "https://github.com/"
+          go install github.com/larsartmann/erraudit/cmd/erraudit@v0.4.0
+      - name: "Skipped: ERRAUDIT_PAT secret not set"
+        if: env.HAS_ERRAUDIT_PAT != 'true'
+        run: echo "erraudit is a private module (no proxy artifact). Add an ERRAUDIT_PAT secret with read access to github.com/larsartmann/erraudit to enable this gate."
       - name: Enforce go-error-family error policy
+        if: env.HAS_ERRAUDIT_PAT == 'true'
         run: erraudit lint ./... --enforce-go-error-family --type-aware
+
+  workflow-lint:
+    name: Workflow Lint (actionlint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      - name: Install actionlint
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - run: actionlint -color
 
   secret-scan:
     name: Secret Scan (gitleaks)

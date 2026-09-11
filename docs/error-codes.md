@@ -60,7 +60,7 @@ Two shapes of API exist by design (see `docs/adr/0001-error-taxonomy.md`):
 
 ## Sentinel codes (8)
 
-Declared as stable `error` identities in `errors.go` and `codec.go`; wraps of a
+Declared as stable `error` identities in errors.go and codec.go; wraps of a
 sentinel reuse its code unless a detail code is noted.
 
 | Code                              | Family    | Meaning                                        | Sentinel                 | Emitted by                          |

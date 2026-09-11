@@ -36,6 +36,9 @@ jobs:
       - name: Go version single-source check (declarations must agree)
         if: matrix.json-mode == 'v1'
         run: bash scripts/check-go-version.sh
+      - name: Error-code registry drift check (source and docs must agree)
+        if: matrix.json-mode == 'v1'
+        run: bash scripts/check-error-codes.sh
 
   lint:
     name: Lint (JSON ${{ matrix.json-mode }})
@@ -92,7 +95,14 @@ jobs:
         run: echo "erraudit is a private module (no proxy artifact). Add an ERRAUDIT_PAT secret with read access to github.com/larsartmann/erraudit to enable this gate."
       - name: Enforce go-error-family error policy
         if: env.HAS_ERRAUDIT_PAT == 'true'
-        run: erraudit lint ./... --enforce-go-error-family --type-aware
+        run: |
+          erraudit lint ./... --enforce-go-error-family --type-aware
+          # Zero-baselines: keep the legacy patterns from regressing silently.
+          # (legacy_as/legacy_is must stay at 0 findings; no //nolint:legacyerrors
+          # suppressions either.)
+          erraudit lint ./... --type legacy_as
+          erraudit lint ./... --type legacy_is
+          ! grep -rn 'nolint:legacyerrors' --include='*.go' .
 
   workflow-lint:
     name: Workflow Lint (actionlint)

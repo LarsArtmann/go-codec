@@ -103,7 +103,12 @@ nix run .#lint                        # lint both modes
   are declared as the `error` interface; wraps use `errorfamily.WrapXf` with
   the SAME code as the sentinel (or a detail code), so `errors.Is` matches
   via the code+family identity AND the cause chain. The full contract is
-  locked by `errors_contract_test.go`.
+  locked by `errors_contract_test.go` + the rapid property test
+  (`errors_property_test.go`); every code is registered in
+  `docs/error-codes.md` (tripwired by `scripts/check-error-codes.sh`) and the
+  design rationale — WrapOnce rule, classified-vs-passthrough split, the
+  transitional `generic_return` declines, typed-errors-v2 direction — lives
+  in `docs/adr/0001-error-taxonomy.md`.
 - **Streaming** (`streaming.go`) — `NewCBOREncoder`/`NewCBORDecoder` return
   `*cbor.Encoder`/`*cbor.Decoder` from fxamacker. `NewJSONEncoder`/
   `NewJSONDecoder` return `*JSONEncoder`/`*JSONDecoder` wrapper types (defined
@@ -220,6 +225,10 @@ nix run .#lint                        # lint both modes
 | `FEATURES.md`                       | Honest feature inventory with status                                                                          |
 | `codec.go`                          | `Codec`/`BufferEncoder`/`DeterministicCodec` contracts                                                        |
 | `errors.go`                         | Stable error sentinels and codes                                                                              |
+| `docs/error-codes.md`               | The error-code registry (every `codec.*` code: family, meaning, emit site) — update it whenever codes change  |
+| `docs/adr/0001-error-taxonomy.md`   | Error-contract ADR: families, WrapOnce rule, classified-vs-passthrough split, typed-errors-v2 direction        |
 | `scripts/check-features-planned.sh` | FEATURES.md drift tripwire (PLANNED symbols must not resolve via `go doc`); runs in CI                        |
 | `scripts/check-go-version.sh`       | Go-version single-source tripwire (go.mod / .go-version / .golangci.yml must agree); runs in CI               |
+| `scripts/check-error-codes.sh`      | Error-code drift tripwire (source literals must equal the docs/error-codes.md registry, both directions)       |
+| `scripts/check-erraudit-version.sh` | erraudit pin tripwire (ci.yml and flake.nix versions must agree)                                              |
 | `docs/benchmark-baseline.md`        | 10-run benchstat reference baseline (v1 mode) — re-run and diff there before accepting perf-sensitive changes |

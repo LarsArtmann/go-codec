@@ -146,6 +146,23 @@
 //	    }),
 //	)
 //
+// # Errors
+//
+// Every error returned by this package carries a stable machine-readable code
+// and a behavioral family (github.com/larsartmann/go-error-family): Rejection
+// for caller input faults, Corruption for undecodable stored or wire bytes,
+// Infrastructure for system-level failures, and Orchestration for internal
+// invariant violations. Sentinel identities (ErrUnknownEncoding,
+// ErrEncodeRawType, ErrInvalidCOSESign1, …) match via errors.Is even when
+// wrapped, and factual details (the offending encoding, the failing COSE part)
+// live in the error's structured context:
+//
+//	_, err := codec.ForEncoding(enc)
+//	if e, ok := errors.AsType[*errorfamily.Error](err); ok {
+//	    log.Printf("code=%s family=%v encoding=%s",
+//	        e.Code(), e.ErrorFamily(), e.ErrorContext()["encoding"])
+//	}
+//
 // # Format Detection
 //
 // AutoDetect infers the encoding (json/cbor/raw) of unknown payload bytes from

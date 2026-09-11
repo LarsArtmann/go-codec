@@ -79,6 +79,14 @@ there before accepting performance-sensitive changes.
 | `normalizeForJSON` depth cap (`maxDepth=100`)      | 🟢 `FULLY_FUNCTIONAL` | `json_compat_v1.go`; prevents stack-exhaustion DoS from adversarial CBOR. Tests + fuzz — `normalize_test.go`, `normalize_fuzz_test.go` |
 | `AutoDetect` size guard (`maxAutoDetectSize=1MiB`) | 🟢 `FULLY_FUNCTIONAL` | `autodetect.go`; trial-decode skipped for oversized ambiguous input                                                                    |
 
+## Error classification
+
+| Feature                                                          | Status                | Notes                                                                                                                                                                              |
+| ---------------------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stable sentinel codes (`errors.go`, `codec.go`)                  | 🟢 `FULLY_FUNCTIONAL` | 8 sentinels declared as the `error` interface with machine-readable codes (`codec.raw_encode_type`, `codec.unknown_encoding`, …); identity locked — `errors_contract_test.go`      |
+| Family-classified wraps (`errorfamily.WrapXf`)                   | 🟢 `FULLY_FUNCTIONAL` | every orchestration wrap carries a stable code + family (Rejection/Corruption/Infrastructure/Orchestration) + structured context; sentinel matching survives wrapping — `errors_contract_test.go` |
+| WrapOnce at orchestration boundaries                             | 🟢 `FULLY_FUNCTIONAL` | `envelope.go`, `pool.go`; inner classifications never double-wrapped — `errors_contract_test.go`                                                                                   |
+
 ## Buffer management
 
 | Feature                                            | Status                | Notes                                                                                                                     |

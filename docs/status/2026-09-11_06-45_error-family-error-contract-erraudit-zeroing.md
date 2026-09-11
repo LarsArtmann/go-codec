@@ -236,3 +236,18 @@ race tests (both modes), `nix flake check`, both repo tripwires.
 ---
 
 *Verification sources: fresh CLI runs at report time (erraudit exit codes, race tests both modes, golangci-lint 0 issues both modes, nix flake check, both tripwire scripts). No claims taken from cached LSP diagnostics.*
+
+---
+
+## ANSWERS (2026-09-11, post-report)
+
+1. **Error library:** samber/oops is just an option worth considering — go-error-family remains this
+   repo's (and the stack's default) choice. The samber/oops report flag was a misapplied option, not a
+   directive. No change to the shipped work.
+2. **Consumers:** none known beyond go-cqrs-lite parse/snapshot codec error strings → the rendered-text
+   change (`codec: X: cause` → `[family:code] X: cause`) is low-risk; no retraction/major-version
+   conversation needed.
+3. **Release:** tag when all done — the error-contract change is BATCHED; do not tag yet. The P0/P1
+   follow-ups in §f gate the future release. Consequence for §g/Q3: the bare-`error` +
+   `errors.AsType` contract stays for this release cycle; a typed-errors v2 remains an open option to
+   revisit after the follow-up batch.

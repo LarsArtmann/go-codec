@@ -2,12 +2,14 @@ package codec_test
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/larsartmann/go-codec"
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 func ExampleJSONCodec() {
@@ -628,4 +630,24 @@ func ExampleMetricsSnapshot() {
 
 	// Output:
 	// encode calls: 2, encode errors: 0
+}
+
+// ExampleForEncoding_classified shows how to extract the stable code,
+// behavioral family, and structured context from a codec error with
+// errors.AsType. Every wrapping helper in this package returns classified
+// errors — see the # Errors section of the package documentation and
+// docs/error-codes.md.
+func ExampleForEncoding_classified() {
+	_, err := codec.ForEncoding("encrypted") // no built-in codec matches
+
+	if e, ok := errors.AsType[*errorfamily.Error](err); ok {
+		fmt.Println("code:", e.Code())
+		fmt.Println("family:", e.ErrorFamily())
+		fmt.Println("encoding:", e.ErrorContext()["encoding"])
+	}
+
+	// Output:
+	// code: codec.unknown_encoding
+	// family: Rejection
+	// encoding: encrypted
 }

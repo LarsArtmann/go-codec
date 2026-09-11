@@ -208,6 +208,11 @@ linters:
         - p
       ignore-type-assert-ok: true
     wrapcheck:
+      # Mechanism (verified 2026-09-11, empty-sig probe): wrapcheck flags only
+      # BARE `return err` where err originates from an external-package call;
+      # any call-wrapped return (errorfamily.Wrap*) passes structurally, with
+      # or without these signatures. The errorfamily entries below are explicit
+      # defense-in-depth for same-line styles, not the reason the wraps pass.
       ignore-sigs:
         - .Errorf(
         - errors.New(
@@ -215,6 +220,20 @@ linters:
         - errors.Join(
         - .Wrap(
         - .Wrapf(
+        - .WrapOnce(
+        - .WrapOncef(
+        - .WrapConflict(
+        - .WrapConflictf(
+        - .WrapCorruption(
+        - .WrapCorruptionf(
+        - .WrapInfrastructure(
+        - .WrapInfrastructuref(
+        - .WrapOrchestration(
+        - .WrapOrchestrationf(
+        - .WrapRejection(
+        - .WrapRejectionf(
+        - .WrapTransient(
+        - .WrapTransientf(
         - .WithMessage(
         - .WithMessagef(
         - .WithStack(

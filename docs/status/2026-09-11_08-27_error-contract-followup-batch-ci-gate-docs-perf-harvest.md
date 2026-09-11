@@ -290,4 +290,3 @@ analyzer behavior read from the erraudit v0.4.0 tag source. No claims taken from
    transitional public contract; the 7 remaining `generic_return` declines are TRANSITIONAL, not
    permanent policy — the ADR (TODO_LIST #8) must record them as such, and the v2 idea is now in
    ROADMAP's error-contract maturity theme.
-

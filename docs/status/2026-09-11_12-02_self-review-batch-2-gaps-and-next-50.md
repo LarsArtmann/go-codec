@@ -163,6 +163,7 @@
 ## f) NEXT 50 (prioritized; P0 = user-gated or push-gated)
 
 **P0 — gates the user owns:**
+
 1. Push go-codec master → first real CI run of tripwire steps, legacy
    baselines, mermaid job (puppeteer risk), property test, example.
 2. Fix whatever that push surfaces (mermaid/puppeteer sandbox flags are the
@@ -192,27 +193,27 @@
 18. Verify the erraudit CI job end-to-end after the secret lands (fork run).
 19. CONTRIBUTING/AGENTS note: ERRAUDIT_PAT-style secrets for sibling repos.
 20. Calendarize the monthly erraudit release check (ROADMAP item; currently
-    an idea, not a task).
+an idea, not a task).
 21. `xargs -r` guard in check-error-codes.sh (empty-fileset stdin edge).
 22. Mermaid job hardening: puppeteer `--no-sandbox` config file fallback;
-    consider actions/cache for the npx chrome download.
-23. Mermaid extraction: note CRLF fragility of the `^```mermaid$` anchor
-    (repo is LF-only today; a Windows-edited README would silently extract 0
-    blocks and FAIL — which is the desired direction, but the message should
-    say so).
+consider actions/cache for the npx chrome download.
+23. Mermaid extraction: note CRLF fragility of the ``^```mermaid$`` anchor
+(repo is LF-only today; a Windows-edited README would silently extract 0
+blocks and FAIL — which is the desired direction, but the message should
+say so).
 24. Add `.#tripwires` nix app running all four check scripts (devShell parity
-    with CI).
+with CI).
 25. DecodeEnvelopeOrLegacy contract test: lock its documented
-    unwrapped-error guarantee in the property suite (currently excluded by
-    design note only).
+unwrapped-error guarantee in the property suite (currently excluded by
+design note only).
 26. Property-test the v1-only normalize_depth_exceeded path (100-deep map).
 27. ErrorContext() keys as godoc constants (08:27 #44).
 28. Registry generation tooling: emit the docs/error-codes.md table from
-    source (errors.go + wrap sites) — kills the whole manual-drift class.
+source (errors.go + wrap sites) — kills the whole manual-drift class.
 29. Extend the tripwire to compare per-code FAMILY between registry and wrap
-    site (needs parsed source or erraudit json output).
+site (needs parsed source or erraudit json output).
 30. go-cqrs-lite: per-module error-code registries (`<module>.*` codes) +
-    stack-wide registry index (go-codec pattern propagated).
+stack-wide registry index (go-codec pattern propagated).
 
 **P2 — prior report leftovers (unchanged, restated for completeness):**
 31. Refresh the four action digests to Node-24-compatible versions (08:27 #18).
@@ -221,7 +222,7 @@
 34. Decide raw-benchmark-output retention (CI artifact vs bench branch) (08:27 #22).
 35. Record a v2-mode benchmark baseline (08:27 #23).
 36. Snapshot test of rendered `[family:code]` strings for a curated failure
-    set (ROADMAP; ADR-gated).
+set (ROADMAP; ADR-gated).
 37. Error code as a `CodecMetrics` dimension (ROADMAP).
 38. `errorfamily.RegisterTemplate` per code for boundary message consistency (ROADMAP).
 39. Document the `errors.Is` same-code behavior table in doc.go (ROADMAP #28).
@@ -230,16 +231,16 @@
 42. Document maxPoolBufferSize/maxAutoDetectSize (both 1 MiB) relationship (ROADMAP #34).
 43. erraudit `lsp` editor integration (ROADMAP #31).
 44. erraudit inside `nix flake check`'s lint phase — blocked until erraudit
-    fetch is hermetic (publish decision) (ROADMAP #32).
+fetch is hermetic (publish decision) (ROADMAP #32).
 45. `//nolint` inventory quality sweep (08:27 #36); prune any wrapcheck
-    nolints the explicit ignore-sigs made redundant (08:27 #37 — re-verify
-    each: bare-return thin wrappers still need them).
+nolints the explicit ignore-sigs made redundant (08:27 #37 — re-verify
+each: bare-return thin wrappers still need them).
 46. setup-go cache:true for the go install-heavy CI jobs (08:27 #48).
 47. dependabot `github-actions` ecosystem entry (automates #31's digest bumps).
 48. Watch the Sunday fuzz cron; confirm corpus artifact upload (08:27 #47).
 49. go-cqrs-lite release notes: error-family/message-format consumer note (08:27 #45).
 50. Rerun the 10-run benchmark suite vs `docs/benchmark-baseline.md` only if
-    the toolchain moves (no code-path changes this session).
+the toolchain moves (no code-path changes this session).
 
 ## g) QUESTIONS (cannot answer myself)
 
@@ -256,5 +257,6 @@
    until the publish/PAT decision lands?
 
 ---
+
 - **Report:** docs/status/2026-09-11_12-02_self-review-batch-2-gaps-and-next-50.md
 - **Waiting for instructions.**

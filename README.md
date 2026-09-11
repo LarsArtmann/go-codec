@@ -433,12 +433,12 @@ decode failure, so SSE clients always receive data.
 Every error returned by this package carries a **stable machine-readable code**
 and a **behavioral family** (`github.com/larsartmann/go-error-family`):
 
-| Family           | Meaning                                      | Examples                                    |
-| ---------------- | -------------------------------------------- | ------------------------------------------- |
-| `Rejection`      | Caller input fault                           | unknown encoding, unencodable value         |
-| `Corruption`     | Undecodable stored / wire bytes              | malformed COSE structure, failing CBOR part |
-| `Infrastructure` | System-level plumbing that should not fail   | envelope marshal, buffer write              |
-| `Orchestration`  | Internal dependency-semantics bug            | CBOR mode-init panics                       |
+| Family           | Meaning                                    | Examples                                    |
+| ---------------- | ------------------------------------------ | ------------------------------------------- |
+| `Rejection`      | Caller input fault                         | unknown encoding, unencodable value         |
+| `Corruption`     | Undecodable stored / wire bytes            | malformed COSE structure, failing CBOR part |
+| `Infrastructure` | System-level plumbing that should not fail | envelope marshal, buffer write              |
+| `Orchestration`  | Internal dependency-semantics bug          | CBOR mode-init panics                       |
 
 Errors render as `[family:code] message: cause`. **Do not match on the string** —
 match sentinels with `errors.Is` (`ErrUnknownEncoding`, `ErrInvalidCOSESign1`,

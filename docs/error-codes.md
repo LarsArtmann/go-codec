@@ -36,12 +36,12 @@ matches.
 
 ### Families
 
-| Family          | Meaning                                                            | Retry / handling posture                    |
-| --------------- | ------------------------------------------------------------------ | ------------------------------------------- |
-| Rejection       | Caller input fault: wrong type, unknown encoding, bad target       | Fix the caller; do not retry as-is          |
-| Corruption      | Undecodable stored/wire bytes (COSE parts, transcode, base64)      | Quarantine or repair the data               |
-| Infrastructure  | Should-never-fail plumbing (buffer write, envelope marshal)        | Alert; treat as environment/system failure  |
-| Orchestration   | Internal dependency-semantics bug (CBOR mode-init panics)         | File a bug; never expected in production    |
+| Family         | Meaning                                                       | Retry / handling posture                   |
+| -------------- | ------------------------------------------------------------- | ------------------------------------------ |
+| Rejection      | Caller input fault: wrong type, unknown encoding, bad target  | Fix the caller; do not retry as-is         |
+| Corruption     | Undecodable stored/wire bytes (COSE parts, transcode, base64) | Quarantine or repair the data              |
+| Infrastructure | Should-never-fail plumbing (buffer write, envelope marshal)   | Alert; treat as environment/system failure |
+| Orchestration  | Internal dependency-semantics bug (CBOR mode-init panics)     | File a bug; never expected in production   |
 
 ### Scope: classified vs. passthrough
 
@@ -63,16 +63,16 @@ Two shapes of API exist by design (see `docs/adr/0001-error-taxonomy.md`):
 Declared as stable `error` identities in errors.go and codec.go; wraps of a
 sentinel reuse its code unless a detail code is noted.
 
-| Code                              | Family    | Meaning                                        | Sentinel                 | Emitted by                          |
-| --------------------------------- | --------- | ---------------------------------------------- | ------------------------ | ----------------------------------- |
-| `codec.unknown_encoding`          | Rejection | No built-in codec matches the encoding         | `ErrUnknownEncoding`     | `ForEncoding` (codec.go)            |
-| `codec.raw_encode_type`           | Rejection | Value is not `[]byte` / raw JSON               | `ErrEncodeRawType`       | `RawCodec.Encode` (raw.go)          |
-| `codec.raw_decode_type`           | Rejection | Decode target is not `*[]byte`                 | `ErrDecodeRawType`       | `RawCodec.Decode` (raw.go)          |
-| `codec.invalid_cose_sign1`        | Rejection | COSE_Sign1 array does not have 4 elements      | `ErrInvalidCOSESign1`    | `UnmarshalCOSESign1` (cose.go), surface code is the detail `codec.cose_sign1_element_count` |
-| `codec.invalid_cose_encrypt0`     | Rejection | COSE_Encrypt0 array does not have 3 elements   | `ErrInvalidCOSEEncrypt0` | `UnmarshalCOSEEncrypt0` (cose.go), surface code is the detail `codec.cose_encrypt0_element_count` |
-| `codec.cose_algorithm_overflow`   | Rejection | Algorithm value exceeds int64                  | `ErrCOSEAlgorithmOverflow` | `NormalizeCOSEAlgorithm` (cose.go) |
-| `codec.cose_invalid_algorithm`    | Rejection | Algorithm value is not an integer              | `ErrCOSEInvalidAlgorithm` | `NormalizeCOSEAlgorithm` (cose.go) |
-| `codec.normalize_depth_exceeded`  | Rejection | `normalizeForJSON` recursion past the depth cap (100) | `ErrNormalizeDepthExceeded` | `normalizeForJSON` (json_compat_v1.go, v1 build only) |
+| Code                             | Family    | Meaning                                               | Sentinel                    | Emitted by                                                                                        |
+| -------------------------------- | --------- | ----------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------- |
+| `codec.unknown_encoding`         | Rejection | No built-in codec matches the encoding                | `ErrUnknownEncoding`        | `ForEncoding` (codec.go)                                                                          |
+| `codec.raw_encode_type`          | Rejection | Value is not `[]byte` / raw JSON                      | `ErrEncodeRawType`          | `RawCodec.Encode` (raw.go)                                                                        |
+| `codec.raw_decode_type`          | Rejection | Decode target is not `*[]byte`                        | `ErrDecodeRawType`          | `RawCodec.Decode` (raw.go)                                                                        |
+| `codec.invalid_cose_sign1`       | Rejection | COSE_Sign1 array does not have 4 elements             | `ErrInvalidCOSESign1`       | `UnmarshalCOSESign1` (cose.go), surface code is the detail `codec.cose_sign1_element_count`       |
+| `codec.invalid_cose_encrypt0`    | Rejection | COSE_Encrypt0 array does not have 3 elements          | `ErrInvalidCOSEEncrypt0`    | `UnmarshalCOSEEncrypt0` (cose.go), surface code is the detail `codec.cose_encrypt0_element_count` |
+| `codec.cose_algorithm_overflow`  | Rejection | Algorithm value exceeds int64                         | `ErrCOSEAlgorithmOverflow`  | `NormalizeCOSEAlgorithm` (cose.go)                                                                |
+| `codec.cose_invalid_algorithm`   | Rejection | Algorithm value is not an integer                     | `ErrCOSEInvalidAlgorithm`   | `NormalizeCOSEAlgorithm` (cose.go)                                                                |
+| `codec.normalize_depth_exceeded` | Rejection | `normalizeForJSON` recursion past the depth cap (100) | `ErrNormalizeDepthExceeded` | `normalizeForJSON` (json_compat_v1.go, v1 build only)                                             |
 
 ## Detail codes (24)
 
@@ -82,43 +82,43 @@ bytes are Corruption.
 
 ### COSE structures (cose.go)
 
-| Code                                 | Family         | Meaning                                            | Emitted by                                  |
-| ------------------------------------ | -------------- | -------------------------------------------------- | ------------------------------------------- |
-| `codec.cose_sign1_unmarshal`         | Corruption     | Bytes are not a CBOR array at all                  | `UnmarshalCOSESign1`                        |
-| `codec.cose_sign1_element_count`     | Rejection      | Array length ≠ 4; wraps `ErrInvalidCOSESign1`      | `UnmarshalCOSESign1`                        |
-| `codec.cose_sign1_protected`         | Corruption     | Element 0 is not a byte string                     | `UnmarshalCOSESign1`                        |
-| `codec.cose_sign1_unprotected`       | Corruption     | Element 1 is not an int-keyed map                  | `UnmarshalCOSESign1`                        |
-| `codec.cose_sign1_payload`           | Corruption     | Element 2 is not a byte string / nil               | `UnmarshalCOSESign1`                        |
-| `codec.cose_sign1_signature`         | Corruption     | Element 3 is not a byte string                     | `UnmarshalCOSESign1`                        |
-| `codec.cose_encrypt0_unmarshal`      | Corruption     | Bytes are not a CBOR array at all                  | `UnmarshalCOSEEncrypt0`                     |
-| `codec.cose_encrypt0_element_count`  | Rejection      | Array length ≠ 3; wraps `ErrInvalidCOSEEncrypt0`   | `UnmarshalCOSEEncrypt0`                     |
-| `codec.cose_encrypt0_protected`      | Corruption     | Element 0 is not a byte string                     | `UnmarshalCOSEEncrypt0`                     |
-| `codec.cose_encrypt0_unprotected`    | Corruption     | Element 1 is not an int-keyed map                  | `UnmarshalCOSEEncrypt0`                     |
-| `codec.cose_encrypt0_ciphertext`     | Corruption     | Element 2 is not a byte string / nil               | `UnmarshalCOSEEncrypt0`                     |
-| `codec.cose_protected_unmarshal`     | Corruption     | Protected header bytes are not a CBOR map          | `UnmarshalCOSEProtectedHeader`              |
-| `codec.cose_marshal_protected`       | Infrastructure | Marshaling the alg-only protected header failed    | `COSEAlgHeader`                             |
+| Code                                | Family         | Meaning                                          | Emitted by                     |
+| ----------------------------------- | -------------- | ------------------------------------------------ | ------------------------------ |
+| `codec.cose_sign1_unmarshal`        | Corruption     | Bytes are not a CBOR array at all                | `UnmarshalCOSESign1`           |
+| `codec.cose_sign1_element_count`    | Rejection      | Array length ≠ 4; wraps `ErrInvalidCOSESign1`    | `UnmarshalCOSESign1`           |
+| `codec.cose_sign1_protected`        | Corruption     | Element 0 is not a byte string                   | `UnmarshalCOSESign1`           |
+| `codec.cose_sign1_unprotected`      | Corruption     | Element 1 is not an int-keyed map                | `UnmarshalCOSESign1`           |
+| `codec.cose_sign1_payload`          | Corruption     | Element 2 is not a byte string / nil             | `UnmarshalCOSESign1`           |
+| `codec.cose_sign1_signature`        | Corruption     | Element 3 is not a byte string                   | `UnmarshalCOSESign1`           |
+| `codec.cose_encrypt0_unmarshal`     | Corruption     | Bytes are not a CBOR array at all                | `UnmarshalCOSEEncrypt0`        |
+| `codec.cose_encrypt0_element_count` | Rejection      | Array length ≠ 3; wraps `ErrInvalidCOSEEncrypt0` | `UnmarshalCOSEEncrypt0`        |
+| `codec.cose_encrypt0_protected`     | Corruption     | Element 0 is not a byte string                   | `UnmarshalCOSEEncrypt0`        |
+| `codec.cose_encrypt0_unprotected`   | Corruption     | Element 1 is not an int-keyed map                | `UnmarshalCOSEEncrypt0`        |
+| `codec.cose_encrypt0_ciphertext`    | Corruption     | Element 2 is not a byte string / nil             | `UnmarshalCOSEEncrypt0`        |
+| `codec.cose_protected_unmarshal`    | Corruption     | Protected header bytes are not a CBOR map        | `UnmarshalCOSEProtectedHeader` |
+| `codec.cose_marshal_protected`      | Infrastructure | Marshaling the alg-only protected header failed  | `COSEAlgHeader`                |
 
 ### Transcode (transcode.go)
 
-| Code                       | Family     | Meaning                                     | Emitted by         |
-| -------------------------- | ---------- | ------------------------------------------- | ------------------ |
-| `codec.transcode_decode`   | Corruption | CBOR decode failed before JSON re-encode    | `TranscodeToJSON`  |
-| `codec.transcode_encode`   | Corruption | JSON re-encode of the decoded value failed  | `TranscodeToJSON`  |
+| Code                     | Family     | Meaning                                    | Emitted by        |
+| ------------------------ | ---------- | ------------------------------------------ | ----------------- |
+| `codec.transcode_decode` | Corruption | CBOR decode failed before JSON re-encode   | `TranscodeToJSON` |
+| `codec.transcode_encode` | Corruption | JSON re-encode of the decoded value failed | `TranscodeToJSON` |
 
 ### Envelope, pool, observability (envelope.go, pool.go, observability.go)
 
-| Code                      | Family         | Meaning                                                            | Emitted by                        |
-| ------------------------- | -------------- | ------------------------------------------------------------------ | --------------------------------- |
-| `codec.envelope_encode`   | Rejection      | Inner codec encode failed; `WrapOncef` preserves an already-classified inner code | `WrapEncode`       |
-| `codec.envelope_marshal`  | Infrastructure | Envelope JSON marshal failed                                       | `WrapEncode`                      |
-| `codec.pooled_encode`     | Rejection      | `EncodeToBuffer` failed; `WrapOncef` preserves an inner classified code | `EncodePooled`               |
-| `codec.observable_write`  | Infrastructure | Writing encoded bytes to the caller buffer failed                  | `ObservableCodec.EncodeToBuffer`  |
+| Code                     | Family         | Meaning                                                                           | Emitted by                       |
+| ------------------------ | -------------- | --------------------------------------------------------------------------------- | -------------------------------- |
+| `codec.envelope_encode`  | Rejection      | Inner codec encode failed; `WrapOncef` preserves an already-classified inner code | `WrapEncode`                     |
+| `codec.envelope_marshal` | Infrastructure | Envelope JSON marshal failed                                                      | `WrapEncode`                     |
+| `codec.pooled_encode`    | Rejection      | `EncodeToBuffer` failed; `WrapOncef` preserves an inner classified code           | `EncodePooled`                   |
+| `codec.observable_write` | Infrastructure | Writing encoded bytes to the caller buffer failed                                 | `ObservableCodec.EncodeToBuffer` |
 
 ### Base64 (base64_json.go)
 
-| Code                   | Family     | Meaning                                          | Emitted by             |
-| ---------------------- | ---------- | ------------------------------------------------ | ---------------------- |
-| `codec.base64_decode`  | Corruption | Input is neither URL-safe nor standard base64    | `DecodeBase64String`   |
+| Code                  | Family     | Meaning                                       | Emitted by           |
+| --------------------- | ---------- | --------------------------------------------- | -------------------- |
+| `codec.base64_decode` | Corruption | Input is neither URL-safe nor standard base64 | `DecodeBase64String` |
 
 ### CBOR mode initialization (cbor.go, cbor_compact.go)
 
@@ -126,12 +126,12 @@ These fire only from the `sync.OnceValue` mode singletons when hardcoded
 option constants stop being valid — a dependency-semantics bug, surfaced as a
 panic (Orchestration), never as a returned error.
 
-| Code                                | Family        | Meaning                                  | Emitted by                     |
-| ----------------------------------- | ------------- | ---------------------------------------- | ------------------------------ |
-| `codec.cbor_encmode_init`           | Orchestration | Canonical `EncMode()` rejected options   | `canonicalEncMode` (cbor.go)   |
-| `codec.cbor_decmode_init`           | Orchestration | Canonical `DecMode()` rejected options   | `canonicalDecMode` (cbor.go)   |
-| `codec.cbor_compact_encmode_init`   | Orchestration | Compact `EncMode()` rejected options     | `compactEncMode` (cbor_compact.go) |
-| `codec.cbor_compact_decmode_init`   | Orchestration | Compact `DecMode()` rejected options     | `compactDecMode` (cbor_compact.go) |
+| Code                              | Family        | Meaning                                | Emitted by                         |
+| --------------------------------- | ------------- | -------------------------------------- | ---------------------------------- |
+| `codec.cbor_encmode_init`         | Orchestration | Canonical `EncMode()` rejected options | `canonicalEncMode` (cbor.go)       |
+| `codec.cbor_decmode_init`         | Orchestration | Canonical `DecMode()` rejected options | `canonicalDecMode` (cbor.go)       |
+| `codec.cbor_compact_encmode_init` | Orchestration | Compact `EncMode()` rejected options   | `compactEncMode` (cbor_compact.go) |
+| `codec.cbor_compact_decmode_init` | Orchestration | Compact `DecMode()` rejected options   | `compactDecMode` (cbor_compact.go) |
 
 ## Parameterized codes (not `codec.*`)
 

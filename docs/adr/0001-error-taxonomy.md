@@ -30,12 +30,12 @@ classification vocabulary and one `errors.AsType[*errorfamily.Error]` shape.
 
 ### 2. Families per failure layer
 
-| Failure layer in the codec                                  | Family        |
-| ----------------------------------------------------------- | ------------- |
-| Caller input: unknown encoding, non-`[]byte` raw values, bad decode targets, COSE element counts | Rejection |
-| Undecodable stored/wire bytes: COSE structure and per-part decodes, transcode, base64 | Corruption |
-| Should-never-fail plumbing: envelope marshal, observable buffer write | Infrastructure |
-| Internal dependency-semantics bugs (CBOR mode-init panics)  | Orchestration |
+| Failure layer in the codec                                                                       | Family         |
+| ------------------------------------------------------------------------------------------------ | -------------- |
+| Caller input: unknown encoding, non-`[]byte` raw values, bad decode targets, COSE element counts | Rejection      |
+| Undecodable stored/wire bytes: COSE structure and per-part decodes, transcode, base64            | Corruption     |
+| Should-never-fail plumbing: envelope marshal, observable buffer write                            | Infrastructure |
+| Internal dependency-semantics bugs (CBOR mode-init panics)                                       | Orchestration  |
 
 Codec never emits Conflict/Transient: it performs no concurrency control and
 has no retryable remote dependencies. Callers add their own context on top

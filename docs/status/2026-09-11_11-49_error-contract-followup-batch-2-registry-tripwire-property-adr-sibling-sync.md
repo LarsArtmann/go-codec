@@ -60,8 +60,8 @@
    by this tripwire. Negative-tested (v0.9.9 drift → FAIL).
 9. **CI mermaid job** (#14) — renders every mermaid block in README.md via
    `@mermaid-js/mermaid-cli@11.17.0` (verified latest against the npm registry)
-   + setup-node v4.4.0 (digest-pinned). Diagram verified renderable locally
-   (nixpkgs mermaid-cli 11.17.0 → SVG). shellcheck-clean after a SC2012 fix.
+   - setup-node v4.4.0 (digest-pinned). Diagram verified renderable locally
+     (nixpkgs mermaid-cli 11.17.0 → SVG). shellcheck-clean after a SC2012 fix.
 10. **Sibling sync (#11) — go-cqrs-lite** (signing/encryption/storage are its
     sub-modules, not separate repos): added the same self-activating
     `error-audit` job with PER-MODULE enforcement (35 modules). Repo baseline:

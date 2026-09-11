@@ -226,9 +226,9 @@ nix run .#lint                        # lint both modes
 | `codec.go`                          | `Codec`/`BufferEncoder`/`DeterministicCodec` contracts                                                        |
 | `errors.go`                         | Stable error sentinels and codes                                                                              |
 | `docs/error-codes.md`               | The error-code registry (every `codec.*` code: family, meaning, emit site) — update it whenever codes change  |
-| `docs/adr/0001-error-taxonomy.md`   | Error-contract ADR: families, WrapOnce rule, classified-vs-passthrough split, typed-errors-v2 direction        |
+| `docs/adr/0001-error-taxonomy.md`   | Error-contract ADR: families, WrapOnce rule, classified-vs-passthrough split, typed-errors-v2 direction       |
 | `scripts/check-features-planned.sh` | FEATURES.md drift tripwire (PLANNED symbols must not resolve via `go doc`); runs in CI                        |
 | `scripts/check-go-version.sh`       | Go-version single-source tripwire (go.mod / .go-version / .golangci.yml must agree); runs in CI               |
-| `scripts/check-error-codes.sh`      | Error-code drift tripwire (source literals must equal the docs/error-codes.md registry, both directions)       |
+| `scripts/check-error-codes.sh`      | Error-code drift tripwire (source literals must equal the docs/error-codes.md registry, both directions)      |
 | `scripts/check-erraudit-version.sh` | erraudit pin tripwire (ci.yml and flake.nix versions must agree)                                              |
 | `docs/benchmark-baseline.md`        | 10-run benchstat reference baseline (v1 mode) — re-run and diff there before accepting perf-sensitive changes |

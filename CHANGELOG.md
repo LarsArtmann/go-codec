@@ -35,8 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   type-safe matching is provided by `errors.AsType[*errorfamily.Error]`.
   Policy documented in `doc.go` (`# Errors`) and AGENTS.md.
 - Go toolchain 1.26.6 → 1.26.7 (`go.mod`, `.go-version`, `.golangci.yml` —
-  tripwire-enforced); `fxamacker/cbor/v2` v2.9.2 → v2.9.3; v1 JSON marshal
-  path simplified.
+  tripwire-enforced); `fxamacker/cbor/v2` v2.9.2 → v2.9.4;
+  `go-error-family` v0.10.0 → v0.10.1; v1 JSON marshal path simplified.
 
 ### Added
 

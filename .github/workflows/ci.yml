@@ -151,8 +151,9 @@ jobs:
             echo "FAIL: no mermaid blocks found in README.md" >&2
             exit 1
           fi
+          echo '{ "args": ["--no-sandbox"] }' > /tmp/puppeteer-config.json
           for f in /tmp/mermaid-*.mmd; do
-            npx -y @mermaid-js/mermaid-cli@11.17.0 -i "$f" -o "${f%.mmd}.svg" > /dev/null
+            npx -y @mermaid-js/mermaid-cli@11.17.0 -p /tmp/puppeteer-config.json -i "$f" -o "${f%.mmd}.svg" > /dev/null
             echo "ok: rendered $f"
           done
           echo "mermaid: PASS ($count diagram(s) rendered)"

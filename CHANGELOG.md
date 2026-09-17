@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [v0.3.0] — 2026-09-17
+
 ### Changed
 
 - **Error contract: every codec error now carries a stable machine-readable
@@ -94,6 +104,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   not yet at zero findings (baseline 2026-09-11: 253 findings across 22
   modules) — zeroing is routed to go-cqrs-lite's `TODO_LIST.md` as the
   gate-activation precondition.
+
+### Fixed
+
+- CI: the mermaid diagram-render job passes `--no-sandbox` to Puppeteer
+  (GitHub runner AppArmor restriction); go-version declarations re-aligned
+  at 1.26.7 after a dependency bump normalized the `go.mod` directive.
 
 ## [v0.2.0] — 2026-08-16
 
@@ -422,5 +438,7 @@ serialization, tag at `3f8ac9d`.
   (matching the original cqrs-lite source), which Go allows for multi-return
   functions used as statements
 
-[Unreleased]: https://github.com/larsartmann/go-codec/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-codec/compare/v0.3.0...HEAD
+[v0.3.0]: https://github.com/larsartmann/go-codec/compare/v0.2.0...v0.3.0
+[v0.2.0]: https://github.com/larsartmann/go-codec/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/larsartmann/go-codec/releases/tag/v0.1.0

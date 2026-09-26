@@ -7,13 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-
-- Nothing yet.
-
 ### Fixed
 
-- Nothing yet.
+- `go.mod`'s `go` directive had been silently bumped to `1.27.1` by tooling
+  (auto-commit `ed85a26`) while `.go-version`, `.golangci.yml`, and the flake
+  still said `1.26.7` — the version tripwire went red on master. Reverted to
+  `1.26.7`; a deliberate Go 1.27 bump remains a `TODO_LIST.md` item that moves
+  all five sources together.
+- `SECURITY.md`'s supported-versions table still listed only `0.1.x`; updated
+  to `0.x`.
+- `scripts/check-error-codes.sh` gained an `xargs -r` guard (empty fileset
+  edge).
+
+### Changed
+
+- Documentation health pass (2026-09-26): all 26 historical status/planning
+  reports now carry inline per-item verdicts (`done at <hash>` / Won't
+  implement / explicit open-routing) and are archived under
+  `docs/status/archived/` and `docs/planning/archived/`. Open items were
+  re-harvested into `TODO_LIST.md` and `ROADMAP.md`. README's Error Handling
+  section now links `docs/error-codes.md` and the error-taxonomy ADR; the
+  README Go floor line was corrected to 1.26.7+; `AGENTS.md` gained an
+  Observability & detection architecture bullet and the four tripwire commands.
 
 ## [v0.3.0] — 2026-09-17
 
@@ -371,7 +386,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `TestUnwrapDecode_FirstByteSniff` (all 128 high bytes), plus
   `_EmptyData` and `_RawCBORScalarsBelowSniffThreshold` edge cases.
 
-## [0.1.0] - 2026-08-12
+## [v0.1.0] - 2026-08-12
 
 First tagged release. Deterministic payload codec library for event-sourced
 serialization, tag at `3f8ac9d`.
@@ -441,4 +456,4 @@ serialization, tag at `3f8ac9d`.
 [Unreleased]: https://github.com/larsartmann/go-codec/compare/v0.3.0...HEAD
 [v0.3.0]: https://github.com/larsartmann/go-codec/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/larsartmann/go-codec/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/larsartmann/go-codec/releases/tag/v0.1.0
+[v0.1.0]: https://github.com/larsartmann/go-codec/releases/tag/v0.1.0

@@ -93,28 +93,20 @@ Raw ideas:
   deprecated `codec/v4` shim (mechanical migration starting at `event/codec.go`
   — see `docs/planning/2026-08-14_encryption-signing-cose-architecture-review.md`
   §6-7)
+- Extract `event/v4` to its own repo if smaller dependency trees are wanted
+  (conditional sibling decision — signing/encryption transitively pull five
+  cqrs modules through event)
+- A `go.work`-free consumer simulation in CI (`GOWORK=off` golden build, like
+  go-cqrs-lite's) so proxy-consumption is proven on every push
+- Release-notes generation from `git log vPREV..HEAD` for the dependency
+  sections, plus a make-less release checklist script codifying the release
+  runbook
+- An API-stability guarantee doc (SemVer commitments for the `Codec` seam) —
+  pairs with the v1.0.0 discussion
+- Audit other LarsArtmann repos beyond `go-cqrs-lite` that require `go-codec`
+  (adoption sweep after each release)
 
-## Non-goals
-
-Things we are deliberately NOT pursuing and why:
-
-- **Cryptography.** Signing and encryption live in sibling modules; this package
-  only shapes COSE structures and deterministic bytes. Crypto belongs behind the
-  `Codec` seam, not inside it.
-- **Event storage / persistence.** Stores, snapshots, and projections are sibling
-  modules. `go-codec` stays a pure serialization layer.
-- **A custom JSON implementation.** We use the Go standard library
-  (`encoding/json` v1 by default, `encoding/json` v2 opt-in via
-  `GOEXPERIMENT=jsonv2`) for correctness and interop; we do not reimplement
-  JSON.
-- **A JOSE/JWS/JWE envelope.** COSE already protects JSON payloads opaquely; a
-  pure-JSON envelope is a transport concern for a separate `jose` module, and
-  carries a determinism landmine under v1 JSON (see the 2026-08-14 architecture
-  review, §3).
-- **A security boundary in `AutoDetect`.** Format sniffing is for diagnostics
-  and tooling only — it will never gate validation.
-
-### 4. Error-contract maturity
+### 6. Error-contract maturity
 
 The 2026-09-11 error-management overhaul gave every codec error a stable code,
 a behavioral family, and structured context. Raw ideas for going further
@@ -142,3 +134,28 @@ a behavioral family, and structured context. Raw ideas for going further
   `error`) in a future **v2** — decided 2026-09-11. Until then, bare `error` +
   `errors.AsType` is the transitional contract and the 7 `generic_return`
   declines are temporary (the ADR records them as such)
+- `//nolint` inventory quality sweep (weak/bare reasons) and pruning any
+  `//nolint:wrapcheck` directives the explicit ignore-sigs made redundant
+- ErrorContext() keys as godoc constants; registry generation tooling that
+  emits `docs/error-codes.md` from source; per-code FAMILY comparison in the
+  tripwire
+
+## Non-goals
+
+Things we are deliberately NOT pursuing and why:
+
+- **Cryptography.** Signing and encryption live in sibling modules; this package
+  only shapes COSE structures and deterministic bytes. Crypto belongs behind the
+  `Codec` seam, not inside it.
+- **Event storage / persistence.** Stores, snapshots, and projections are sibling
+  modules. `go-codec` stays a pure serialization layer.
+- **A custom JSON implementation.** We use the Go standard library
+  (`encoding/json` v1 by default, `encoding/json` v2 opt-in via
+  `GOEXPERIMENT=jsonv2`) for correctness and interop; we do not reimplement
+  JSON.
+- **A JOSE/JWS/JWE envelope.** COSE already protects JSON payloads opaquely; a
+  pure-JSON envelope is a transport concern for a separate `jose` module, and
+  carries a determinism landmine under v1 JSON (see the 2026-08-14 architecture
+  review, §3).
+- **A security boundary in `AutoDetect`.** Format sniffing is for diagnostics
+  and tooling only — it will never gate validation.

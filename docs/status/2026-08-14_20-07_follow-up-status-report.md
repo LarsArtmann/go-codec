@@ -91,7 +91,7 @@ verified.
 
 | # | Task                                                        | Why not started                                                                                                                                                         |
 | - | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 | Execute the release: create `v0.1.1` tag and GitHub Release | **Blocked on user confirmation + remote push/tag.** The decision itself is made (cut `v0.1.1` from HEAD), but I cannot push to the remote without explicit instruction. |
+| 1 | ~~Execute the release: create `v0.1.1` tag and GitHub Release~~ resolved — superseded: v0.2.0/v0.3.0 released (`9094137`, `4cd0b45`) | ~~Blocked~~ resolved |
 
 ---
 
@@ -160,81 +160,63 @@ Nothing is fucked up. Final verification passed:
 
 High-impact (do soon):
 
-1. Execute release #1: cut `v0.1.1` from HEAD and publish GitHub Release notes.
-2. Wire `DeterministicCodec` assertion into the sibling `signing` module.
-3. Update sibling `signing`/`encryption` modules to reuse exported `CBOREncMode()` /
-   `CBORDecMode()` singletons.
-4. Add negative tests for `TranscodeToJSON` (toarray structs, invalid CBOR leading
-   bytes, >1 MiB auto-detect skip).
-5. Add an `AutoDetect` / `AutoDetectDebug` benchmark to quantify the heuristic
-   cost.
-6. Add property tests for `EncodePooled` buffer lifecycle (callback must copy).
-7. Add a benchmark comparing `CBORCodec` vs `CBORCompactCodec` encode/decode delta.
-8. Add a benchmark for `RawCodec` copy-vs-no-copy behavior.
-9. Add a test for `Diagnose` on invalid CBOR bytes.
-10. Add a test proving `CBOREncMode()` / `CBORDecMode()` return identical modes
-    across multiple calls (already done; verify coverage is sufficient).
-11. Add a test proving `CBORCodec` and `CBORCompactCodec` produce different bytes for
-    the same struct (already done; verify coverage is sufficient).
-12. Refactor `ObservableCodec` metrics to atomics and benchmark the delta against
-    the current `RWMutex` implementation.
-13. Add a `MetricsSnapshot` JSON marshal example for operational dashboards.
-14. Add a README example for `TranscodeToJSON` with HTTP/SSE context.
-15. Add a README example for `AutoDetectDebug` logging.
-16. Add a `SizeResult` JSON tag and an example of logging payload size budgets.
-17. Add a test for `PutBuffer` rejecting a buffer that grew due to `Grow` vs `Write`.
-18. Add a test for `GetBuffer` returning a zeroed buffer even under pool
-    exhaustion.
-19. Add a test for `EncodePooled` callback returning an error — buffer is still
-    returned to the pool.
-20. Add a fuzz target for `JSONEncoder` / `JSONDecoder` NDJSON streams.
+1. ~~Execute release #1: cut `v0.1.1` from HEAD and publish GitHub Release notes.~~ resolved — superseded by v0.2.0/v0.3.0 (`9094137`)
+2. ~~Wire `DeterministicCodec` assertion into the sibling `signing` module.~~ ← open — `ROADMAP.md` theme 5 (cross-repo)
+3. ~~Update sibling `signing`/`encryption` modules to reuse exported `CBOREncMode()` /
+   `CBORDecMode()` singletons.~~ ← open — `ROADMAP.md` theme 5 (cross-repo)
+4. ~~Add negative tests for `TranscodeToJSON`~~ done — tests present in `transcode_test.go` (`2c98116`)
+5. ~~Add an `AutoDetect` / `AutoDetectDebug` benchmark~~ done at `f04d158`
+6. ~~Add property tests for `EncodePooled` buffer lifecycle~~ done — `TestEncodePooled_CallbackMustNotRetainBuffer` (`2c98116`)
+7. ~~Add a benchmark comparing `CBORCodec` vs `CBORCompactCodec` delta~~ done — `BenchmarkCBORCompact_vs_Canon_Decode` (`f04d158`)
+8. ~~Add a benchmark for `RawCodec` copy-vs-no-copy behavior~~ **Won't implement — `Decode` always copies (`TestRawCodec_Decode_IsCopy`); no no-copy path to compare.**
+9. ~~Add a test for `Diagnose` on invalid CBOR bytes~~ done — `TestDiagnose_InvalidCBOR` (`094de50`)
+10. ~~Add a test proving `CBOREncMode()` / `CBORDecMode()` return identical modes across calls~~ done — `TestCBORMode_SingletonsReturnIdenticalValues` (`18b8164`)
+11. ~~Add a test proving `CBORCodec` and `CBORCompactCodec` produce different bytes~~ done — `TestCBORCodec_AndCBORCompactCodec_ProduceDifferentBytes` (`18b8164`)
+12. ~~Refactor `ObservableCodec` metrics to atomics~~ ← open — `ROADMAP.md` theme 4
+13. ~~Add a `MetricsSnapshot` JSON marshal example~~ done — `ExampleMetricsSnapshot` (`f04d158` era)
+14. ~~Add a README example for `TranscodeToJSON` with HTTP/SSE context~~ done — README §Transcoding covers SSE + graceful fallback (`699fad9`)
+15. ~~Add a README example for `AutoDetectDebug` logging~~ done — README §AutoDetectDebug (`699fad9`)
+16. ~~Add a `SizeResult` JSON tag and an example of logging payload size budgets~~ done — tags shipped in the v0.2.0 cycle; example half covered by `ExampleSize` (`2c98116`)
+17. ~~Add a test for `PutBuffer` rejecting a buffer grown via `Grow` vs `Write`~~ **NOT-DO/DUPLICATE — `TestPutBuffer_RejectsOversizedBuffers` grows via `Grow`; the guard checks `Cap()` regardless (`2c98116`).**
+18. ~~Add a test for `GetBuffer` returning a zeroed buffer under pool exhaustion~~ **NOT-DO/DUPLICATE — `TestGetBuffer_ReturnsResetBuffer` locks the reset; exhaustion falls back to a fresh zeroed allocation.**
+19. ~~Add a test for `EncodePooled` callback returning an error~~ done — `TestEncodePooled_CallbackError` (`2c98116`)
+20. ~~Add a fuzz target for NDJSON streams~~ done — `FuzzStreamingJSON_NDJSONRoundtrip` (`d9b30ff`)
 
 Medium-impact (do next):
 
-21. Add a fuzz target for `ObservableCodec` hook safety (panic behavior).
-22. Add an `ExampleCBORCodec` showing `time.Time` UTC normalization.
-23. Add an `ExampleTranscodeToJSON`.
-24. Add an `ExampleAutoDetect` (non-debug version).
-25. Verify `ExampleCBOREncMode` and `ExampleCBORDecMode` are discoverable from
-    README.
-26. Add a `doc.go` note about `CBORCodec` vs `CBORCompactCodec` byte
-    incompatibility.
-27. Add a test for `Size` returning `-1` for types that fail to encode.
-28. Add a test for `Size` with a type that JSON can encode but CBOR cannot (or
-    vice versa).
-29. Add a benchmark for the `Size` helper.
-30. Add a README mention of `DeterministicCodec` for signing-module consumers
-    (already done; verify wording is discoverable).
-31. Add a `docs/planning` note documenting the decision that `JSONCodec` is
-    deterministic only in the v2 build.
-32. Add a `CONTRIBUTING` section on how to add new fuzz targets and seed corpus.
-33. Increase fuzztime budget or add a second cron schedule with a longer run
-    (e.g., 5 minutes per target) for deeper coverage.
-34. Add a CI test that verifies the lint JSON artifact is produced and is valid
-    JSON.
-35. Add a CI job that runs benchmarks on every PR to detect regressions (with a
-    threshold).
-36. Add a CI check that renders the mermaid architecture diagram to catch syntax
-    errors.
-37. Add a README badge for CI status and `pkg.go.dev` reference.
-38. Add a fuzz target for `RawCodec` with non-`[]byte` types.
-39. Add a property test for `TranscodeToJSON` passthrough contracts.
-40. Add a test for `JSONEncoder` error path when the writer returns an error.
+21. ~~Add a fuzz target for `ObservableCodec` hook safety~~ done — `FuzzObservableCodec_HookSafety` (`d9b30ff`)
+22. ~~Add an `ExampleCBORCodec` showing `time.Time` UTC normalization~~ done — `ExampleCBORCodec_time` (`f04d158` era)
+23. ~~Add an `ExampleTranscodeToJSON`~~ done (`f04d158` era)
+24. ~~Add an `ExampleAutoDetect` (non-debug version)~~ done (`f04d158` era)
+25. ~~Verify `ExampleCBOREncMode` and `ExampleCBORDecMode` are discoverable from README~~ done — pkg.go.dev renders the Examples index (verified 2026-09-26)
+26. ~~Add a `doc.go` note about `CBORCodec` vs `CBORCompactCodec` byte incompatibility~~ done at `d9b30ff`
+27. ~~Add a test for `Size` returning `-1` for types that fail to encode~~ done — encode-error path tested (FEATURES, `094de50` era)
+28. ~~Add a test for `Size` with a type one codec can encode and the other cannot~~ ← open — nice-to-have
+29. ~~Add a benchmark for the `Size` helper~~ done — `BenchmarkSize` (`f04d158`)
+30. ~~Add a README mention of `DeterministicCodec` for signing-module consumers~~ done — README signing section references it (wording verified 2026-09-26)
+31. ~~Add a `docs/planning` note documenting that `JSONCodec` is deterministic only in the v2 build~~ done — the architecture review (`8f6a56b`) + FEATURES/AGENTS document it
+32. ~~Add a `CONTRIBUTING` section on adding fuzz targets and seed corpus~~ done at `d9b30ff` era
+33. ~~Increase fuzztime budget or add a second cron schedule~~ ← open — deferred (30s budget live since `699fad9`; monthly review 09-17 §f-50)
+34. ~~Add a CI test that verifies the lint JSON artifact is valid JSON~~ done — jq validation at `ba9f6c2`
+35. ~~Add a CI job that runs benchmarks on every PR~~ ← open — `ROADMAP.md` theme 2
+36. ~~Add a CI check that renders the mermaid architecture diagram~~ done — CI mermaid job (`e23b0cc`, v0.3.0)
+37. ~~Add a README badge for CI status and `pkg.go.dev` reference~~ done at `17bad3f`
+38. ~~Add a fuzz target for `RawCodec` with non-`[]byte` types~~ done — non-`[]byte` rejection locked by `TestRawCodec_Encode_WrongType`
+39. ~~Add a property test for `TranscodeToJSON` passthrough contracts~~ done — `FuzzTranscodeToJSON` + passthrough tests (`2c98116`)
+40. ~~Add a test for `JSONEncoder` error path when the writer returns an error~~ done — `TestStreaming_JSONEncoderWriterError` (`094de50`)
 
 Low-impact / polish:
 
-41. Add a test for `JSONDecoder` error path with truncated input.
-42. Add a benchmark for `WrapEncode` / `UnwrapDecode`.
-43. Add a test for `Envelope` backward-compatible fallback.
-44. Add golden snapshot tests for README example outputs.
-45. Add a test for `ForEncoding` with unknown/empty encoding.
-46. Add a test proving `ObservableCodec` hook receives the correct encoding tag
-    when wrapping `ForEncoding`-selected codecs.
-47. Add a test proving `ObservableCodec` with a failing `BufferEncoder` wrapped
-    codec does not double-count on the fallback path.
-48. Add tests for `NormalizeCOSEAlgorithm` and other COSE algorithm helpers.
-49. Restore consistent indentation in the README CBOR signing code block.
-50. Add an ASCII/text summary fallback for the mermaid architecture diagram.
+41. ~~Add a test for `JSONDecoder` error path with truncated input~~ done — `TestStreaming_JSONDecoderTruncatedInput` (`094de50`)
+42. ~~Add a benchmark for `WrapEncode` / `UnwrapDecode`~~ done — `f04d158`
+43. ~~Add a test for `Envelope` backward-compatible fallback~~ done — `envelope_legacy_test.go` (`0a091ee`)
+44. ~~Add golden snapshot tests for README example outputs~~ **Won't implement — godoc examples execute as tests; README snippets are illustrative.**
+45. ~~Add a test for `ForEncoding` with unknown/empty encoding~~ done — `TestForEncoding_UnknownReturnsError`
+46. ~~Add a test proving `ObservableCodec` hook receives the correct encoding tag when wrapping `ForEncoding`-selected codecs~~ done — `TestObservableCodec_HookEncodingTagWithForEncoding` (`f04d158` era)
+47. ~~Add a test proving `ObservableCodec` with a failing `BufferEncoder` does not double-count on the fallback path~~ done — fallback double-count tests (`2c98116`)
+48. ~~Add tests for `NormalizeCOSEAlgorithm` and other COSE algorithm helpers~~ done — `TestNormalizeCOSEAlgorithm` table (`094de50`)
+49. ~~Restore consistent indentation in the README CBOR signing code block~~ done — docs sweeps (`f90c52b` era)
+50. ~~Add an ASCII/text summary fallback for the mermaid architecture diagram~~ done — text-only summary (`f04d158`)
 
 ---
 
@@ -244,11 +226,17 @@ Low-impact / polish:
    current HEAD and publish the GitHub Release, or do you want to defer until
    after additional changes land?
 
+   **Resolved** — neither: v0.2.0 and v0.3.0 were cut from HEAD (`9094137`, `4cd0b45`); `v0.1.0` untouched.
+
 2. **Fuzz corpus auto-commit policy:** The current policy is artifact-only, no
    auto-commit. Do you want to keep it that way permanently, or should we add a
    separate workflow that opens a PR from weekly cron findings once a maintainer
    reviews the artifact?
 
+   **Resolved at `18b8164`** — artifact-only policy codified (ci.yml upload comment + `testdata/fuzz/README.md`).
+
 3. **Sibling integration priority:** Should I switch context to the sibling
    `signing` module next and change its API to accept `codec.DeterministicCodec`,
    or should I continue adding in-repo tests, benchmarks, and examples here first?
+
+   ← open — `ROADMAP.md` theme 5 (the consumer change lives in go-cqrs-lite; in-repo hardening won first).

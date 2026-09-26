@@ -146,31 +146,31 @@ user (§g).
 
 | #  | Task                                                                                           | Impact   | Effort | Category      |
 | -- | ---------------------------------------------------------------------------------------------- | -------- | ------ | ------------- |
-| 1  | User decides release: cut `v0.1.1` from HEAD (recommended) vs move `v0.1.0`                    | Critical | 5min   | Decision      |
-| 2  | User decides commit split (docs vs tests vs CI) before daemon scoops the working tree          | High     | 5min   | Decision      |
-| 3  | Read + ANNOTATE `17-29` and `18-09` reports in full (docs-health ANNOTATE)                     | High     | M      | Documentation |
-| 4  | Add build-tagged tests locking `DeterministicCodec` satisfaction matrix (v1 JSON NOT, v2 YES)  | High     | S      | Quality       |
-| 5  | Add CI/docs tripwire: PLANNED symbol in FEATURES.md must not resolve via `go doc`              | High     | S      | Quality       |
-| 6  | After release: `gh release create` with CHANGELOG Unreleased body                              | Critical | S      | Release       |
-| 7  | After release: cut `## [Unreleased]` → `## [0.1.1] - 2026-08-14`                               | Critical | S      | Release       |
-| 8  | After release: verify `go get github.com/larsartmann/go-codec@v0.1.1` + pkg.go.dev rendering   | High     | S      | Release       |
-| 9  | After release: rebuild `go-cqrs-lite/codec/v4` against the tag with `GOWORK=off`               | High     | S      | Integration   |
-| 10 | HARVEST this §f into TODO_LIST/ROADMAP (pending §g-3)                                          | Medium   | S      | Documentation |
-| 11 | Add `ExampleDeterministicCodec` godoc example (compile-time signing-safety demo)               | Medium   | S      | Documentation |
-| 12 | Mention `DeterministicCodec` in `doc.go` codec-choice guidance                                 | Medium   | S      | Documentation |
-| 13 | Update README mermaid diagram caption once the sibling `signing` module adopts the interface   | Low      | S      | Documentation |
-| 14 | Add `codec.go` to AGENTS.md High-Value References table row for the marker interface           | Low      | S      | Documentation |
-| 15 | Consider a `make`-free `nix run .#bench` app for on-demand benchmark baselines                 | Low      | M      | Quality       |
-| 16 | Record one-time benchmark baselines (ns/op, B/op) in a docs file for regression eyeballing     | Low      | S      | Quality       |
-| 17 | CI: add coverage reporting (85.3%/85.4% measured manually last session — should be automatic)  | Medium   | M      | Quality       |
-| 18 | `testdata/fuzz/README.md`: document `GOCACHE/fuzz` corpus location for local fuzz runs         | Low      | S      | Documentation |
-| 19 | Review fuzz-artifact retention (currently `if: always()` upload — set explicit retention days) | Low      | S      | CI            |
-| 20 | Consider `FuzzCBORCodec_RoundTrip` target (exists? verify; add if missing)                     | Medium   | S      | Quality       |
-| 21 | Sweep all README Go blocks for a consistent indent convention (now all 4-space — keep it)      | Low      | S      | Cleanup       |
-| 22 | Convert `Errors.go` depth-cap error to error-family code if still unwrapped (verify first)     | Medium   | S      | Quality       |
-| 23 | ROADMAP: add "FEATURES drift tripwire" as a theme if §f-5 ships                                | Low      | S      | Documentation |
-| 24 | Add `DeterministicCodec` paragraph to README "When to Use CBOR vs JSON" section                | Low      | S      | Documentation |
-| 25 | Consider golangci-lint `iface`-adjacent check or custom vet for marker-interface misuse        | Low      | M      | Quality       |
+| 1  | ~~User decides release: cut `v0.1.1` from HEAD (recommended) vs move `v0.1.0`~~ resolved — superseded by v0.2.0/v0.3.0 (`9094137`)                           | Critical | 5min   | Decision      |
+| 2  | ~~User decides commit split (docs vs tests vs CI) before daemon scoops the working tree~~ moot — daemon scooped (`f04d158` era); policy question lives as `TODO_LIST.md` #3                          | High     | 5min   | Decision      |
+| 3  | ~~Read + ANNOTATE `17-29` and `18-09` reports in full (docs-health ANNOTATE)~~ done at `18b8164` (20-47 T10); re-verified 2026-09-26                     | High     | M      | Documentation |
+| 4  | ~~Add build-tagged tests locking `DeterministicCodec` satisfaction matrix~~ done at `d9b30ff` (`deterministic_codec_v1/v2_test.go`)  | High     | S      | Quality       |
+| 5  | ~~Add CI/docs tripwire: PLANNED symbol in FEATURES.md must not resolve via `go doc`~~ done at `d9b30ff` (`scripts/check-features-planned.sh`, CI-wired)              | High     | S      | Quality       |
+| 6  | ~~After release: `gh release create` with CHANGELOG body~~ resolved — v0.3.0 released (`4cd0b45`)                              | Critical | S      | Release       |
+| 7  | ~~After release: cut `## [Unreleased]` → dated release heading~~ resolved — v0.3.0 CHANGELOG dated (`9094137`)                               | Critical | S      | Release       |
+| 8  | ~~After release: verify `go get …@tag` + pkg.go.dev rendering~~ resolved — v0.3.0 runbook closed (`4cd0b45`); re-verified 2026-09-26 (v0.3.0 Latest)   | High     | S      | Release       |
+| 9  | ~~After release: rebuild `go-cqrs-lite/codec/v4` against the tag with `GOWORK=off`~~ resolved — v0.3.0 consumer wave (09-17 report §a)   | High     | S      | Integration   |
+| 10 | ~~HARVEST this §f into TODO_LIST/ROADMAP~~ done at `17bad3f` (00-49 pass); re-harvested 2026-09-26                                  | Medium   | S      | Documentation |
+| 11 | ~~Add `ExampleDeterministicCodec` godoc example~~ done at `d9b30ff` era               | Medium   | S      | Documentation |
+| 12 | ~~Mention `DeterministicCodec` in `doc.go` codec-choice guidance~~ done at `d9b30ff`                           | Medium   | S      | Documentation |
+| 13 | ~~Update README mermaid diagram caption once the sibling `signing` module adopts the interface~~ ← open — `ROADMAP.md` theme 5 (sibling-side trigger)   | Low      | S      | Documentation |
+| 14 | ~~Add `codec.go` to AGENTS.md High-Value References table~~ done — row present                     | Low      | S      | Documentation |
+| 15 | ~~Consider a make-free `nix run .#bench` app for on-demand benchmark baselines~~ ← open — `ROADMAP.md` theme 2               | Low      | M      | Quality       |
+| 16 | ~~Record one-time benchmark baselines (ns/op, B/op) in a docs file~~ done at `ba9f6c2` (`docs/benchmark-baseline.md`)     | Low      | S      | Quality       |
+| 17 | ~~CI: add coverage reporting~~ done at `699fad9` (coverage summary step per JSON mode)  | Medium   | M      | Quality       |
+| 18 | ~~`testdata/fuzz/README.md`: document `GOCACHE/fuzz` corpus location~~ done at `18b8164`         | Low      | S      | Documentation |
+| 19 | ~~Review fuzz-artifact retention~~ ← open — nice-to-have (default retention; `if: always()` upload works) | Low      | S      | CI            |
+| 20 | ~~Consider `FuzzCBORCodec_RoundTrip` target (exists? verify; add if missing)~~ done — exists and runs in the weekly CI fuzz matrix (`699fad9`)                     | Medium   | S      | Quality       |
+| 21 | ~~Sweep all README Go blocks for a consistent indent convention~~ done — 4-space convention held (verified 2026-09-26)      | Low      | S      | Cleanup       |
+| 22 | ~~Convert depth-cap error to error-family code if still unwrapped~~ done — `codec.normalize_depth_exceeded` stable code (error-contract wave; registry `7eaf7d2`)     | Medium   | S      | Quality       |
+| 23 | ~~ROADMAP: add "FEATURES drift tripwire" as a theme if §f-5 ships~~ **Won't implement — the tripwire is CI mechanics documented in FEATURES header + AGENTS references; no ROADMAP theme needed.**      | Low      | S      | Documentation |
+| 24 | ~~Add `DeterministicCodec` paragraph to README "When to Use CBOR vs JSON" section~~ done — signing section + compile-time-safety paragraph reference it      | Low      | S      | Documentation |
+| 25 | ~~Consider golangci-lint check or custom vet for marker-interface misuse~~ done (existing mechanism) — unexported `signingSafe()` makes external satisfaction a compile error (`codec.go`)        | Low      | M      | Quality       |
 
 (25 items — the honest ceiling of what THIS session observed; padding to 50
 would violate the "no vague items" rule.)
@@ -180,12 +180,15 @@ would violate the "no vague items" rule.)
 1. **Release:** cut `v0.1.1` from HEAD (my recommendation — moving the published
    `v0.1.0` tag poisons the module proxy for anyone who already fetched it), or
    do you want `v0.1.0` moved despite the proxy risk?
+   **Resolved** — neither: v0.2.0 and v0.3.0 were cut from HEAD (`9094137`); `v0.1.0` untouched.
 2. **Commit granularity:** the working tree holds docs + tests + a CI comment in
    one uncommitted pile, and the auto-commit daemon may scoop it at any moment.
    Explicit split (docs / tests / CI) now, or let the daemon take it whole?
+   **Moot** — the daemon scooped it (`f04d158` era); the policy question lives on as `TODO_LIST.md` #3.
 3. **Harvest:** should I run docs-health HARVEST on this report's §f into
    TODO_LIST/ROADMAP right away, or wait until the release decisions land
    (several §f items are release-gated and would sit BLOCKED)?
+   **Resolved** — harvested at `17bad3f` (00-49 pass) and re-harvested by the 2026-09-26 pass.
 
 ---
 

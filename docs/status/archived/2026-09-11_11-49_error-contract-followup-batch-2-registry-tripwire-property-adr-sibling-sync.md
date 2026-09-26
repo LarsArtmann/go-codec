@@ -10,7 +10,8 @@
   under-counted codes (31 → actual 32, two sentinel names typo'd), and
   go-cqrs-lite is NOT at zero erraudit findings (253 across 22 modules) — routed
   to its own TODO_LIST as the gate-activation precondition.
-- **Deferred on user decisions (unchanged):** release (v0.3.0 chosen, not tagged),
+- **Deferred on user decisions (unchanged):** ~~release (v0.3.0 chosen, not tagged)~~
+  shipped as v0.3.0 (`9094137`, `4cd0b45`),
   ERRAUDIT_PAT secret, upstream erraudit issue filing (#12 — needs explicit
   instruction; verify-before-filing applies).
 
@@ -118,7 +119,7 @@ passed; go-cqrs-lite ci.yml actionlint clean.
 
 ## f) Left open
 
-- #1 release v0.3.0 (user-gated; runbook in TODO_LIST).
+- ~~#1 release v0.3.0 (user-gated; runbook in TODO_LIST).~~ done at `9094137`, `4cd0b45`.
 - #2 ERRAUDIT_PAT (user-gated).
 - #3 upstream erraudit filings (user-gated; drafts not yet written).
 - #4 daemon policy (user-gated).

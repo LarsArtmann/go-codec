@@ -1114,70 +1114,70 @@
               <td>1</td>
               <td><span class="badge badge-critical">Critical</span></td>
               <td>
-                Cut v0.1.1 from HEAD (runbook in TODO_LIST #1; now carries two
+                <s>Cut v0.1.1 from HEAD (runbook in TODO_LIST #1; now carries two
                 release-note flags: ≥1.26.6 toolchain, SizeResult lowercase
-                keys)
+                keys)</s>
               </td>
-              <td><span class="badge badge-low">Blocked — user</span></td>
+              <td><span class="badge badge-fixed">Resolved</span> — superseded by v0.3.0 (<code>9094137</code>, <code>4cd0b45</code>)</td>
             </tr>
             <tr>
               <td>2</td>
               <td><span class="badge badge-high">High</span></td>
               <td>
-                Observe first post-bump CI run (expect green) and the first
-                weekly fuzz cron on Sunday
+                <s>Observe first post-bump CI run (expect green) and the first
+                weekly fuzz cron on Sunday</s>
               </td>
-              <td><span class="badge badge-low">Waiting on CI</span></td>
+              <td><span class="badge badge-fixed">Done</span> — CI green through v0.3.0; first cron green 2026-09-06</td>
             </tr>
             <tr>
               <td>3</td>
               <td><span class="badge badge-high">High</span></td>
               <td>
-                Update nixpkgs lock when go_1_26 packages 1.26.6; restore green
-                nix flake check
+                <s>Update nixpkgs lock when go_1_26 packages 1.26.6; restore green
+                nix flake check</s>
               </td>
-              <td><span class="badge badge-low">Blocked upstream</span></td>
+              <td><span class="badge badge-fixed">Done</span> — nixpkgs bumped (<code>061645a</code>, <code>f90c52b</code>); checks green</td>
             </tr>
             <tr>
               <td>4</td>
               <td><span class="badge badge-high">High</span></td>
               <td>
-                Auto-commit daemon policy decision (one-commit scoops vs split)
+                <s>Auto-commit daemon policy decision (one-commit scoops vs split)</s>
               </td>
-              <td><span class="badge badge-low">Blocked — user</span></td>
+              <td><span class="badge badge-low">Open</span> — <code>TODO_LIST.md</code> #3 (user-gated)</td>
             </tr>
             <tr>
               <td>5</td>
               <td><span class="badge badge-fixed">Low</span></td>
-              <td>Mermaid diagram render check in CI (recovered lost item)</td>
-              <td><span class="badge badge-low">Open</span></td>
+              <td><s>Mermaid diagram render check in CI (recovered lost item)</s></td>
+              <td><span class="badge badge-fixed">Done</span> — CI mermaid job (<code>e23b0cc</code>, v0.3.0)</td>
             </tr>
             <tr>
               <td>6</td>
               <td><span class="badge badge-fixed">Low</span></td>
               <td>
-                Verify 20-07 follow-up items #12–20 (CONTRIBUTING/SECURITY
-                freshness, dprint.json, archived planning)
+                <s>Verify 20-07 follow-up items #12–20 (CONTRIBUTING/SECURITY
+                freshness, dprint.json, archived planning)</s>
               </td>
-              <td><span class="badge badge-low">Open</span></td>
+              <td><span class="badge badge-fixed">Done</span> — verified 2026-09-26 (00-49 §f-12–20)</td>
             </tr>
             <tr>
               <td>7</td>
               <td><span class="badge badge-fixed">Low</span></td>
               <td>
-                Sibling signing module adopts DeterministicCodec (ROADMAP theme
-                5)
+                <s>Sibling signing module adopts DeterministicCodec (ROADMAP theme
+                5)</s>
               </td>
-              <td><span class="badge badge-low">Open</span></td>
+              <td><span class="badge badge-low">Open</span> — <code>ROADMAP.md</code> theme 5 (go-cqrs-lite-side)</td>
             </tr>
             <tr>
               <td>8</td>
               <td><span class="badge badge-fixed">Low</span></td>
               <td>
-                CI bench-regression job (ROADMAP theme 2; baseline now exists to
-                diff against)
+                <s>CI bench-regression job (ROADMAP theme 2; baseline now exists to
+                diff against)</s>
               </td>
-              <td><span class="badge badge-low">Open</span></td>
+              <td><span class="badge badge-low">Open</span> — <code>ROADMAP.md</code> theme 2</td>
             </tr>
           </tbody>
         </table>

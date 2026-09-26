@@ -164,83 +164,60 @@
 
 **P0 — gates the user owns:**
 
-1. Push go-codec master → first real CI run of tripwire steps, legacy
-   baselines, mermaid job (puppeteer risk), property test, example.
-2. Fix whatever that push surfaces (mermaid/puppeteer sandbox flags are the
-   likeliest flake).
-3. Execute the v0.3.0 release runbook (TODO_LIST #1) once CI is green.
-4. Decide ERRAUDIT_PAT secret vs publishing erraudit (TODO_LIST #2) — this
-   also unblocks item 6's CI activation and #12's upstream filings.
-5. Push go-cqrs-lite (their error-audit job + baseline TODO entry).
-6. go-cqrs-lite erraudit zeroing campaign — storage first (53), then graph
-   (46), event (25); 22 modules, 253 findings total.
-7. Decide Renovate app install (or ratify deliberate-bump + tripwire policy).
-8. File or explicitly defer the two upstream erraudit issues (see 9-10).
-9. Upstream issue A: `generic_return` must recognize WrapOncef/
-   WrapCorruptionf/WrapInfrastructuref/WrapOrchestrationf as creators
-   (evidence: go-codec's 11→7 artifact; ADR-0001 §6).
-10. Upstream issue B: warn when `--enforce-go-error-family`/`--enforce-samber-oops`
-    names a library absent from go.mod.
-11. After release: bump go-cqrs-lite/codec/v4, run suite `GOWORK=off`.
-12. Add dependabot `653f4cd` entry to v0.3.0 release notes (runbook tail).
+1. ~~Push go-codec master → first real CI run~~ done — pushed; CI ran green through the v0.3.0 release (`28351c8`-era → `9094137`).
+2. ~~Fix whatever that push surfaced~~ done — the mermaid/Puppeteer `--no-sandbox` fix shipped (v0.3.0 CHANGELOG Fixed).
+3. ~~Execute the v0.3.0 release runbook~~ resolved — v0.3.0 tagged + published (`9094137`, `4cd0b45`).
+4. ~~Decide ERRAUDIT_PAT secret vs publishing erraudit~~ ← open — `TODO_LIST.md` #1 (user-deferred).
+5. ~~Push go-cqrs-lite~~ ← open — go-cqrs-lite-side.
+6. ~~go-cqrs-lite erraudit zeroing campaign~~ ← open — go-cqrs-lite's `TODO_LIST.md` (253 findings).
+7. ~~Decide Renovate app install~~ done — deliberate-bump + `check-erraudit-version.sh` tripwire ratified (`779277b`); Renovate install remains a user option.
+8. ~~File or explicitly defer the two upstream erraudit issues~~ ← open — `TODO_LIST.md` #2 (drafts, file on instruction).
+9. ~~Upstream issue A: `generic_return` recognition~~ ← open — `TODO_LIST.md` #2.
+10. ~~Upstream issue B: absent-library warning~~ ← open — `TODO_LIST.md` #2.
+11. ~~After release: bump go-cqrs-lite/codec/v4, run suite `GOWORK=off`~~ done — v0.3.0 consumer wave (09-17 §a).
+12. ~~Add dependabot `653f4cd` entry to v0.3.0 release notes~~ done at `9094137`.
 
 **P1 — known gaps from this session:**
-13. README `## Error Handling`: link `docs/error-codes.md` + ADR-0001.
-14. doc.go `# Errors`: same cross-links.
-15. AGENTS.md Commands: list `check-error-codes.sh` + `check-erraudit-version.sh`.
-16. Annotate 06:45 + 08:27 status reports inline (31→32, sentinel-name typos).
-17. Archive 06:45 report to `docs/status/archived/` once PAT/release resolve.
-18. Verify the erraudit CI job end-to-end after the secret lands (fork run).
-19. CONTRIBUTING/AGENTS note: ERRAUDIT_PAT-style secrets for sibling repos.
-20. Calendarize the monthly erraudit release check (ROADMAP item; currently
-an idea, not a task).
-21. `xargs -r` guard in check-error-codes.sh (empty-fileset stdin edge).
-22. Mermaid job hardening: puppeteer `--no-sandbox` config file fallback;
-consider actions/cache for the npx chrome download.
-23. Mermaid extraction: note CRLF fragility of the ``^```mermaid$`` anchor
-(repo is LF-only today; a Windows-edited README would silently extract 0
-blocks and FAIL — which is the desired direction, but the message should
-say so).
-24. Add `.#tripwires` nix app running all four check scripts (devShell parity
-with CI).
-25. DecodeEnvelopeOrLegacy contract test: lock its documented
-unwrapped-error guarantee in the property suite (currently excluded by
-design note only).
-26. Property-test the v1-only normalize_depth_exceeded path (100-deep map).
-27. ErrorContext() keys as godoc constants (08:27 #44).
-28. Registry generation tooling: emit the docs/error-codes.md table from
-source (errors.go + wrap sites) — kills the whole manual-drift class.
-29. Extend the tripwire to compare per-code FAMILY between registry and wrap
-site (needs parsed source or erraudit json output).
-30. go-cqrs-lite: per-module error-code registries (`<module>.*` codes) +
-stack-wide registry index (go-codec pattern propagated).
+13. ~~README `## Error Handling`: link `docs/error-codes.md` + ADR-0001~~ done — 2026-09-26 pass (links added).
+14. ~~doc.go `# Errors`: same cross-links~~ ← open — nice-to-have (README carries them; doc.go keeps godoc-internal refs).
+15. ~~AGENTS.md Commands: list `check-error-codes.sh` + `check-erraudit-version.sh`~~ done — 2026-09-26 pass (all four tripwires listed in Commands).
+16. ~~Annotate 06:45 + 08:27 status reports inline~~ done — 2026-09-26 pass.
+17. ~~Archive 06:45 report to `docs/status/archived/`~~ done — 2026-09-26 pass.
+18. ~~Verify the erraudit CI job end-to-end after the secret lands~~ ← open — blocked on `TODO_LIST.md` #1.
+19. ~~CONTRIBUTING/AGENTS note: ERRAUDIT_PAT-style secrets for sibling repos~~ ← open — `TODO_LIST.md` (bounded docs row).
+20. ~~Calendarize the monthly erraudit release check~~ ← open — `ROADMAP.md` error-contract theme (idea; scheduling is a user/calendar action).
+21. ~~`xargs -r` guard in check-error-codes.sh~~ done — 2026-09-26 pass (`-r` added; script green).
+22. ~~Mermaid job hardening: puppeteer config fallback; actions/cache~~ done (covered) — the `--no-sandbox` config file is in the job (`e23b0cc`); the npx chrome cache remains a nicety.
+23. ~~Mermaid extraction: note CRLF fragility of the anchor~~ ← open — nice-to-have (comment-only hardening; LF-only repo today).
+24. ~~Add `.#tripwires` nix app running all four check scripts~~ ← open — `TODO_LIST.md` (bounded DX row).
+25. ~~DecodeEnvelopeOrLegacy contract test: lock the unwrapped-error guarantee in the property suite~~ ← open — nice-to-have (behavior locked by `envelope_legacy_test.go` (`0a091ee`); rapid integration pending).
+26. ~~Property-test the v1-only normalize_depth_exceeded path~~ done (covered) — boundary tests `TestNormalizeForJSON_DepthCap`/`_AtMaxDepth` + fuzz (`094de50`).
+27. ~~ErrorContext() keys as godoc constants~~ ← open — `ROADMAP.md` error-contract theme.
+28. ~~Registry generation tooling: emit docs/error-codes.md from source~~ ← open — `ROADMAP.md` error-contract theme.
+29. ~~Extend the tripwire to compare per-code FAMILY between registry and wrap site~~ ← open — `ROADMAP.md` error-contract theme.
+30. ~~go-cqrs-lite: per-module error-code registries + stack-wide index~~ ← open — go-cqrs-lite-side (pattern lives here).
 
 **P2 — prior report leftovers (unchanged, restated for completeness):**
-31. Refresh the four action digests to Node-24-compatible versions (08:27 #18).
-32. Add least-privilege `permissions:` block to ci.yml jobs (08:27 #20).
-33. Commit `scripts/bench-compare.py` (08:27 #21).
-34. Decide raw-benchmark-output retention (CI artifact vs bench branch) (08:27 #22).
-35. Record a v2-mode benchmark baseline (08:27 #23).
-36. Snapshot test of rendered `[family:code]` strings for a curated failure
-set (ROADMAP; ADR-gated).
-37. Error code as a `CodecMetrics` dimension (ROADMAP).
-38. `errorfamily.RegisterTemplate` per code for boundary message consistency (ROADMAP).
-39. Document the `errors.Is` same-code behavior table in doc.go (ROADMAP #28).
-40. Classify `Observability` hook errors before invoking user hooks (ROADMAP #29).
-41. Confirm/document AutoDetectDebug/Diagnose placeholders (ROADMAP #30).
-42. Document maxPoolBufferSize/maxAutoDetectSize (both 1 MiB) relationship (ROADMAP #34).
-43. erraudit `lsp` editor integration (ROADMAP #31).
-44. erraudit inside `nix flake check`'s lint phase — blocked until erraudit
-fetch is hermetic (publish decision) (ROADMAP #32).
-45. `//nolint` inventory quality sweep (08:27 #36); prune any wrapcheck
-nolints the explicit ignore-sigs made redundant (08:27 #37 — re-verify
-each: bare-return thin wrappers still need them).
-46. setup-go cache:true for the go install-heavy CI jobs (08:27 #48).
-47. dependabot `github-actions` ecosystem entry (automates #31's digest bumps).
-48. Watch the Sunday fuzz cron; confirm corpus artifact upload (08:27 #47).
-49. go-cqrs-lite release notes: error-family/message-format consumer note (08:27 #45).
-50. Rerun the 10-run benchmark suite vs `docs/benchmark-baseline.md` only if
-the toolchain moves (no code-path changes this session).
+31. ~~Refresh the four action digests to Node-24-compatible versions~~ ← open — `TODO_LIST.md` (CI hygiene).
+32. ~~Add least-privilege `permissions:` block~~ ← open — `TODO_LIST.md` (CI hygiene).
+33. ~~Commit `scripts/bench-compare.py`~~ ← open — `TODO_LIST.md` (CI hygiene).
+34. ~~Decide raw-benchmark-output retention~~ ← open — `TODO_LIST.md` (CI hygiene).
+35. ~~Record a v2-mode benchmark baseline~~ ← open — `TODO_LIST.md` (baseline re-run row).
+36. ~~Snapshot test of rendered `[family:code]` strings~~ ← open — `ROADMAP.md` error-contract theme.
+37. ~~Error code as a `CodecMetrics` dimension~~ ← open — `ROADMAP.md` error-contract theme.
+38. ~~`errorfamily.RegisterTemplate` per code~~ ← open — `ROADMAP.md` error-contract theme.
+39. ~~Document the `errors.Is` same-code behavior table in doc.go~~ ← open — `ROADMAP.md` error-contract theme.
+40. ~~Classify `Observability` hook errors before invoking user hooks~~ ← open — `ROADMAP.md` error-contract theme.
+41. ~~Confirm/document AutoDetectDebug/Diagnose placeholders~~ ← open — `ROADMAP.md` error-contract theme.
+42. ~~Document maxPoolBufferSize/maxAutoDetectSize relationship~~ ← open — `ROADMAP.md` error-contract theme.
+43. ~~erraudit `lsp` editor integration~~ ← open — `ROADMAP.md` error-contract theme.
+44. ~~erraudit inside `nix flake check`'s lint phase~~ ← open — `ROADMAP.md` error-contract theme (gated on the publish decision).
+45. ~~`//nolint` inventory quality sweep + wrapcheck-nolint pruning~~ ← open — `ROADMAP.md` error-contract theme.
+46. ~~setup-go cache:true for the go install-heavy CI jobs~~ ← open — `TODO_LIST.md` (CI hygiene).
+47. ~~dependabot `github-actions` ecosystem entry~~ ← open — `TODO_LIST.md` (verified absent 2026-09-26; automates the digest bumps).
+48. ~~Watch the Sunday fuzz cron; confirm corpus artifact upload~~ done — first cron green 2026-09-06.
+49. ~~go-cqrs-lite release notes: error-family consumer note~~ ← open — go-cqrs-lite-side.
+50. ~~Rerun the 10-run benchmark suite vs `docs/benchmark-baseline.md` only if the toolchain moves~~ ← open — `TODO_LIST.md`: the toolchain HAS moved (1.26.5 baseline → 1.26.7 now), so the re-run is due.
 
 ## g) QUESTIONS (cannot answer myself)
 
@@ -248,15 +225,27 @@ the toolchain moves (no code-path changes this session).
    the new CI steps — mermaid job, both tripwires, legacy baselines — get
    their first real run before you cut v0.3.0? Or should CI first see the
    release commit?
+   **ANSWERED by events** — pushed; CI green; v0.3.0 released (`9094137`).
 2. **erraudit future:** publish `larsartmann/erraudit` or keep it private
    behind `ERRAUDIT_PAT`? This single decision gates the CI gate activation
    for BOTH repos, the hermetic nix integration, and the upstream filings'
    visibility — I cannot see a cost that beats your call here.
+   **Still user-gated** — `TODO_LIST.md` #1 (deferred 2026-09-11).
 3. **Upstream filings:** want the two erraudit issues (§f-9/10) drafted and
    filed on the erraudit repo now (verify-before-filing enforced), or held
    until the publish/PAT decision lands?
+   **Still user-gated** — `TODO_LIST.md` #2 (drafts prepared on instruction).
 
 ---
 
 - **Report:** docs/status/2026-09-11_12-02_self-review-batch-2-gaps-and-next-50.md
 - **Waiting for instructions.**
+
+---
+
+## ANNOTATION (2026-09-26 docs-health pass)
+
+Every §f item now carries an inline verdict above (done at hash / Won't
+implement / explicit open-routing into `TODO_LIST.md`, `ROADMAP.md`, or the
+go-cqrs-lite-side backlog). §g questions answered inline. Open survivors were
+re-harvested into the current `TODO_LIST.md`.

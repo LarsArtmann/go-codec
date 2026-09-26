@@ -369,11 +369,11 @@ signing                          encryption
 
 | Action                                                           | Why                                                                                        |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Keep signing + encryption as 2 separate modules                  | Zero cross-imports, different crypto primitives, real composability payoff                 |
-| Keep them depending on `event/v4`                                | The coupling is structural and correct                                                     |
-| Extract `event/v4` to its own repo if you want smaller dep trees | That's the keystone — signing/encryption transitively pull in 5 cqrs modules through event |
-| Implement `DeterministicCodec` in go-codec                       | Turns the JSON signing footgun into a compile error                                        |
-| Retire the `codec/v4` shim                                       | 26 files still on it; migration is mechanical sed                                          |
+| ~~Keep signing + encryption as 2 separate modules~~ decided — adopted                                              | Zero cross-imports, different crypto primitives, real composability payoff                 |
+| ~~Keep them depending on `event/v4`~~ decided — adopted                                | The coupling is structural and correct                                                     |
+| ~~Extract `event/v4` to its own repo if you want smaller dep trees~~ ← open — go-cqrs-lite-side decision (`ROADMAP.md` theme 5 mentions the retire-shim path) | That's the keystone — signing/encryption transitively pull in 5 cqrs modules through event |
+| ~~Implement `DeterministicCodec` in go-codec~~ done at `2c98116` (approved proposal §4; satisfaction matrix locked by build-tagged tests `d9b30ff`)                       | Turns the JSON signing footgun into a compile error                                        |
+| ~~Retire the `codec/v4` shim~~ ← open — `ROADMAP.md` theme 5 (go-cqrs-lite-side mechanical migration; 26 files at review time)                                       | 26 files still on it; migration is mechanical sed                                          |
 
 ---
 

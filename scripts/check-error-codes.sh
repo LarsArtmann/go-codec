@@ -31,7 +31,7 @@ doc_tmp=$(mktemp)
 trap 'rm -f "$src_tmp" "$doc_tmp"' EXIT
 
 # Source set: code literals in non-test Go files.
-git ls-files '*.go' | grep -v '_test\.go$' | xargs grep -ohE '"codec\.[a-z0-9_]+"' |
+git ls-files '*.go' | grep -v '_test\.go$' | xargs -r grep -ohE '"codec\.[a-z0-9_]+"' |
 	tr -d '"' | sort -u >"$src_tmp"
 
 # Registry set: backticked code tokens in the registry doc (the registration

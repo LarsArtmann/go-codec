@@ -453,8 +453,7 @@ if e, ok := errors.AsType[*errorfamily.Error](err); ok {
 }
 ```
 
-The full code table is locked by `errors_contract_test.go`; see `doc.go`
-(`# Errors`) for the contract and `errors.go` for the sentinel list.
+The full code table lives in [`docs/error-codes.md`](docs/error-codes.md) (registry, tripwired in CI), the design rationale in [`docs/adr/0001-error-taxonomy.md`](docs/adr/0001-error-taxonomy.md); the contract is locked by `errors_contract_test.go`. See `doc.go` (`# Errors`) for the contract and `errors.go` for the sentinel list.
 
 ## Dual JSON Support (v1 and v2)
 
@@ -462,7 +461,7 @@ go-codec supports both `encoding/json` (v1, the default) and `encoding/json/v2`
 (opt-in). The library uses the [go-branded-id dual-build pattern](https://github.com/larsartmann/go-branded-id):
 build-tagged compat files select the JSON implementation at compile time.
 
-**Default (v1):** `go build ./...` — uses `encoding/json`, works on Go 1.26.6+.
+**Default (v1):** `go build ./...` — uses `encoding/json`, works on Go 1.26.7+ (see `go.mod`).
 
 **Opt-in (v2):** `GOEXPERIMENT=jsonv2 go build ./...` — uses `encoding/json/v2`
 (Go 1.25+ with the experiment flag, or Go 1.27+ natively).

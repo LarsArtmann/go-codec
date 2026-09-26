@@ -52,6 +52,10 @@ GOEXPERIMENT=jsonv2 go build ./...      # build (v2 JSON)
 GOEXPERIMENT=jsonv2 go test ./... -race # test with race detector (v2)
 env -u GOEXPERIMENT golangci-lint run ./...                 # lint (v1)
 golangci-lint run --build-tags goexperiment.jsonv2 ./...    # lint (v2)
+bash scripts/check-go-version.sh          # tripwire: go.mod/.go-version/.golangci.yml agree
+bash scripts/check-error-codes.sh         # tripwire: errors.go ↔ docs/error-codes.md in sync
+bash scripts/check-features-planned.sh    # tripwire: PLANNED symbols must not exist yet
+bash scripts/check-erraudit-version.sh    # tripwire: erraudit pin agrees ci.yml ↔ flake.nix
 ```
 
 With flake.nix (preferred in LarsArtmann projects):
@@ -120,10 +124,17 @@ nix run .#lint                        # lint both modes
   `jsontext.NewDecoder` (NOT `json.UnmarshalRead`, which over-reads from the
   `io.Reader` and silently breaks sequential `Decode` calls). See
   `json_compat_v2.go`.
+- **Observability & detection** (`observability.go`, `autodetect.go`) —
+  `ObserveCodec` wraps any `Codec` with goroutine-safe `CodecMetrics`
+  (counters, byte totals, last errors; `Snapshot()`/`Reset()`) plus an optional
+  push-style `MetricsHook` (hook panics propagate; metrics are recorded before
+  the hook runs). `AutoDetectDebug` is the explainable variant of `AutoDetect`:
+  `Reason` is the stable machine-readable contract, `Detail` is unstable
+  human-readable prose — never parse it.
 - **Buffer pool** (`pool.go`) — `GetBuffer`/`PutBuffer` manage a `sync.Pool`
   of `*bytes.Buffer`. `EncodePooled` is a callback-based helper that handles
   the full GetBuffer to EncodeToBuffer to callback to PutBuffer lifecycle
-  automatically.
+  automatically; `maxPoolBufferSize` rejects oversized buffers on put.
 - **Performance** — fxamacker/cbor caches type metadata in a process-wide
   `sync.Map` (cold ~117us to warm ~340ns, 344x faster). Code generation is NOT
   needed. Benchmarks: `BenchmarkTagTradeoffs_Encode/Decode` (map vs toarray vs

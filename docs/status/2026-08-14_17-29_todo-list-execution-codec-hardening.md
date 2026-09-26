@@ -46,7 +46,7 @@ These items were not started in this session. They are either larger, lower-prio
 
 | #  | Task                                                                                                                                    | Why not started                                                                                              |
 | -- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| 1  | Decide release strategy and create GitHub Release                                                                                       | **Blocked on user decision** (cut `v0.1.1` vs move tag). Cannot act autonomously.                            |
+| 1  | ~~Decide release strategy and create GitHub Release~~ resolved — superseded by the v0.2.0 and v0.3.0 releases (`9094137`)                                                                              | ~~Blocked on user decision~~ resolved (v0.2.0/v0.3.0 cut; `v0.1.0` untouched)                            |
 | 3  | Add CI fuzz job (cron + seed corpus) ~~done at `699fad9` (30s/target cron + seed corpus)~~                                              | Requires CI design decision on fuzztime, runner budget, and corpus seeding workflow. Non-trivial (~1-2h).    |
 | 17 | Prometheus/OpenTelemetry exporter example ~~done at `699fad9` — resolved dependency-free via `ExampleMetricsHook`~~                     | **Blocked on user decision** (dependency-free pseudo-metrics vs real `prometheus/client_golang` dev-dep).    |
 | 18 | CI step: `golangci-lint run --out-format json` artifact ~~done at `699fad9` (`lint-report-json-v1/v2` artifacts, 14-day retention)~~    | CI-only improvement; lower priority than code changes.                                                       |
@@ -82,13 +82,13 @@ Two transient issues were introduced and fixed during the session:
 
 ~~2. **Lint-before-test discipline.** I ran tests before lint and had to backtrack to fix goconst/makezero issues. Running `nix run .#lint` immediately after the first batch of edits would have caught the issues before the second verification round.~~ **NOT-DO — process lesson; the superb session ran lint before final verification.**
 
-3. **Auto-commit message drift.** The auto-commit daemon generated commit `2c98116` with a summary mentioning `EncodedSize` helpers, elapsed duration, and `SetObservableLogger` that were not actually part of this session. The changes are real, but the commit prose is misleading. We should review auto-commit summaries before they land, or the commit history becomes unreliable.
+3. **Auto-commit message drift.** The auto-commit daemon generated commit `2c98116` with a summary mentioning `EncodedSize` helpers, elapsed duration, and `SetObservableLogger` that were not actually part of this session. The changes are real, but the commit prose is misleading. We should review auto-commit summaries before they land, or the commit history becomes unreliable. ← open — user decision (`TODO_LIST.md` #3, daemon policy)
 
 ~~4. **Remaining README gaps.** The README still lacks dedicated sections for NDJSON streaming, `EncodePooled`, and `Size`/`SizeResult`. These are user-facing gaps that are cheap to close (item #22).~~ done at `699fad9` (dedicated README sections)
 
 ~~5. **CI fuzz coverage.** Fuzz targets exist (`FuzzCBORCodec_CanonicalFidelity`, `FuzzAutoDetectDebug_Consistency`) but are not exercised in CI. The seed corpus is also incomplete. This is the biggest unclosed quality gap.~~ done at `699fad9` (fuzz job + seed corpus committed)
 
-6. **DeterministicCodec consumer.** The marker interface is now implemented, but no sibling module (signing/encryption) actually asserts it yet. The value is only realized once the signing module rejects non-deterministic codecs at compile time. We should verify the sibling integration path.
+6. **DeterministicCodec consumer.** The marker interface is now implemented, but no sibling module (signing/encryption) actually asserts it yet. The value is only realized once the signing module rejects non-deterministic codecs at compile time. We should verify the sibling integration path. ← open — `ROADMAP.md` theme 5 (cross-repo)
 
 ---
 
@@ -100,7 +100,7 @@ High-impact (do soon):
 ~~2. Close #19: add a mermaid architecture diagram to README showing codec → store/event/signing/encryption boundaries.~~ done at `699fad9`
 ~~3. Add CI fuzz job (#3): cron schedule, short fuzztime, commit seed corpus for `FuzzAutoDetectDebug_Consistency`.~~ done at `699fad9`
 ~~4. Add CI lint JSON artifact step (#18) to disambiguate LSP-vs-CLI lint truth.~~ done at `699fad9`
-5. Wire `DeterministicCodec` assertion into the signing module so non-deterministic codecs fail at compile time.
+5. ~~Wire `DeterministicCodec` assertion into the signing module so non-deterministic codecs fail at compile time.~~ ← open — `ROADMAP.md` theme 5 (cross-repo)
 ~~6. Add streaming benchmarks (#20): `BenchmarkStreamingJSON_Encode/Decode`, CBOR streaming, and v2 `jsontext.Decoder` vs `json.UnmarshalRead` comparison.~~ done at `699fad9`
 ~~7. Add negative tests for `TranscodeToJSON` (toarray structs, invalid CBOR leading bytes, >1 MiB auto-detect skip).~~ done — tests present in `transcode_test.go` (`2c98116`)
 ~~8. Add `AutoDetect` / `AutoDetectDebug` benchmark to prove the heuristic cost.~~ done 2026-08-14 (superb session) — `BenchmarkAutoDetect`/`BenchmarkAutoDetectDebug`
@@ -114,7 +114,7 @@ High-impact (do soon):
 
 Medium-impact (do next):
 
-16. Refactor `ObservableCodec` metrics to use atomics instead of `RWMutex` and benchmark the delta (the new `BenchmarkObserveCodec` enables this).
+16. ~~Refactor `ObservableCodec` metrics to use atomics instead of `RWMutex` and benchmark the delta (the new `BenchmarkObserveCodec` enables this).~~ ← open — `ROADMAP.md` theme 4
     ~~17. Add `MetricsSnapshot` JSON marshal example for operational dashboards.~~ done 2026-08-14 (superb session) — `ExampleMetricsSnapshot`
     ~~18. Add a `README.md` example for `TranscodeToJSON` with HTTP/SSE context.~~ done at `699fad9` — README §Transcoding covers SSE + graceful fallback
     ~~19. Add a `README.md` example for `AutoDetectDebug` logging.~~ done at `699fad9` — README §AutoDetectDebug shows the logging pattern
@@ -158,10 +158,12 @@ Low-impact / polish:
 ## g) Questions I Cannot Figure Out Myself
 
 1. **Release decision:** Should we cut `v0.1.1` from current HEAD (recommended), or do you want to move the `v0.1.0` tag? Moving a published tag poisons the module proxy, so I strongly recommend `v0.1.1`, but this is your call.
+   **Resolved** — neither: v0.2.0 and v0.3.0 were cut from HEAD (`9094137`); `v0.1.0` untouched.
 
 ~~2. **Prometheus/OpenTelemetry example:** Do you want a dependency-free pseudo-metrics example (keeps the library light) or a real `prometheus/client_golang` dev-dependency example? The latter is more useful but adds a dep to the module graph.~~ **Resolved at `699fad9` — dependency-free counter example (`ExampleMetricsHook`).**
 
 3. **CI fuzz budget:** For the cron fuzz job, what fuzztime and runner budget are acceptable? Short runs (30-60s per target) are cheap but may not find deep issues; longer runs (5-15m) are more useful but consume CI minutes. Also, should the seed corpus be committed automatically by CI on green runs?
+   ← open — deferred: the 30s budget has been live since `699fad9` (first cron green 2026-09-06); corpus policy is no-auto-commit (`testdata/fuzz/README.md`); deeper review rides the monthly CI/erraudit check (09-17 §f-50).
 
 ---
 

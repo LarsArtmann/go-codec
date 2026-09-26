@@ -66,7 +66,7 @@ verified.
 
 | # | Task                                                  | Why not started                                                                                                                                                       |
 | - | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 | Decide release strategy and create the GitHub Release | **Blocked on user decision** (cut `v0.1.1` from HEAD vs move the `v0.1.0` tag). Also requires a remote push/tag, which is not done without explicit user instruction. |
+| 1 | ~~Decide release strategy and create the GitHub Release~~ resolved — superseded: v0.2.0 and v0.3.0 cut from HEAD (`9094137`); `v0.1.0` untouched | ~~Blocked on user decision~~ resolved |
 
 ---
 
@@ -97,6 +97,7 @@ Nothing is fucked up. Final verification passed:
    artifact upload, cron schedule, `workflow_dispatch`) is only inferred. We
    should either run the workflow on a fork or add a lightweight `act`
    smoke-test before claiming the CI work is fully verified.
+   ~~open~~ done — CI has exercised the full matrix on every push since; green through the v0.3.0 release run (09-17 report §a).
 
 ~~3. **No ASCII fallback for the mermaid diagram.** GitHub renders mermaid, but~~
 ~~ the README is less accessible to plain-text readers or non-GitHub hosts. An~~
@@ -105,11 +106,13 @@ Nothing is fucked up. Final verification passed:
 4. **Fuzz budget is unvalidated.** 30s per target is a conservative default; it
    may not catch deep bugs, and the total job time is untested on GitHub's
    runners. We should monitor the first cron run and adjust.
+   ← open — deferred: first cron ran green 2026-09-06 (08-27 §a-11); budget review rides the monthly CI/erraudit check (09-17 §f-50).
 
 5. **DeterministicCodec is not yet consumed.** The marker interface is
    implemented, but no sibling module (signing/encryption) actually asserts it.
    The value of the work is only realized once the signing module rejects
    non-deterministic codecs at compile time.
+   ← open — `ROADMAP.md` theme 5 (cross-repo)
 
 ~~6. **Lint-before-test discipline remains a risk.** Although this session did not~~
 ~~ introduce lint regressions, the pattern of running tests before lint still~~
@@ -120,6 +123,7 @@ Nothing is fucked up. Final verification passed:
    mention features not actually implemented (e.g., `EncodedSize`,
    `SetObservableLogger`). We should verify commit summaries before they land,
    or at least annotate known-drift commits in the commit log.
+   ← open — user decision (`TODO_LIST.md` #3, daemon policy)
 
 ~~8. **Metrics example is intentionally minimal.** `ExampleMetricsHook` uses a~~
 ~~ simple counter map. A real-world user may want a Prometheus/OpenTelemetry~~
@@ -188,11 +192,11 @@ Medium-impact (do next):
 ~~ (e.g., 5 minutes per target) for deeper coverage.~~ **NOT-DO — deferred CI budget decision; monitor the weekly 30s runs first.**
 ~~35. Add a CI test that verifies the lint JSON artifact is produced and is valid~~
 ~~ JSON.~~ **NOT-DO — the producing lint step already fails the job; the artifact is diagnostic-only.**
-36. Add a CI job that runs benchmarks on every PR to detect regressions (with
-a threshold).
+36. ~~Add a CI job that runs benchmarks on every PR to detect regressions (with
+a threshold).~~ ← open — `ROADMAP.md` theme 2
 ~~37. Add a CI check that renders the mermaid architecture diagram to catch syntax~~
 ~~ errors.~~ **NOT-DO — text-only summary added instead (done 2026-08-14 (superb session)); GitHub renders mermaid natively.**
-38. Add a README badge for CI status and `pkg.go.dev` reference.
+38. ~~Add a README badge for CI status and `pkg.go.dev` reference.~~ done at `17bad3f`
 ~~39. Add a fuzz target for `RawCodec` with non-`[]byte` types.~~ done — non-`[]byte` rejection locked by `TestRawCodec_Encode_WrongType`
 ~~40. Add a property test for `TranscodeToJSON` passthrough contracts.~~ done — `FuzzTranscodeToJSON` + passthrough unit tests (`2c98116`)
 
@@ -209,8 +213,8 @@ Low-impact / polish:
 ~~48. Add a test proving `ObservableCodec` with a failing `BufferEncoder` wrapped~~
 ~~ codec does not double-count on the fallback path.~~ done — fallback double-count tests (`2c98116`)
 ~~49. Add tests for `NormalizeCOSEAlgorithm` and other COSE algorithm helpers.~~ done 2026-08-14 (superb session) — `TestNormalizeCOSEAlgorithm` table test
-50. Decide on and execute the release strategy (#1), then tag `v0.1.1` and
-publish release notes.
+50. ~~Decide on and execute the release strategy (#1), then tag `v0.1.1` and
+publish release notes.~~ resolved — superseded by v0.2.0/v0.3.0 (`9094137`)
 
 ---
 
@@ -219,6 +223,7 @@ publish release notes.
 1. **Release strategy:** Should we cut `v0.1.1` from current HEAD (strongly
    recommended), or do you want to move the `v0.1.0` tag? Moving a published tag
    poisons the module proxy and breaks consumers that already resolved `v0.1.0`.
+   **Resolved** — neither: v0.2.0 and v0.3.0 cut from HEAD (`9094137`); `v0.1.0` untouched.
 
 ~~2. **Fuzz corpus auto-commit:** Should the weekly fuzz job automatically commit~~
 ~~ new corpus entries back to the repository (e.g., open a PR or push directly~~
@@ -228,6 +233,7 @@ publish release notes.
 3. **Sibling integration priority:** Should we now update the sibling `signing`
    module to assert `DeterministicCodec` for signing codecs, or do you want to
    defer that integration until the next sibling-module work cycle?
+   ← open — `ROADMAP.md` theme 5 (the consumer change lives in go-cqrs-lite)
 
 ---
 

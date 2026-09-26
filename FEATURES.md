@@ -14,8 +14,10 @@
 | ⚪ `PLANNED`              | Designed or documented but **not yet implemented** in code.  |
 
 > All statuses verified by running `go test ./...` and
-> `GOEXPERIMENT=jsonv2 go test ./...` with `-race` (both JSON modes green).
-> Test coverage: **88.0%** (v1) / **88.8%** (v2) of statements.
+> `GOEXPERIMENT=jsonv2 go test ./...` with `-race` (both JSON modes green;
+> re-verified 2026-09-26).
+> Test coverage: **90.3%** (v1) / **90.8%** (v2) of statements
+> (measured 2026-09-26, go1.26.7).
 > Drift-guarded in CI by `scripts/check-features-planned.sh`: a symbol marked
 > `PLANNED` that actually resolves in the package fails the build.
 
@@ -99,7 +101,7 @@ there before accepting performance-sensitive changes.
 | Feature                                         | Status                | Notes                                                                                                  |
 | ----------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
 | `CBOREncMode` / `CBORDecMode` — exported modes  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; sibling modules reuse these for byte-identical output — `streaming_test.go`                 |
-| `Diagnose` — CBOR extended diagnostic notation  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; valid + invalid-CBOR cases — `cbor_compact_test.go`                                         |
+| `Diagnose` — CBOR extended diagnostic notation  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; valid cases — `cbor_compact_test.go` (`TestDiagnose`); invalid-CBOR rejection — `codec_test.go` (`TestDiagnose_InvalidCBOR`)                 |
 | `Size` — JSON vs CBOR byte-size comparison      | 🟢 `FULLY_FUNCTIONAL` | `size.go`; returns `SizeResult{JSON, CBOR}` struct; normal + encode-error paths — `autodetect_test.go` |
 | `toarray` / `keyasint` / `omitzero` tag support | 🟢 `FULLY_FUNCTIONAL` | Via fxamacker/cbor; struct tags + godoc examples — `codec_test.go`, `example_test.go`                  |
 
@@ -134,7 +136,7 @@ there before accepting performance-sensitive changes.
 | `COSE_Encrypt0` marshal/unmarshal                        | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; invalid-length rejection — `cose_test.go`                                                     |
 | `SigStructure` / `EncStructure0` builders                | 🟢 `FULLY_FUNCTIONAL` | `cose.go` — `cose_test.go`                                                                               |
 | COSE header marshal/unmarshal + `NormalizeCOSEAlgorithm` | 🟢 `FULLY_FUNCTIONAL` | `cose.go`; constants, protected header, algorithm normalization — `cose_test.go`                         |
-| `PrepareCOSESetup` (generic option-apply helper)         | 🟢 `FULLY_FUNCTIONAL` | `cose.go:144`; direct unit test verifying option-apply + protected-header output — `base64_json_test.go` |
+| `PrepareCOSESetup` (generic option-apply helper)         | 🟢 `FULLY_FUNCTIONAL` | `cose.go:143`; direct unit test verifying option-apply + protected-header output — `base64_json_test.go` |
 | `COSESign1Diagnostic` / `COSEEncrypt0Diagnostic`         | 🟢 `FULLY_FUNCTIONAL` | `cose_helpers.go` — `cose_test.go`                                                                       |
 
 ## JSON / base64 marshalling helpers

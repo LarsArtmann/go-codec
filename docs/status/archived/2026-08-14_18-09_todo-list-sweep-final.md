@@ -136,10 +136,10 @@ Nothing is fucked up. Final verification passed:
 
 High-impact (do soon):
 
-1. Wire `DeterministicCodec` assertion into the sibling signing module so
-   non-deterministic codecs fail at compile time.
-2. Update sibling signing/encryption modules to reuse the exported
-   `CBOREncMode()` / `CBORDecMode()` singletons.
+1. ~~Wire `DeterministicCodec` assertion into the sibling signing module so
+   non-deterministic codecs fail at compile time.~~ ← open — `ROADMAP.md` theme 5 (cross-repo)
+2. ~~Update sibling signing/encryption modules to reuse the exported
+   `CBOREncMode()` / `CBORDecMode()` singletons.~~ ← open — `ROADMAP.md` theme 5 (cross-repo)
    ~~3. Add negative tests for `TranscodeToJSON` (toarray structs, invalid CBOR~~
    ~~ leading bytes, >1 MiB auto-detect skip).~~ done — tests present in `transcode_test.go` (`2c98116`)
    ~~4. Add an `AutoDetect` / `AutoDetectDebug` benchmark to quantify the heuristic~~
@@ -153,8 +153,8 @@ High-impact (do soon):
    ~~ across multiple calls.~~ done at `18b8164` — `TestCBORMode_SingletonsReturnIdenticalValues`
    ~~10. Add a test proving `CBORCodec` and `CBORCompactCodec` produce different~~
    ~~ bytes for the same struct.~~ done at `18b8164` — `TestCBORCodec_AndCBORCompactCodec_ProduceDifferentBytes`
-3. Refactor `ObservableCodec` metrics to atomics and benchmark the delta
-   against the current `RWMutex` implementation.
+3. ~~Refactor `ObservableCodec` metrics to atomics and benchmark the delta
+   against the current `RWMutex` implementation.~~ ← open — `ROADMAP.md` theme 4
    ~~12. Add a `MetricsSnapshot` JSON marshal example for operational dashboards.~~ done 2026-08-14 (superb session) — `ExampleMetricsSnapshot`
    ~~13. Add a README example for `TranscodeToJSON` with HTTP/SSE context.~~ done at `699fad9` — README §Transcoding (SSE + graceful fallback)
    ~~14. Add a README example for `AutoDetectDebug` logging.~~ done at `699fad9` — README §AutoDetectDebug logging pattern

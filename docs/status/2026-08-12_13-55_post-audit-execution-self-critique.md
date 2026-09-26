@@ -264,34 +264,34 @@ I used a blind regex to prefix all exported identifiers with `codec.` across
 
 21. ~~Fix `nix flake check` permission issue (`/homeless-shelter` — missing `HOME`?)~~ done 2026-08-14 — hermetic `buildGoModule` checks
 22. ~~Add `dependabot.yml` or `renovate` config for dependency updates~~ **still open — `TODO_LIST.md` #16**
-23. Add `.go-version` file for `gvm`/`asdf` users
+23. ~~Add `.go-version` file for `gvm`/`asdf` users~~ done at `f04d158`
 24. ~~Fix `nix build` — no `default` package attribute~~ done 2026-08-14 — `packages.default` via `buildGoModule`
 25. ~~Review whether `observability.go` belongs in this library (concern separation)~~ **Won't implement (extraction) — kept in-package by decision; shipped, tested, documented**
 26. ~~Consider whether `AutoDetectDebug` + `DetectionReason` types are over-engineered~~ **Won't implement (removal) — kept; delegation locked by property test + fuzz**
 27. ~~Check if the daemon's streaming JSON encoder/decoder is tested in both modes~~ done at `ef1f4f4` (both modes are CI matrix legs)
 28. ~~Verify the daemon's v2 streaming bug fix is actually correct~~ done at `ef1f4f4` — both-mode CI green; deeper non-buffer-reader coverage still `TODO_LIST.md` #7
-29. Add integration test that exercises the full encode → envelope → detect → decode path
-30. Consider adding `context.Context` support for cancellation
+29. ~~Add integration test that exercises the full encode → envelope → detect → decode path~~ ← open — nice-to-have (each stage is individually tested; the single chained test was never written)
+30. ~~Consider adding `context.Context` support for cancellation~~ **Won't implement — codec operations are synchronous and CPU-bound (sub-µs to µs); cancellation adds API surface with no consumer ask.**
 
 ### Documentation
 
-31. Update `README.md` with `SizeResult` usage example
-32. Update `README.md` with `GetBuffer`/`PutBuffer`/`EncodePooled` mention
-33. Add `SECURITY.md` to README index or table of contents
+31. ~~Update `README.md` with `SizeResult` usage example~~ done at `699fad9` (Size Comparison section)
+32. ~~Update `README.md` with `GetBuffer`/`PutBuffer`/`EncodePooled` mention~~ done at `699fad9` (Pooled Encoding section)
+33. ~~Add `SECURITY.md` to README index or table of contents~~ **Won't implement — README intentionally has no index/TOC; GitHub surfaces SECURITY.md via community standards.**
 34. ~~Document the `observability.go` API in `doc.go` package overview~~ done at `93e68f3` (`# Observability` section in `doc.go`)
-35. Update `CONTRIBUTING.md` with `observability.go` testing guidance
+35. ~~Update `CONTRIBUTING.md` with `observability.go` testing guidance~~ ← open — nice-to-have (CONTRIBUTING documents the testing stack generically; observability specifics live in FEATURES + godoc)
 36. ~~Consider adding a `CHANGELOG.md` entry for the daemon's changes~~ done at `93e68f3`, `d871122` (full `[Unreleased]` entries)
 37. ~~Write `doc.go` examples for `ObserveCodec`, `CodecMetrics`, `WithMetrics`~~ done at `93e68f3` (`ExampleObserveCodec`)
-38. Update `AGENTS.md` with `observability.go` architecture note
-39. Update `AGENTS.md` with `AutoDetectDebug` / `DetectionReason` note
+38. ~~Update `AGENTS.md` with `observability.go` architecture note~~ done — 2026-09-26 docs-health pass (Observability & detection bullet added)
+39. ~~Update `AGENTS.md` with `AutoDetectDebug` / `DetectionReason` note~~ done — 2026-09-26 docs-health pass (same bullet)
 40. ~~Update `FEATURES.md` with observability + streaming JSON features~~ done at `93e68f3`, `d871122`
 
 ### Ecosystem / verification
 
 41. ~~Wire `go-cqrs-lite` to consume `go-codec@v0.1.0`~~ done at `d871122` (proxy-consumption verified; deeper `ObservableCodec` wiring is `ROADMAP.md` theme 5)
-42. Verify `pkg.go.dev` renders the package correctly
+42. ~~Verify `pkg.go.dev` renders the package correctly~~ done — verified 2026-09-26: v0.3.0 is Latest, README + 21 godoc examples render
 43. ~~Add `go ref` links in README to pkg.go.dev~~ done — pkg.go.dev reference badge at README top
-44. Consider adding a versioned API stability guarantee doc
+44. ~~Consider adding a versioned API stability guarantee doc~~ ← open — `ROADMAP.md` theme 5 (pairs with the v1.0.0 discussion)
 45. ~~Run `govulncheck` on the final dependency tree~~ done at `ef1f4f4` (CI vulncheck job on every push)
 46. ~~Review whether `gitleaks-action@v2` needs a GitHub App token vs `GITHUB_TOKEN`~~ done — running with `GITHUB_TOKEN` since `ef1f4f4`
 47. ~~Test the CI pipeline end-to-end (push to a branch, verify all jobs)~~ done — every push since `ef1f4f4` exercises the full matrix
@@ -313,6 +313,9 @@ The v0.1.0 tag is already at `3f8ac9d`. Should I:
 
 This affects whether we create a GitHub Release for v0.1.0 now, or wait and
 release v0.2.0.
+
+**Resolved** — v0.2.0 was cut from HEAD (carrying `SizeResult`), then v0.3.0
+(`9094137`); v0.1.0 history left untouched.
 
 ### 2. Should `observability.go` exist in this library at all?
 
@@ -340,16 +343,13 @@ This is a style/convention decision that affects the entire test suite.
 
 ---
 
-## Resolution (2026-08-14, docs-health pass)
+## Resolution (2026-08-14, docs-health pass; completed 2026-09-26)
 
 Every item above has a verdict: 26 closed inline (done / Won't implement /
-NOT-DO), 12 marked **still open** with a current owner (`TODO_LIST.md` #1, #3,
-#4, #7, #8, #9, #14, #16, #22, #25-ish; `ROADMAP.md` theme 5), and the
-remainder left untouched as deliberately-unowned nice-to-haves: #23
-(`.go-version`), #29 (full-chain integration test), #30 (`context.Context`),
-#31/#32 (README `SizeResult`/pool sections — folded into `TODO_LIST.md` #22),
-#33 (README index — README intentionally has none), #35 (CONTRIBUTING
-observability note), #38/#39 (AGENTS AutoDetectDebug note), #42 (pkg.go.dev
-render check), #44 (API-stability doc). Question g-1 (version strategy) still
-awaits the user; g-2 (observability placement) is settled; g-3 (constant
-naming) is partially settled via `TODO_LIST.md` #14.
+NOT-DO), 12 marked **still open** with a current owner, and the
+remainder resolved by the 2026-09-26 docs-health pass: #23 done `f04d158`;
+#31/#32 done `699fad9`; #33/#30 Won't implement; #29/#35 open nice-to-haves;
+#38/#39 done in-pass (AGENTS.md Observability & detection bullet); #42 done
+(pkg.go.dev verified 2026-09-26); #44 routed to `ROADMAP.md` theme 5.
+Question g-1 resolved (v0.2.0 + v0.3.0 cut); g-2 (observability placement) is
+settled; g-3 (constant naming) is partially settled via `TODO_LIST.md` #14.

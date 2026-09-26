@@ -186,24 +186,24 @@ race tests (both modes), `nix flake check`, both repo tripwires.
 
 ### P1 — make the policy structural
 
-11. Create `docs/error-codes.md`: every code, family, meaning, and emitted site (the ubiquitous language, written down).
-12. Add a uniqueness/registration tripwire (script or test): all `codec.*` codes unique and present in the registry doc.
-13. Add property test (rapid): every error escaping the public API implements `Coded` with a `codec.` prefix — mechanically catch future unclassified wraps.
-14. Add explicit wrapcheck `ignore-sigs` for all `errorfamily.Wrap*` variants (or document the matching mechanism) — remove config-by-luck.
-15. ~~Run `erraudit nolint-audit` and `--no-suppress` audit; prune stale `//nolint:wrapcheck` directives.~~ done (no //nolint:erraudit directives exist)
-16. ~~Run the explicit errors.As→AsType sweep (`erraudit lint --type legacy_as`) and record zero-baseline.~~ done (0 findings, zero-baseline recorded 2026-09-11)
-17. ~~Run `erraudit tree ./...` once; sanity-check the hierarchy for anomalies.~~ done (exit 0; 8 sentinels listed (display quirk: labeled family.new))
-18. ~~Sweep `streaming.go`, `autodetect.go`, `size.go`, `json.go` error paths against the thin-wrapper/classified policy (the audit flagged nothing there, but policy coverage was never explicitly confirmed).~~ done (covered by enforced+type-aware full-package run, 0 findings)
-19. Add a godoc `Example*` demonstrating `errors.AsType[*errorfamily.Error]` on a codec error (doubles as test).
-20. Write the ADR: error taxonomy (families per layer), WrapOnce rule, generic_return decline rationale.
-21. Add erraudit to the nix devShell; consider a `.#erraudit` flake app for pinned local runs.
-22. Pin erraudit version management (dependabot/renovate for the workflow's `go install`).
-23. Sync policy to sibling repos: add the same `error-audit` CI job to go-cqrs-lite (and signing/encryption/storage as applicable).
-24. Run erraudit in each sibling repo; zero their findings under the same flags.
-25. Consider `errorfamily.RegisterTemplate` per code for consistent user-facing messages at the CLI/HTTP boundary.
-26. Evaluate adding the error code as a `CodecMetrics` dimension (count by code) for ops dashboards.
-27. Explicitly verify `errors.Is` behavior table for same-code wraps (wrap-code == sentinel-code matches via `Is` WITHOUT walking the cause chain) and document it in doc.go — it is load-bearing for the sentinel strategy.
-28. ~~Decide the release: tag the error-contract change (see question 3), then bump go-cqrs-lite to it and run its suite.~~ done (deferred per ANSWERS section 3; tracked in TODO_LIST #1)
+11. ~~Create `docs/error-codes.md`~~ done at `dee6efc` (batch 2 registry).
+12. ~~Add a uniqueness/registration tripwire~~ done at `dee6efc` (`scripts/check-error-codes.sh`, CI-wired).
+13. ~~Add property test (rapid): every error escaping the public API implements `Coded`~~ done — `errors_property_test.go` created `fdf8597`.
+14. ~~Add explicit wrapcheck `ignore-sigs` for all `errorfamily.Wrap*` variants~~ done in batch 2 — `.golangci.yml` carries the explicit `errorfamily` signatures plus the verified-mechanism comment (re-verified 2026-09-26).
+15. ~~Run `erraudit nolint-audit` and `--no-suppress` audit~~ done (no //nolint:erraudit directives exist)
+16. ~~Run the explicit errors.As→AsType sweep~~ done (0 findings, zero-baseline recorded 2026-09-11)
+17. ~~Run `erraudit tree ./...` once~~ done (exit 0; 8 sentinels listed (display quirk: labeled family.new))
+18. ~~Sweep `streaming.go`, `autodetect.go`, `size.go`, `json.go` error paths~~ done (covered by enforced+type-aware full-package run, 0 findings)
+19. ~~Add a godoc `Example*` demonstrating `errors.AsType[*errorfamily.Error]`~~ done — `ExampleForEncoding_classified` (verified rendering on pkg.go.dev 2026-09-26).
+20. ~~Write the ADR: error taxonomy~~ done — `docs/adr/0001-error-taxonomy.md` created `888cf8b`.
+21. ~~Add erraudit to the nix devShell; consider a `.#erraudit` flake app~~ done — `.#erraudit` app + devShell command shipped (`e23b0cc`, v0.3.0).
+22. ~~Pin erraudit version management~~ done — deliberate-bump policy + `scripts/check-erraudit-version.sh` tripwire (created `779277b`).
+23. ~~Sync policy to sibling repos: add the same `error-audit` CI job to go-cqrs-lite~~ done — sibling ci.yml carries the self-activating job (batch 2; edit not yet pushed — see 11:49 §a).
+24. ~~Run erraudit in each sibling repo; zero their findings~~ ← open — go-cqrs-lite's `TODO_LIST.md` (253 findings across 22 modules, baseline 2026-09-11).
+25. ~~Consider `errorfamily.RegisterTemplate` per code~~ ← open — `ROADMAP.md` error-contract theme.
+26. ~~Evaluate adding the error code as a `CodecMetrics` dimension~~ ← open — `ROADMAP.md` error-contract theme.
+27. ~~Explicitly verify `errors.Is` behavior table for same-code wraps and document in doc.go~~ ← open — `ROADMAP.md` error-contract theme.
+28. ~~Decide the release: tag the error-contract change~~ done — shipped as v0.3.0 (`9094137`, `4cd0b45`).
 
 ### P2 — polish and upstream
 
@@ -214,8 +214,8 @@ race tests (both modes), `nix flake check`, both repo tripwires.
 33. ~~Consider a snapshot test of rendered `[family:code]` strings for a small, curated failure set (accept the churn tradeoff or reject explicitly in the ADR).~~ done (routed to ROADMAP error-contract theme)
 34. ~~Evaluate `erraudit lsp` for editor integration in this repo's toolchain.~~ done (routed to ROADMAP error-contract theme)
 35. ~~Add erraudit invocation to `nix flake check`'s lint phase (hermetic gate for the error policy) — needs the binary packaged in nix first.~~ done (routed to ROADMAP error-contract theme)
-36. ~~Document the daemon-commit caveat in AGENTS.md Git Workflow section: descriptive commits must be hand-made before pushing shared branches.~~ done at `7eaf7d2`
-37. Inventory which `//nolint` directives lack specific reasons across the repo (nolintlint already enforces; audit for weak reasons like bare `//nolint`).
+36. ~~Document the daemon-commit caveat in AGENTS.md Git Workflow section~~ done at `7eaf7d2`
+37. ~~Inventory which `//nolint` directives lack specific reasons across the repo~~ ← open — `ROADMAP.md` error-contract theme (nolintlint enforces presence; the weak-reason sweep was never run).
 38. ~~Consider classifying `AutoDetectDebug`/`Diagnose` failure placeholders (`<diagnose failed: …>` strings) — currently string placeholders, fine by policy, but confirm and document.~~ done (routed to ROADMAP error-contract theme)
 39. ~~Assess whether `Observability` hook errors should be classified before invoking user hooks (consistency for downstream telemetry).~~ done (routed to ROADMAP error-contract theme)
 40. ~~Monthly erraudit release check (new analyzers) as a recurring task; bump the CI pin deliberately.~~ done (routed to ROADMAP error-contract theme)

@@ -176,83 +176,56 @@ and the status report's 44 open items are annotated inline with evidence.
 
 ## f) NEXT TASKS (prioritized; P0/P1 harvested into TODO_LIST.md)
 
-1. **[USER-BLOCKED] Add `ERRAUDIT_PAT`** (fine-grained PAT, read: `larsartmann/erraudit`) to
-   go-codec repo secrets → the `error-audit` gate self-activates on next push. (TODO_LIST #2)
-2. **[USER DECISION] Or publish erraudit** — then the secret becomes unnecessary and `go install`
-   works everywhere. (TODO_LIST #2 alternative)
-3. Create `docs/error-codes.md`: all 31 codes with family, meaning, emitted site `file:line`.
-   (TODO_LIST #3)
-4. Uniqueness/registration tripwire for `codec.*` codes (script in the
-   `check-features-planned.sh` spirit, CI-integrated). (TODO_LIST #4)
-5. rapid property test: every error escaping the public API is `*errorfamily.Error` with a
-   `codec.`-prefixed code. (TODO_LIST #5)
-6. Make wrapcheck `ignore-sigs` explicit for all `errorfamily.Wrap*` variants (or document the
-   matching mechanism) — remove config-by-luck. (TODO_LIST #6)
-7. godoc `Example*` demonstrating `errors.AsType[*errorfamily.Error]` (doubles as test).
-   (TODO_LIST #7)
-8. Write the error-taxonomy ADR (families per layer, WrapOnce rule, generic_return decline; input:
-   this session's analyzer diagnosis). (TODO_LIST #8)
-9. Package erraudit in the nix devShell + `.#erraudit` flake app (needs `GOEXPERIMENT=jsonv2`
-   under go 1.26). (TODO_LIST #9)
-10. Renovate/dependabot management for the erraudit pin in ci.yml. (TODO_LIST #10)
-11. Sync the error-audit CI job to **go-cqrs-lite** and zero its findings. (TODO_LIST #11)
-12. Same for **signing / encryption / storage** siblings. (TODO_LIST #11)
-13. Upstream erraudit fix: `generic_return` must recognize `WrapOncef`/`WrapCorruptionf`/
-    `WrapInfrastructuref`/`WrapOrchestrationf` as error creators (verified against v0.4.0 source).
-    (TODO_LIST #12)
-14. Upstream erraudit: warn when `--enforce-*` names a library absent from go.mod. (TODO_LIST #12)
-15. Release the batch: deliberate version pick → tag → `gh release create` with `[Unreleased]`
-    body → re-date CHANGELOG → verify proxy/pkg.go.dev. (TODO_LIST #1; §g-2)
-16. Bump `go-cqrs-lite/codec/v4` to the new tag; run its suite `GOWORK=off`. (TODO_LIST #1)
-17. Add the missing dependabot-bump entry (`653f4cd`) to the CHANGELOG release notes.
-18. Refresh the four action digests to Node-24-compatible versions (checkout, setup-go,
-    upload-artifact, gitleaks-action) — clears the deprecation annotations.
-19. Validate the self-activating error-audit job end-to-end (fork run or post-secret push).
-20. Add a least-privilege `permissions:` block to ci.yml jobs (currently absent).
-21. Commit `scripts/bench-compare.py` (robust baseline-vs-rerun diff with sanity bounds) — replaces
-    this session's hand-rolled parsing.
-22. Decide raw-benchmark-output retention (CI artifact or bench branch) so future baselines are
-    tool-comparable, not regex-comparable.
-23. Record a **v2-mode** benchmark baseline alongside the v1 one.
-24. Fold `erraudit --type legacy_as` + `nolint-audit` zero-baselines into the error-audit CI job
-    (cheap, keeps them from regressing silently).
-25. Snapshot test of rendered `[family:code]` strings for a curated failure set (ADR-gated).
-    (ROADMAP)
-26. Error code as a `CodecMetrics` dimension (count by code) for ops dashboards. (ROADMAP)
-27. `errorfamily.RegisterTemplate` per code for boundary message consistency. (ROADMAP)
-28. Document the `errors.Is` same-code behavior table in `doc.go` (wrap-code == sentinel-code
-    matches without walking the cause chain — load-bearing). (ROADMAP)
-29. Classify `Observability` hook errors before invoking user hooks. (ROADMAP)
-30. Confirm/document `AutoDetectDebug`/`Diagnose` `<diagnose failed: …>` placeholders. (ROADMAP)
-31. `erraudit lsp` editor integration for this repo's toolchain. (ROADMAP)
-32. erraudit inside `nix flake check`'s lint phase (blocked by #9). (ROADMAP)
-33. Monthly erraudit release check as a recurring task; bump the CI pin deliberately. (ROADMAP)
-34. Document the `maxPoolBufferSize` / `maxAutoDetectSize` (both 1 MiB) relationship. (ROADMAP)
-35. Flip the README consumer signing example to the family pattern IF the stack-wide convention
-    lands. (ROADMAP)
-36. Inventory `//nolint` directives with weak/no reasons (nolintlint enforces format, not quality).
-37. After #6: prune any `//nolint:wrapcheck` directives that became unnecessary.
-38. Decide the permanent error contract: bare-`error` + `errors.AsType` forever, or typed-errors
-    v2 someday. (§g-3)
-39. Review the weekly fuzz budget (13 targets × 30s × 2 modes ≈ 14 min runner time) after the
-    first cron runs — both legs green 2026-09-06; is 30s/target enough?
-40. Add the mermaid-render CI check for the README architecture diagram (carried TODO_LIST item).
-41. CONTRIBUTING/AGENTS note: how to set `ERRAUDIT_PAT`-style secrets for contributors of sibling
-    repos (if the PAT route is chosen).
-42. When the 06:45 report's remaining open items resolve, `git mv` it to `docs/status/archived/`
-    (docs-health ARCHIVE rule).
-43. Consider `continue-on-error`-free CI policy: keep gates enforcing; document that skip-reason
-    steps are the only acceptable dormancy form.
-44. Evaluate exposing `ErrorContext()` keys as godoc constants (machine-readable contract).
-45. Add the error-family/message-format change to the next go-cqrs-lite release notes (consumer
-    communication).
-46. Keep `.go-version`/`.golangci.yml`/go.mod tripwire green through the next Go patch bump
-    (recurring; scripts/check-go-version.sh guards).
-47. Watch the next Sunday fuzz cron; confirm corpus artifact upload remains healthy.
-48. Consider CI cache (setup-go cache: true) for the three `go install`-heavy jobs.
-49. Evaluate `erraudit lint` in PR-annotation mode (inline comments) once the gate activates.
-50. Post-release: re-run the full benchmark suite and re-date the baseline doc (toolchain may move
-    again with the release).
+1. ~~**[USER-BLOCKED] Add `ERRAUDIT_PAT`**~~ ← open — `TODO_LIST.md` #1 (user-deferred 2026-09-11; gate stays dormant).
+2. ~~**[USER DECISION] Or publish erraudit**~~ ← open — `TODO_LIST.md` #1 (alternative).
+3. ~~Create `docs/error-codes.md`~~ done at `dee6efc` (32 codes; renamed/phantom codes break CI).
+4. ~~Uniqueness/registration tripwire~~ done at `dee6efc` (`scripts/check-error-codes.sh`).
+5. ~~rapid property test~~ done — `errors_property_test.go` (`fdf8597`).
+6. ~~Make wrapcheck `ignore-sigs` explicit~~ done in batch 2 (verified mechanism + explicit sigs in `.golangci.yml`).
+7. ~~godoc `Example*` demonstrating `errors.AsType`~~ done — `ExampleForEncoding_classified` (verified on pkg.go.dev 2026-09-26).
+8. ~~Write the error-taxonomy ADR~~ done — `docs/adr/0001-error-taxonomy.md` (`888cf8b`).
+9. ~~Package erraudit in the nix devShell + `.#erraudit` flake app~~ done — shipped `e23b0cc` (v0.3.0).
+10. ~~Renovate/dependabot management for the erraudit pin~~ done — deliberate-bump policy ratified; `scripts/check-erraudit-version.sh` tripwire (`779277b`).
+11. ~~Sync the error-audit CI job to **go-cqrs-lite** and zero its findings~~ partially done — the ci.yml job synced in batch 2 (not pushed); zeroing ← open — go-cqrs-lite's `TODO_LIST.md` (253 findings).
+12. ~~Same for **signing / encryption / storage** siblings~~ ← open — go-cqrs-lite-side.
+13. ~~Upstream erraudit fix: `generic_return` must recognize the family-wrap creators~~ ← open — `TODO_LIST.md` #2 (draft, file on instruction).
+14. ~~Upstream erraudit: warn when `--enforce-*` names a library absent from go.mod~~ ← open — `TODO_LIST.md` #2.
+15. ~~Release the batch: deliberate version pick → tag → `gh release create`~~ resolved — shipped as v0.3.0 (`9094137`, `4cd0b45`).
+16. ~~Bump `go-cqrs-lite/codec/v4` to the new tag; run its suite `GOWORK=off`~~ resolved — v0.3.0 consumer wave (09-17 report §a).
+17. ~~Add the missing dependabot-bump entry (`653f4cd`) to the CHANGELOG release notes~~ done at `9094137` (cbor v2.9.4 entry).
+18. ~~Refresh the four action digests to Node-24-compatible versions~~ ← open — `TODO_LIST.md` (CI hygiene; verify current Node-24-runtime releases at execution time).
+19. ~~Validate the self-activating error-audit job end-to-end~~ ← open — blocked on `TODO_LIST.md` #1 (the secret).
+20. ~~Add a least-privilege `permissions:` block to ci.yml jobs~~ ← open — `TODO_LIST.md` (CI hygiene; verified absent 2026-09-26).
+21. ~~Commit `scripts/bench-compare.py`~~ ← open — `TODO_LIST.md` (verified absent from `scripts/` 2026-09-26).
+22. ~~Decide raw-benchmark-output retention~~ ← open — `TODO_LIST.md` (CI hygiene decision).
+23. ~~Record a **v2-mode** benchmark baseline alongside the v1 one~~ ← open — `TODO_LIST.md` (folded into the baseline re-run row).
+24. ~~Fold `erraudit --type legacy_as` + `nolint-audit` zero-baselines into the error-audit CI job~~ done at `7eaf7d2`-era batch (v0.3.0 CHANGELOG documents the folded zero-baselines).
+25. ~~Snapshot test of rendered `[family:code]` strings~~ ← open — `ROADMAP.md` error-contract theme.
+26. ~~Error code as a `CodecMetrics` dimension~~ ← open — `ROADMAP.md` error-contract theme.
+27. ~~`errorfamily.RegisterTemplate` per code~~ ← open — `ROADMAP.md` error-contract theme.
+28. ~~Document the `errors.Is` same-code behavior table in `doc.go`~~ ← open — `ROADMAP.md` error-contract theme.
+29. ~~Classify `Observability` hook errors before invoking user hooks~~ ← open — `ROADMAP.md` error-contract theme.
+30. ~~Confirm/document `AutoDetectDebug`/`Diagnose` placeholders~~ ← open — `ROADMAP.md` error-contract theme.
+31. ~~`erraudit lsp` editor integration~~ ← open — `ROADMAP.md` error-contract theme.
+32. ~~erraudit inside `nix flake check`'s lint phase~~ ← open — `ROADMAP.md` error-contract theme.
+33. ~~Monthly erraudit release check as a recurring task~~ ← open — `ROADMAP.md` error-contract theme.
+34. ~~Document the `maxPoolBufferSize` / `maxAutoDetectSize` relationship~~ ← open — `ROADMAP.md` error-contract theme.
+35. ~~Flip the README consumer signing example to the family pattern IF the stack-wide convention lands~~ ← open — `ROADMAP.md` error-contract theme.
+36. ~~Inventory `//nolint` directives with weak/no reasons~~ ← open — `ROADMAP.md` error-contract theme.
+37. ~~After #6: prune any `//nolint:wrapcheck` directives that became unnecessary~~ ← open — `ROADMAP.md` error-contract theme (niche).
+38. ~~Decide the permanent error contract~~ done — decided 2026-09-11: bare-`error` + `errors.AsType` now, typed-errors v2 later (ADR-0001; ROADMAP records the direction).
+39. ~~Review the weekly fuzz budget~~ ← open — deferred (both legs green 2026-09-06; monthly review, 09-17 §f-50).
+40. ~~Add the mermaid-render CI check~~ done — CI mermaid job (`e23b0cc`, v0.3.0).
+41. ~~CONTRIBUTING/AGENTS note: how to set `ERRAUDIT_PAT`-style secrets~~ ← open — `TODO_LIST.md` (bounded docs row).
+42. ~~When the 06:45 report's remaining open items resolve, `git mv` it to `docs/status/archived/`~~ done 2026-09-26 — 06-45 annotated and archived in this pass.
+43. ~~Consider `continue-on-error`-free CI policy~~ done (verified 2026-09-26 — ci.yml has no `continue-on-error`; skip-reason steps are the only dormancy form).
+44. ~~Evaluate exposing `ErrorContext()` keys as godoc constants~~ ← open — `ROADMAP.md` error-contract theme.
+45. ~~Add the error-family/message-format change to the next go-cqrs-lite release notes~~ ← open — go-cqrs-lite-side.
+46. ~~Keep the Go-version tripwire green through the next bump~~ done (recurring) — tripwire guards CI; the 2026-09-26 pass caught + fixed an accidental `go.mod` 1.27.1 drift.
+47. ~~Watch the next Sunday fuzz cron; confirm corpus artifact upload~~ done — first cron green 2026-09-06 (08-27 §a-11).
+48. ~~Consider CI cache (setup-go cache: true) for the `go install`-heavy jobs~~ ← open — `TODO_LIST.md` (CI hygiene).
+49. ~~Evaluate `erraudit lint` in PR-annotation mode~~ ← open — `ROADMAP.md` error-contract theme (gated on `TODO_LIST.md` #1).
+50. ~~Post-release: re-run the full benchmark suite and re-date the baseline doc~~ ← open — `TODO_LIST.md` (toolchain moved 1.26.5 → 1.26.7 since the 2026-08-15 baseline).
 
 ## g) QUESTIONS I CANNOT ANSWER MYSELF
 

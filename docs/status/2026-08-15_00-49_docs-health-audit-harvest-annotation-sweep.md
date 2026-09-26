@@ -184,15 +184,15 @@ New/un-routed observations from this session:
 
 | #  | Task                                                                                                                                                                                                                          | Impact | Effort |
 | -- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
-| 12 | Verify the trusted-not-checked set from the 20-07 follow-up report: #34 lint-artifact-validity CI test, #36 mermaid-render CI check, #43 Envelope fallback test, #44 README-example golden snapshots — grep each against code | Med    | S      |
-| 13 | Read + verify `CONTRIBUTING.md` freshness (not read this session)                                                                                                                                                             | Low    | 15min  |
-| 14 | Read + verify `SECURITY.md` freshness (not read this session)                                                                                                                                                                 | Low    | 10min  |
-| 15 | Audit `docs/planning/archived/` for stale references                                                                                                                                                                          | Low    | 15min  |
-| 16 | Strike or annotate the last old-numbering ref at 09-58:323                                                                                                                                                                    | Low    | 2min   |
-| 17 | `git diff` the pre-existing 20-47-report modification (or confirm the daemon committed it)                                                                                                                                    | Low    | 5min   |
-| 18 | Decide `dprint.json` fate: treefmt drives formatting; is the secondary config still earning its keep?                                                                                                                         | Low    | 10min  |
-| 19 | Post-`v0.1.1` docs-health pass: `[Unreleased]`→`[0.1.1]` dating collapses TODO #1; re-measure coverage; next audit can compare against this session's Accuracy/Fitness baseline                                               | Med    | 30min  |
-| 20 | Post-release: `go get @v0.1.1` + pkg.go.dev rendering check (in TODO #1 runbook; listed for visibility)                                                                                                                       | High   | 10min  |
+| 12 | ~~Verify the trusted-not-checked set from the 20-07 follow-up report~~ done — verified 2026-09-26: #34 jq validation (`ba9f6c2`), #36 mermaid CI job (`e23b0cc`), #43 envelope fallback (`0a091ee`), #44 README goldens Won't implement            | Med    | S      |
+| 13 | ~~Read + verify `CONTRIBUTING.md` freshness~~ done — verified 2026-09-26 (commands, dual-build, snapshot flow current)                                                                                                                                                             | Low    | 15min  |
+| 14 | ~~Read + verify `SECURITY.md` freshness~~ done — verified + fixed 2026-09-26 (supported-versions table updated to 0.x; it still listed only 0.1.x)                                                                                                                                                             | Low    | 10min  |
+| 15 | ~~Audit `docs/planning/archived/` for stale references~~ done 2026-09-26 (single archived plan; cross-refs updated where cited)                                                                                                                                                                          | Low    | 15min  |
+| 16 | ~~Strike or annotate the last old-numbering ref at 09-58:323~~ done 2026-09-26 pass (09-58 re-verified fully annotated and archived)                                                                                                                                                           | Low    | 2min   |
+| 17 | ~~`git diff` the pre-existing 20-47-report modification (or confirm the daemon committed it)~~ done (moot) — history confirms the daemon commits; documented in `TODO_LIST.md` #3                                                                                           | Low    | 5min   |
+| 18 | ~~Decide `dprint.json` fate~~ done (kept) — treefmt-nix drives `nix fmt`/`nix flake check`; `dprint.json` remains a secondary config for non-Nix contributors                                                                          | Low    | 10min  |
+| 19 | ~~Post-`v0.1.1` docs-health pass~~ resolved — superseded by the v0.3.0 release; the 2026-09-26 pass is the current audit                                                                                       | Med    | 30min  |
+| 20 | ~~Post-release: `go get @tag` + pkg.go.dev rendering check~~ done — v0.3.0 runbook closed (`4cd0b45`); pkg.go.dev re-verified 2026-09-26 (Latest, renders)                                                                                       | High   | 10min  |
 
 (20 items — the honest ceiling of what THIS session observed; padding to 50 would
 violate the no-vague-items rule.)
@@ -202,13 +202,16 @@ violate the no-vague-items rule.)
 1. **Release:** cut `v0.1.1` from HEAD now (HEAD includes this audit's doc fixes)?
    Recommendation unchanged — new tag, never move the published `v0.1.0`. Also gates
    CHANGELOG dating and the GitHub Release body.
+   **Resolved** — v0.2.0 and v0.3.0 were cut from HEAD (`9094137`); `v0.1.0` untouched.
 2. **Daemon policy:** the daemon has twice preempted commit-granularity decisions
    (`f04d158`, and this session's 11-file diff is now queued the same way). Is
    one-commit scooping acceptable, or should reports/docs be committed separately
    from code? (Daemon config — only you can change it.)
+   ← open — user decision (`TODO_LIST.md` #3).
 3. **Trusted-not-checked set:** items 12 in §f above rest on the 20-47 session's
    dedup claim rather than my own verification. Do you want a verification sweep of
    those next, or does the prior claim stand?
+   **Resolved** — the sweep ran (see §f-12 above): three shipped, one Won't implement.
 
 ---
 

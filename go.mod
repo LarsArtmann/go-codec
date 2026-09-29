@@ -6,7 +6,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.9.4
 	github.com/gkampitakis/go-snaps v0.5.23
 	github.com/larsartmann/go-error-family v0.11.0
-	github.com/onsi/gomega v1.43.0
+	github.com/onsi/gomega v1.44.0
 	pgregory.net/rapid v1.3.0
 )
 
@@ -24,8 +24,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

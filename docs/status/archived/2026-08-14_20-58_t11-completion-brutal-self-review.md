@@ -130,24 +130,24 @@ three user decisions, one of which just went moot.
 
 ## f) Things we should get done next
 
-| #  | Task                                                                                                                                         | Impact   | Effort |
-| -- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
-| 1  | ~~USER: decide `v0.1.1` release from `f04d158`~~ resolved — superseded: v0.2.0/v0.3.0 released (`9094137`, `4cd0b45`)                                        | Critical | 5min   |
-| 2  | ~~USER: fuzz CI budget — 13 targets × 30s × 2 modes weekly cron, acceptable or trim?~~ ← open — deferred (budget live since `699fad9`; first cron green 2026-09-06; monthly review 09-17 §f-50)                           | Med      | —      |
-| 3  | ~~USER: daemon commit policy~~ ← open — user decision (`TODO_LIST.md` #3)  | Med      | —      |
-| 4  | ~~Push and watch the first real CI run~~ done — CI exercised on every push since; green through the v0.3.0 release run                                   | High     | S      |
-| 5  | ~~Sibling `signing` module: accept `DeterministicCodec`~~ ← open — `ROADMAP.md` theme 5 (cross-repo)                                       | High     | M      |
-| 6  | ~~Sibling modules: reuse `CBOREncMode()`/`CBORDecMode()`~~ ← open — `ROADMAP.md` theme 5 (cross-repo)                                                           | Med      | M      |
-| 7  | ~~Benchstat long-run baseline → record in a docs file; upgrade FEATURES `~` numbers~~ done at `ba9f6c2` (`docs/benchmark-baseline.md`; FEATURES baseline-cited)                                   | Med      | 30min  |
-| 8  | ~~Fix `observability_test.go:560` unusedwrite~~ done at `f04d158` (`TestObservableCodec_MetricsSnapshotImmutability` asserts the copy)                                   | Low      | 10min  |
-| 9  | ~~Remove or use the unused constant set at `testdata_test.go:7`~~ **NOT-DO/FALSE-POSITIVE — the constants are used (00-49 §a-2); nothing to fix.**                                   | Low      | 10min  |
-| 10 | ~~Single source of Go version~~ done at `ba9f6c2` (`scripts/check-go-version.sh` tripwire; drift caught + fixed 2026-09-26)                                | Low      | 10min  |
-| 11 | ~~CI bench-regression job~~ ← open — `ROADMAP.md` theme 2                              | Med      | M      |
-| 12 | ~~README badges (CI status + pkg.go.dev)~~ done at `17bad3f`                                                       | Low      | 15min  |
-| 13 | ~~`SizeResult` JSON tags~~ done — shipped in the v0.2.0 cycle                     | Low      | S      |
-| 14 | ~~Longer/second fuzz cron once weekly runs are monitored~~ ← open — deferred (monthly review 09-17 §f-50)                                                       | Low      | S      |
-| 15 | ~~pkg.go.dev verification after the release~~ done — verified 2026-09-26 (v0.3.0 Latest, renders with 21 examples)                                 | Med      | 10min  |
-| 16 | ~~Migrate remaining multi-line `~~` spans in older annotated reports~~ done at `17bad3f` (+ 2026-09-26 pass)                                  | Low      | 30min  |
+| #  | Task                                                                                                                                                                                            | Impact   | Effort |
+| -- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
+| 1  | ~~USER: decide `v0.1.1` release from `f04d158`~~ resolved — superseded: v0.2.0/v0.3.0 released (`9094137`, `4cd0b45`)                                                                           | Critical | 5min   |
+| 2  | ~~USER: fuzz CI budget — 13 targets × 30s × 2 modes weekly cron, acceptable or trim?~~ ← open — deferred (budget live since `699fad9`; first cron green 2026-09-06; monthly review 09-17 §f-50) | Med      | —      |
+| 3  | ~~USER: daemon commit policy~~ ← open — user decision (`TODO_LIST.md` #3)                                                                                                                       | Med      | —      |
+| 4  | ~~Push and watch the first real CI run~~ done — CI exercised on every push since; green through the v0.3.0 release run                                                                          | High     | S      |
+| 5  | ~~Sibling `signing` module: accept `DeterministicCodec`~~ ← open — `ROADMAP.md` theme 5 (cross-repo)                                                                                            | High     | M      |
+| 6  | ~~Sibling modules: reuse `CBOREncMode()`/`CBORDecMode()`~~ ← open — `ROADMAP.md` theme 5 (cross-repo)                                                                                           | Med      | M      |
+| 7  | ~~Benchstat long-run baseline → record in a docs file; upgrade FEATURES `~` numbers~~ done at `ba9f6c2` (`docs/benchmark-baseline.md`; FEATURES baseline-cited)                                 | Med      | 30min  |
+| 8  | ~~Fix `observability_test.go:560` unusedwrite~~ done at `f04d158` (`TestObservableCodec_MetricsSnapshotImmutability` asserts the copy)                                                          | Low      | 10min  |
+| 9  | ~~Remove or use the unused constant set at `testdata_test.go:7`~~ **NOT-DO/FALSE-POSITIVE — the constants are used (00-49 §a-2); nothing to fix.**                                              | Low      | 10min  |
+| 10 | ~~Single source of Go version~~ done at `ba9f6c2` (`scripts/check-go-version.sh` tripwire; drift caught + fixed 2026-09-26)                                                                     | Low      | 10min  |
+| 11 | ~~CI bench-regression job~~ ← open — `ROADMAP.md` theme 2                                                                                                                                       | Med      | M      |
+| 12 | ~~README badges (CI status + pkg.go.dev)~~ done at `17bad3f`                                                                                                                                    | Low      | 15min  |
+| 13 | ~~`SizeResult` JSON tags~~ done — shipped in the v0.2.0 cycle                                                                                                                                   | Low      | S      |
+| 14 | ~~Longer/second fuzz cron once weekly runs are monitored~~ ← open — deferred (monthly review 09-17 §f-50)                                                                                       | Low      | S      |
+| 15 | ~~pkg.go.dev verification after the release~~ done — verified 2026-09-26 (v0.3.0 Latest, renders with 21 examples)                                                                              | Med      | 10min  |
+| 16 | ~~Migrate remaining multi-line `~~` spans in older annotated reports~~ done at `17bad3f` (+ 2026-09-26 pass)                                                                                    | Low      | 30min  |
 
 (16 items — deduped against the 20-47 report's still-open f-items 4–15; those
 remain the routing source. Per the status-report skill, this list is HARVEST

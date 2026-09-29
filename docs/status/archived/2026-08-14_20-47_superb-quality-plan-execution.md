@@ -142,18 +142,18 @@ $ go tool cover -func                               # 86.3% (v1) / 88.8% (v2)
 | 1  | ~~Finish T11: `CHANGELOG [Unreleased]` entries for T1–T10~~ done 2026-08-14 (follow-up session)                                                             | High     | 15min  |
 | 2  | ~~Finish T11: `FEATURES.md` — coverage 86.3/88.8 + evidence rows (matrix tests, fuzz ×2, tripwire, benchmarks)~~ done 2026-08-14 — final coverage 88.0/88.8 | High     | 15min  |
 | 3  | ~~Run `nix flake check` (treefmt over new files; canonical gate)~~ done 2026-08-14 — all checks passed                                                      | High     | 10min  |
-| 4  | ~~User decides release: cut `v0.1.1` from HEAD + `gh release create`~~ resolved — superseded by v0.2.0/v0.3.0 (`9094137`)                                                                                          | Critical | 5min   |
-| 5  | ~~Cross-repo: sibling `signing` module accepts `DeterministicCodec`~~ ← open — `ROADMAP.md` theme 5 (cross-repo)                                                                                           | High     | M      |
-| 6  | ~~Cross-repo: sibling modules reuse `CBOREncMode()`/`CBORDecMode()`~~ ← open — `ROADMAP.md` theme 5 (cross-repo)                                                                                           | Med      | M      |
-| 7  | ~~README badge (CI status + pkg.go.dev)~~ done at `17bad3f`                                                                                                                       | Low      | 15min  |
-| 8  | ~~CI bench-regression job (baseline + benchstat; ROADMAP theme 2)~~ ← open — `ROADMAP.md` theme 2                                                                                             | Med      | M      |
-| 9  | ~~Longer/second fuzz cron after monitoring weekly 30s runs~~ ← open — deferred (monthly review 09-17 §f-50)                                                                                    | Low      | S      |
-| 10 | ~~`SizeResult` JSON tags (deferred API change; pair with release decision)~~ done — shipped in the v0.2.0 cycle                                                                                    | Low      | S      |
-| 11 | ~~Record benchmark baselines (ns/op, B/op) in a docs file~~ done at `ba9f6c2` (`docs/benchmark-baseline.md`)                                                                           | Low      | 15min  |
-| 12 | ~~Consider `nix run .#bench` app for on-demand baselines~~ ← open — `ROADMAP.md` theme 2                                                                                                      | Low      | M      |
-| 13 | ~~Monitor first GitHub Actions run of the new CI steps~~ done — CI green through the v0.3.0 release run                                                            | Med      | S      |
-| 14 | ~~gopls project diagnostics re-check after daemon commit~~ done — verified in later sessions; LSP clean at the 2026-09-26 pass                                                  | Low      | S      |
-| 15 | ~~Migrate any remaining multi-line `~~` spans in older annotated reports to per-line form~~ done at `17bad3f`                                         | Low      | 30min  |
+| 4  | ~~User decides release: cut `v0.1.1` from HEAD + `gh release create`~~ resolved — superseded by v0.2.0/v0.3.0 (`9094137`)                                   | Critical | 5min   |
+| 5  | ~~Cross-repo: sibling `signing` module accepts `DeterministicCodec`~~ ← open — `ROADMAP.md` theme 5 (cross-repo)                                            | High     | M      |
+| 6  | ~~Cross-repo: sibling modules reuse `CBOREncMode()`/`CBORDecMode()`~~ ← open — `ROADMAP.md` theme 5 (cross-repo)                                            | Med      | M      |
+| 7  | ~~README badge (CI status + pkg.go.dev)~~ done at `17bad3f`                                                                                                 | Low      | 15min  |
+| 8  | ~~CI bench-regression job (baseline + benchstat; ROADMAP theme 2)~~ ← open — `ROADMAP.md` theme 2                                                           | Med      | M      |
+| 9  | ~~Longer/second fuzz cron after monitoring weekly 30s runs~~ ← open — deferred (monthly review 09-17 §f-50)                                                 | Low      | S      |
+| 10 | ~~`SizeResult` JSON tags (deferred API change; pair with release decision)~~ done — shipped in the v0.2.0 cycle                                             | Low      | S      |
+| 11 | ~~Record benchmark baselines (ns/op, B/op) in a docs file~~ done at `ba9f6c2` (`docs/benchmark-baseline.md`)                                                | Low      | 15min  |
+| 12 | ~~Consider `nix run .#bench` app for on-demand baselines~~ ← open — `ROADMAP.md` theme 2                                                                    | Low      | M      |
+| 13 | ~~Monitor first GitHub Actions run of the new CI steps~~ done — CI green through the v0.3.0 release run                                                     | Med      | S      |
+| 14 | ~~gopls project diagnostics re-check after daemon commit~~ done — verified in later sessions; LSP clean at the 2026-09-26 pass                              | Low      | S      |
+| 15 | ~~Migrate any remaining multi-line `~~` spans in older annotated reports to per-line form~~ done at `17bad3f`                                               | Low      | 30min  |
 
 (15 items — everything else from the 20:07 lists is either done in this
 session, resolved NOT-DO with reasons in the annotations, or routed above.)

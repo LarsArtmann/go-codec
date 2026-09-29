@@ -245,7 +245,7 @@ noticed this session. Ranked roughly by impact.
 
 7. Re-run the 10-run benchstat baseline (v1) + record the v2-mode baseline;
    re-date `docs/benchmark-baseline.md` (TODO_LIST #4; toolchain 1.26.5→1.26.7
-   + simplified v1 marshal since 2026-08-15).
+   - simplified v1 marshal since 2026-08-15).
 8. Run `check-rows.py` over all 26 archived files; fix any PARTIAL table rows
    it flags (this pass's gap, see d-1).
 9. Refresh pinned action digests to Node-24-runtime versions + least-privilege
@@ -348,25 +348,25 @@ noticed this session. Ranked roughly by impact.
 
 ## Harvest ledger (this pass's routing decisions)
 
-| Source (archived report §item)                                                                 | Disposition    | Destination / reason                                                     |
-| ---------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------ |
-| 08-27 §f-23/50 + 12-02 #35/50 + 09-17 §f-17 (benchstat re-run + v2 baseline)                    | new row        | TODO_LIST #4 (toolchain moved → baseline stale)                          |
-| 08-27 §f-18/20 + 12-02 #31/32 + 09-17 §f-38 (action digests, permissions block)                 | new row        | TODO_LIST #5                                                             |
-| 12-02 #46/47 (dependabot actions, setup-go cache)                                               | new row        | TODO_LIST #6                                                             |
-| 08-27 §f-21/22 + 12-02 #33/34 (bench-compare.py, retention)                                     | new row        | TODO_LIST #7                                                             |
-| 09-17 §c-6/§g-2/§f-19 (backfill v0.1.0/v0.2.0 releases)                                         | new row        | TODO_LIST #8 (user-gated)                                                |
-| 09-17 §c-5/§f-20 (tag-push release workflow)                                                    | new row        | TODO_LIST #9                                                             |
-| 08-27 §f-41 + 12-02 #19 (PAT secrets note)                                                      | new row        | TODO_LIST #10 (gated on #1)                                              |
-| 12-02 #24 (.#tripwires app)                                                                     | new row        | TODO_LIST #11                                                            |
-| 18-24 §f-50 (+09-58 #44) (Go 1.27 bump)                                                         | new row        | TODO_LIST #12 (accidental bump reverted 2026-09-26)                      |
-| 09-17 §f-23 (go-directive floor policy)                                                         | new ROADMAP    | theme 5 raw idea                                                         |
-| 09-17 §f-36/40/45/48/49 + arch-review row 3 (consumer sim, notes-gen, checklist, API doc, adoption, event/v4) | new ROADMAP | theme 5 (6 ideas)                                      |
-| 06-45 §f-11..14,19..23 (registry, tripwire, property, wrapcheck, example, ADR, devShell, pin, sibling sync) | done in code | `dee6efc`/`fdf8597`/`888cf8b`/`779277b`/`e23b0cc` era (verified)   |
-| 08-27 §f-3..10,15..17,24,38,40,42,43,46..48 (same family)                                       | done in code   | batch 2 / v0.3.0 (cited inline per item)                                 |
-| 12-02 #1..3,7,11..17,21,26,48 (push, release, cron, tripwires, archive)                          | done in code   | this pass / prior commits (cited inline)                                 |
-| 06-45 §f-24 (sibling zeroing), 08-27 §f-11..12 (sibling job roll-out)                           | existing row   | go-cqrs-lite TODO_LIST (253 findings)                                    |
-| ERRAUDIT_PAT / upstream filings / daemon policy                                                 | existing row   | TODO_LIST #1/#2/#3 (unchanged)                                           |
-| ~15 niche test/tool ideas (fuzz EncodePooled, goldens, io.Pipe, StreamCodec, …)                 | declined       | "no consumer demand" — dispositioned inline in archived files (see §g-3) |
+| Source (archived report §item)                                                                                | Disposition  | Destination / reason                                                     |
+| ------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------ |
+| 08-27 §f-23/50 + 12-02 #35/50 + 09-17 §f-17 (benchstat re-run + v2 baseline)                                  | new row      | TODO_LIST #4 (toolchain moved → baseline stale)                          |
+| 08-27 §f-18/20 + 12-02 #31/32 + 09-17 §f-38 (action digests, permissions block)                               | new row      | TODO_LIST #5                                                             |
+| 12-02 #46/47 (dependabot actions, setup-go cache)                                                             | new row      | TODO_LIST #6                                                             |
+| 08-27 §f-21/22 + 12-02 #33/34 (bench-compare.py, retention)                                                   | new row      | TODO_LIST #7                                                             |
+| 09-17 §c-6/§g-2/§f-19 (backfill v0.1.0/v0.2.0 releases)                                                       | new row      | TODO_LIST #8 (user-gated)                                                |
+| 09-17 §c-5/§f-20 (tag-push release workflow)                                                                  | new row      | TODO_LIST #9                                                             |
+| 08-27 §f-41 + 12-02 #19 (PAT secrets note)                                                                    | new row      | TODO_LIST #10 (gated on #1)                                              |
+| 12-02 #24 (.#tripwires app)                                                                                   | new row      | TODO_LIST #11                                                            |
+| 18-24 §f-50 (+09-58 #44) (Go 1.27 bump)                                                                       | new row      | TODO_LIST #12 (accidental bump reverted 2026-09-26)                      |
+| 09-17 §f-23 (go-directive floor policy)                                                                       | new ROADMAP  | theme 5 raw idea                                                         |
+| 09-17 §f-36/40/45/48/49 + arch-review row 3 (consumer sim, notes-gen, checklist, API doc, adoption, event/v4) | new ROADMAP  | theme 5 (6 ideas)                                                        |
+| 06-45 §f-11..14,19..23 (registry, tripwire, property, wrapcheck, example, ADR, devShell, pin, sibling sync)   | done in code | `dee6efc`/`fdf8597`/`888cf8b`/`779277b`/`e23b0cc` era (verified)         |
+| 08-27 §f-3..10,15..17,24,38,40,42,43,46..48 (same family)                                                     | done in code | batch 2 / v0.3.0 (cited inline per item)                                 |
+| 12-02 #1..3,7,11..17,21,26,48 (push, release, cron, tripwires, archive)                                       | done in code | this pass / prior commits (cited inline)                                 |
+| 06-45 §f-24 (sibling zeroing), 08-27 §f-11..12 (sibling job roll-out)                                         | existing row | go-cqrs-lite TODO_LIST (253 findings)                                    |
+| ERRAUDIT_PAT / upstream filings / daemon policy                                                               | existing row | TODO_LIST #1/#2/#3 (unchanged)                                           |
+| ~15 niche test/tool ideas (fuzz EncodePooled, goldens, io.Pipe, StreamCodec, …)                               | declined     | "no consumer demand" — dispositioned inline in archived files (see §g-3) |
 
 Every other harvested observation was `done in code` and is cited per-item
 inline in the archived files — this ledger covers the routing decisions, not

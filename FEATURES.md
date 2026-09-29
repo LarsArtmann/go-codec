@@ -98,12 +98,12 @@ there before accepting performance-sensitive changes.
 
 ## Shared CBOR infrastructure
 
-| Feature                                         | Status                | Notes                                                                                                  |
-| ----------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
-| `CBOREncMode` / `CBORDecMode` — exported modes  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; sibling modules reuse these for byte-identical output — `streaming_test.go`                 |
-| `Diagnose` — CBOR extended diagnostic notation  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; valid cases — `cbor_compact_test.go` (`TestDiagnose`); invalid-CBOR rejection — `codec_test.go` (`TestDiagnose_InvalidCBOR`)                 |
-| `Size` — JSON vs CBOR byte-size comparison      | 🟢 `FULLY_FUNCTIONAL` | `size.go`; returns `SizeResult{JSON, CBOR}` struct; normal + encode-error paths — `autodetect_test.go` |
-| `toarray` / `keyasint` / `omitzero` tag support | 🟢 `FULLY_FUNCTIONAL` | Via fxamacker/cbor; struct tags + godoc examples — `codec_test.go`, `example_test.go`                  |
+| Feature                                         | Status                | Notes                                                                                                                                   |
+| ----------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `CBOREncMode` / `CBORDecMode` — exported modes  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; sibling modules reuse these for byte-identical output — `streaming_test.go`                                                  |
+| `Diagnose` — CBOR extended diagnostic notation  | 🟢 `FULLY_FUNCTIONAL` | `cbor.go`; valid cases — `cbor_compact_test.go` (`TestDiagnose`); invalid-CBOR rejection — `codec_test.go` (`TestDiagnose_InvalidCBOR`) |
+| `Size` — JSON vs CBOR byte-size comparison      | 🟢 `FULLY_FUNCTIONAL` | `size.go`; returns `SizeResult{JSON, CBOR}` struct; normal + encode-error paths — `autodetect_test.go`                                  |
+| `toarray` / `keyasint` / `omitzero` tag support | 🟢 `FULLY_FUNCTIONAL` | Via fxamacker/cbor; struct tags + godoc examples — `codec_test.go`, `example_test.go`                                                   |
 
 ## Cross-format transcoding
 

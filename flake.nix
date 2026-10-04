@@ -83,6 +83,9 @@
         {
           treefmt = {
             projectRootFile = "go.mod";
+            # The auto-added checks.treefmt is replaced by checks.format below,
+            # which pins the go toolchain for goimports.
+            flakeCheck = false;
             programs = {
               gofumpt.enable = true;
               goimports.enable = true;
@@ -90,7 +93,15 @@
             };
           };
 
-          checks.format = config.treefmt.build.check self;
+          # treefmt's goimports shells out to `go` for module-aware import
+          # resolution. The sandbox's ambient go can be older than go.mod's
+          # directive; with the default GOTOOLCHAIN=auto it then tries (and,
+          # offline, fails) to download the pinned toolchain. Pin the same go
+          # the devShell uses and forbid toolchain downloads instead.
+          checks.format = (config.treefmt.build.check self).overrideAttrs (old: {
+            nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ goPkg ];
+            GOTOOLCHAIN = "local";
+          });
           devShells.default = pkgs.mkShellNoCC {
             packages = [
               goPkg

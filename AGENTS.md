@@ -38,7 +38,7 @@ go-codec/
 
 ## Commands
 
-Plain Go toolchain (Go 1.26+). The project supports both `encoding/json` v1
+Plain Go toolchain (Go 1.27+). The project supports both `encoding/json` v1
 (default) and v2 (opt-in via `GOEXPERIMENT=jsonv2`). **Mode must be explicit:**
 shells may carry an ambient `GOEXPERIMENT=jsonv2`, which silently flips plain
 invocations to v2 and excludes every v1-tagged file (`json_compat_v1.go`,
@@ -56,6 +56,7 @@ bash scripts/check-go-version.sh          # tripwire: go.mod/.go-version/.golang
 bash scripts/check-error-codes.sh         # tripwire: errors.go ↔ docs/error-codes.md in sync
 bash scripts/check-features-planned.sh    # tripwire: PLANNED symbols must not exist yet
 bash scripts/check-erraudit-version.sh    # tripwire: erraudit pin agrees ci.yml ↔ flake.nix
+nix run .#tripwires                       # all four tripwires, CI order, one command
 ```
 
 With flake.nix (preferred in LarsArtmann projects):
@@ -140,8 +141,11 @@ nix run .#lint                        # lint both modes
   needed. Benchmarks: `BenchmarkTagTradeoffs_Encode/Decode` (map vs toarray vs
   keyasint across small/medium/large payloads), `BenchmarkCBORReflectionCache`
   (cold vs warm), `BenchmarkEncodePooled` (pool vs plain Encode). A 10-run
-  benchstat reference baseline lives in `docs/benchmark-baseline.md` — re-run
-  and compare there before accepting performance-sensitive changes.
+  benchstat reference baseline (v1 + v2 modes) lives in
+  `docs/benchmark-baseline.md` — re-run and compare there before accepting
+  performance-sensitive changes; `scripts/bench-compare.py` sanity-gates two
+  raw benchmark outputs (wide 0.33..3 ratio bounds; use benchstat for
+  statistics).
 
 ## Conventions
 
@@ -212,7 +216,21 @@ nix run .#lint                        # lint both modes
   unstable packages that patch: the sandbox cannot download the newer toolchain
   (`go: downloading go1.26.x … connection refused`, goimports exit 2). Local
   `nix fmt` still shows real drift (0 changed = none). Fix: `nix flake update
-  nixpkgs` once available — tracked in TODO_LIST at bump time.
+  nixpkgs` once available — tracked in TODO_LIST at bump time. NOTE since the
+  1.27.1 bump: `goModule` pins the toolchain via
+  `(pkgs.buildGoModule.override { go = goPkg; })` and `checks.format` pins
+  `goPkg` + `GOTOOLCHAIN = "local"`, so only nixpkgs' DEFAULT `go` lag can
+  bite (other tooling), not the package/build/format checks.
+- **`buildGoModule`'s `go` is an outer-param, not a call argument** (current
+  nixpkgs): `pkgs.buildGoModule { go = …; }` is SILENTLY ignored — the build
+  then runs nixpkgs' default go under `GOTOOLCHAIN=local` and fails with
+  `go.mod requires go >= X (running go Y)` the moment go.mod outpaces the
+  default. Always `.override { go = …; }` (see `goModule` in flake.nix).
+- **treefmt's goimports shells out to `go`** for module-aware import
+  resolution. In the hermetic format check an ambient go older than go.mod's
+  directive plus default `GOTOOLCHAIN=auto` produces offline toolchain-download
+  failures (`failed to finalise formatting`). `checks.format` therefore pins
+  `goPkg` and `GOTOOLCHAIN = "local"`.
 - **Auto-commit daemon flattens history into `chore: auto-commit N changed
   file(s)` commits.** Before pushing a shared branch, hand-make one descriptive
   commit for any human-meaningful change (the error-contract overhaul shipped

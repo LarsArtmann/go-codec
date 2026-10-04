@@ -141,9 +141,9 @@ nix run .#lint                        # lint both modes
   needed. Benchmarks: `BenchmarkTagTradeoffs_Encode/Decode` (map vs toarray vs
   keyasint across small/medium/large payloads), `BenchmarkCBORReflectionCache`
   (cold vs warm), `BenchmarkEncodePooled` (pool vs plain Encode). A 10-run
-  benchstat reference baseline (v1 + v2 modes) lives in
-  `docs/benchmark-baseline.md` — re-run and compare there before accepting
-  performance-sensitive changes; `scripts/bench-compare.py` sanity-gates two
+  benchstat reference baseline lives in `docs/benchmark-baseline.md` — re-run
+  and compare there before accepting performance-sensitive changes;
+  `scripts/bench-compare.py` sanity-gates two
   raw benchmark outputs (wide 0.33..3 ratio bounds; use benchstat for
   statistics).
 
@@ -237,6 +237,16 @@ nix run .#lint                        # lint both modes
   with no meaningful commit message anywhere in history — CHANGELOG and status
   reports are the only narrative). The daemon still commits on top; that is
   expected noise.
+- **Benchmarks need a quiet machine — this box is multi-tenant.** Sibling
+  tenants (nix rustc builds, qemu VMs, gatus, clickhouse, other agents)
+  routinely push loadavg to 30-60 with double-digit iowait. Running
+  `go test -bench` under that load inflates ns/op uniformly 2-3x while
+  B/op and allocs/op stay IDENTICAL (the tell: deterministic counters
+  unchanged, timing scattered ±20-50% — a full 10-run suite was wasted this
+  way on 2026-10-05). Check `/proc/loadavg` before AND after any benchmark;
+  if the run overlapped load >10, discard it. Clean signal check:
+  `RawCodec_Encode` ≈16n at ±<10%. Gate re-runs on sustained load <8
+  (pattern: `CV/scripts/when-quiet.sh`).
 
 ## Dependencies
 

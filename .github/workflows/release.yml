@@ -1,0 +1,79 @@
+name: Release
+
+# Runs alongside CI on tag pushes (ci.yml also fires on tags). The gates below
+# are a release safety net, not a replacement for the test matrix; the tagger
+# is responsible for tagging only green commits. Notes are cut from the
+# CHANGELOG.md section for the tagged version, falling back to GitHub's
+# generated notes when no section exists. Never delete/re-push a tag: the
+# module proxy makes tag content immutable.
+
+on:
+  push:
+    tags: [v*]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: GitHub Release (${{ github.ref_name }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Release gates (build + test, both JSON modes)
+        run: |
+          if grep -q '^replace' go.mod; then
+            echo "FAIL: local replace directive would poison the published tag" >&2
+            exit 1
+          fi
+          if grep -q '00010101' go.mod; then
+            echo "FAIL: pseudo-version placeholder detected in go.mod" >&2
+            exit 1
+          fi
+          go mod verify
+          go build ./...
+          go test ./... -count=1
+          GOEXPERIMENT=jsonv2 go build ./...
+          GOEXPERIMENT=jsonv2 go test ./... -count=1
+      - name: Cut release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v ver="$version" '
+            /^## \[/ {
+              if (found) exit
+              if (index($0, "[" ver "]") > 0 || index($0, "[v" ver "]") > 0) found = 1
+              next
+            }
+            found { print }
+          ' CHANGELOG.md | sed -e '/./,$!d' > notes.md
+          if [ -s notes.md ]; then
+            echo "notes: using CHANGELOG.md section for ${GITHUB_REF_NAME}"
+          else
+            echo "notes: no CHANGELOG.md section for ${GITHUB_REF_NAME}; will generate" >&2
+          fi
+      - name: Create or refresh GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          args=(--title "$GITHUB_REF_NAME")
+          case "$GITHUB_REF_NAME" in
+            *-rc*|*-alpha*|*-beta*) args+=(--prerelease) ;;
+            *) args+=(--latest) ;;
+          esac
+          if [ -s notes.md ]; then
+            args+=(--notes-file notes.md)
+          else
+            args+=(--generate-notes)
+          fi
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            echo "release exists; refreshing notes for $GITHUB_REF_NAME"
+            gh release edit "$GITHUB_REF_NAME" "${args[@]}"
+          else
+            gh release create "$GITHUB_REF_NAME" "${args[@]}"
+          fi

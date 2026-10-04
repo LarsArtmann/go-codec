@@ -173,6 +173,17 @@
               program = "${errauditApp}/bin/erraudit";
             };
 
+            # Parity with the CI test job: run all four drift tripwires in the
+            # same order the v1 leg of .github/workflows/ci.yml runs them.
+            tripwires = mkApp "tripwires" [ goPkg ] ''
+              set -euo pipefail
+              bash scripts/check-features-planned.sh
+              bash scripts/check-go-version.sh
+              bash scripts/check-error-codes.sh
+              bash scripts/check-erraudit-version.sh
+              echo "tripwires: all four checks passed"
+            '';
+
             clean = mkApp "clean" [ goPkg pkgs.trash-cli ] ''
               trash-put coverage.out 2>/dev/null || true
               go clean -testcache

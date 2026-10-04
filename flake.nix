@@ -50,14 +50,17 @@
           # Hermetic module source: fetches dependencies through the Nix sandbox
           # (goModules FOD) instead of relying on $HOME/GOMODCACHE, so checks and
           # `nix build` work without network access at build time.
-          goModule = pkgs.buildGoModule {
+          # `go` is an outer-param of buildGoModule in this nixpkgs — passing it
+          # as a call argument is silently ignored (GOTOOLCHAIN=local then runs
+          # nixpkgs' default go, e.g. 1.26.8 against a go.mod requiring 1.27.1).
+          goModule = (pkgs.buildGoModule.override { go = goPkg; }) {
             pname = "go-codec";
             version = "unstable";
             src = lib.fileset.toSource {
               root = ./.;
               fileset = lib.fileset.gitTracked ./.;
             };
-            vendorHash = "sha256-UYjNaLjwKFPgcuONAiOUzsuz4nzPuOyhHuGap1F0zBk=";
+            vendorHash = "sha256-auINCYX4nm63FITg+IWYBFfSsj7uut6KeWai1VLVR9Y=";
           };
 
           # erraudit runner: fetches the pinned version from source at run time.

@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Tag-push release workflow (`.github/workflows/release.yml`): scoped
+  `contents: write`, gates (replace/pseudo-version leak checks, `go mod
+  verify`, build + test in both JSON modes), release notes cut from the
+  CHANGELOG section for the tag with `--generate-notes` fallback, idempotent
+  create-or-refresh, `--latest` for stable tags / `--prerelease` for
+  rc/alpha/beta.
+- `.#tripwires` nix app: runs all four check scripts in CI-leg order with one
+  command (`nix run .#tripwires`) — devShell parity with CI.
+- `scripts/bench-compare.py`: sanity-gates two raw `go test -bench` outputs
+  (per-benchmark mean of ns/op, B/op, allocs/op across counts; ratio bounds
+  0.33..3, exit 1 outside). Wide sanity gate for gross drift; benchstat
+  remains the statistical A/B tool.
+- dependabot `github-actions` ecosystem entry (weekly, grouped) and explicit
+  `cache: true` on all six `setup-go` steps in CI.
+- Least-privilege top-level `permissions: contents: read` in ci.yml. All five
+  pinned actions verified at latest releases running node24 (checkout v7.0.1,
+  setup-go v7.0.0, upload-artifact v7.0.1, setup-node v7.0.0,
+  gitleaks-action v3.0.0) — digest refresh was a verified no-op.
+- Issue drafts for two upstream erraudit findings under `docs/drafts/`
+  (`generic_return` misses go-error-family creators; enforce flags name
+  libraries without checking go.mod). Filing stays gated on explicit
+  instruction.
+
 ### Fixed
 
 - `go.mod`'s `go` directive had been silently bumped to `1.27.1` by tooling
@@ -18,9 +43,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   to `0.x`.
 - `scripts/check-error-codes.sh` gained an `xargs -r` guard (empty fileset
   edge).
+- Hermetic build pinned the wrong Go: `buildGoModule`'s `go` is an outer
+  `.override` param in current nixpkgs, so a call-argument `go = …` was
+  silently ignored and the sandbox built with nixpkgs' default go. Now
+  `(pkgs.buildGoModule.override { go = go_1_27; })`; `vendorHash` updated for
+  the new toolchain.
+- Hermetic format check failed offline: treefmt's `goimports` shells out to
+  `go`, and the sandbox's ambient older go with `GOTOOLCHAIN=auto` tried to
+  download go1.27.1. `checks.format` now pins the devShell go and
+  `GOTOOLCHAIN = "local"`.
 
 ### Changed
 
+- **Toolchain bumped to Go 1.27.1** (deliberate, all five sources moved
+  together: go.mod, `.go-version`, `.golangci.yml`, flake `go_1_27`, and the
+  overridden `buildGoModule` go). Both JSON modes build, the full test suite
+  is green, and `nix flake check` passes hermetically. `encoding/json/v2` is
+  natively available on 1.27 (verified: imports without the experiment);
+  `GOEXPERIMENT=jsonv2` remains the opt-in switch for the v2 build of this
+  library.
 - Documentation health pass (2026-09-26): all 26 historical status/planning
   reports now carry inline per-item verdicts (`done at <hash>` / Won't
   implement / explicit open-routing) and are archived under

@@ -20,7 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `scripts/bench-compare.py`: sanity-gates two raw `go test -bench` outputs
   (per-benchmark mean of ns/op, B/op, allocs/op across counts; ratio bounds
   0.33..3, exit 1 outside). Wide sanity gate for gross drift; benchstat
-  remains the statistical A/B tool.
+  remains the statistical A/B tool. Verified end-to-end on real 10-run
+  output: 210 metric means across 70 benchmarks, self-compare exit 0; a
+  v1-vs-v2 cross-mode compare exits 1 on `RawCodec_Decode` (ratio 0.292) — a
+  genuine mode gap, so the gate demonstrably catches real drift.
+- `scripts/bench-gate.sh`: quiet-machine gate for benchmark baselining on a
+  multi-tenant box — storm-aware sustained-idle entry, `RawCodec_Encode`
+  canary early-abort (> 25n), peak-load watch during the runs (abort ≥ 12),
+  up to 8 attempts. The 2026-10-05 dual-mode baseline ran behind it.
 - dependabot `github-actions` ecosystem entry (weekly, grouped) and explicit
   `cache: true` on all six `setup-go` steps in CI.
 - Least-privilege top-level `permissions: contents: read` in ci.yml. All five
@@ -62,6 +69,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   natively available on 1.27 (verified: imports without the experiment);
   `GOEXPERIMENT=jsonv2` remains the opt-in switch for the v2 build of this
   library.
+- `docs/benchmark-baseline.md` re-baselined 2026-10-05 (go1.27.1, BOTH JSON
+  modes, 70 benchmarks × 10 runs each) — supersedes the 2026-09-11 v1-only
+  table. The first overnight attempt was rejected as multi-tenant contention
+  (uniform ~2.6–3x ns/op inflation with byte-identical B/op + allocs/op);
+  the accepted runs passed the canary (11.27n v1 / 13.10n v2 vs 25n
+  threshold) and the peak-load watch (8.10 / 9.96 vs 12). Raw outputs stay
+  uncommitted (artifact-only retention, fuzz-corpus precedent). Go 1.27's
+  JSON engine moved several allocation figures in both directions (v1 and
+  v2 builds now byte-identical per row) — the new table is the only valid
+  comparison anchor.
 - Documentation health pass (2026-09-26): all 26 historical status/planning
   reports now carry inline per-item verdicts (`done at <hash>` / Won't
   implement / explicit open-routing) and are archived under

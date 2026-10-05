@@ -46,10 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   still said `1.26.7` — the version tripwire went red on master. Reverted to
   `1.26.7`; a deliberate Go 1.27 bump remains a `TODO_LIST.md` item that moves
   all five sources together.
-- `SECURITY.md`'s supported-versions table still listed only `0.1.x`; updated
-  to `0.x`.
-- `scripts/check-error-codes.sh` gained an `xargs -r` guard (empty fileset
-  edge).
 - Hermetic build pinned the wrong Go: `buildGoModule`'s `go` is an outer
   `.override` param in current nixpkgs, so a call-argument `go = …` was
   silently ignored and the sandbox built with nixpkgs' default go. Now
@@ -87,6 +83,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   section now links `docs/error-codes.md` and the error-taxonomy ADR; the
   README Go floor line was corrected to 1.26.7+; `AGENTS.md` gained an
   Observability & detection architecture bullet and the four tripwire commands.
+
+## [v0.3.1] — 2026-10-03
+
+Maintenance tag (no Go file changes). The signed tag message is the
+authoritative release note ("go directive minor-form floor"); this section
+records the same release here so future notes can be cut from the CHANGELOG.
+
+### Changed
+
+- `go.mod` `go` directive floor `go 1.26.7` → `go 1.27` (minor form): a
+  patch-form floor lifts consumer `go` directives on their `go mod tidy`
+  via MVS floor propagation; the minor form stops the lift.
+- Dependencies: `go-error-family` v0.10.1 → v0.11.0; test-only `gomega`
+  v1.43.0 → v1.44.0; assorted indirect bumps (`gopkg.in/check.v1` dropped).
+
+### Fixed
+
+- `flake.nix`: inlined the `systems` list and dropped the
+  `github:nix-systems/default` input — nixpkgs 26.11 removed `x86_64-darwin`,
+  which that input still listed, breaking flake eval.
+- `SECURITY.md` supported-versions table listed only `0.1.x`; now `0.x`.
+- `scripts/check-error-codes.sh`: `xargs -r` guard (empty fileset edge).
 
 ## [v0.3.0] — 2026-09-17
 

@@ -20,10 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `scripts/bench-compare.py`: sanity-gates two raw `go test -bench` outputs
   (per-benchmark mean of ns/op, B/op, allocs/op across counts; ratio bounds
   0.33..3, exit 1 outside). Wide sanity gate for gross drift; benchstat
-  remains the statistical A/B tool. Verified end-to-end on real 10-run
-  output: 210 metric means across 70 benchmarks, self-compare exit 0; a
-  v1-vs-v2 cross-mode compare exits 1 on `RawCodec_Decode` (ratio 0.292) — a
-  genuine mode gap, so the gate demonstrably catches real drift.
+  remains the statistical A/B tool. Verified on the accepted 2026-10-05
+  suites: self-compare exits 0, and the v1-vs-v2 cross-mode compare also
+  stays 0 (210/210 metric means in bounds; worst ns/op ratio 1.32). An
+  earlier exit-1 (`RawCodec_Decode` 0.292) had compared clean v2 against
+  the contention-polluted v1 suite — the gate catching exactly the ~3x
+  drift that invalidated that run.
 - `scripts/bench-gate.sh`: quiet-machine gate for benchmark baselining on a
   multi-tenant box — storm-aware sustained-idle entry, `RawCodec_Encode`
   canary early-abort (> 25n), peak-load watch during the runs (abort ≥ 12),

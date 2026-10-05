@@ -150,7 +150,7 @@
 
 1. Wait for v2 benchmark completion; benchstat both raw files.
 2. Verify `scripts/bench-compare.py` against the REAL v1 output (self-compare
-   + v1-vs-v2 cross-check for the sanity-gate behavior).
+   - v1-vs-v2 cross-check for the sanity-gate behavior).
 3. Rewrite `docs/benchmark-baseline.md`: v1+v2 sections, go1.27.1 environment,
    2026-10-05 date, benchstat tables, artifact-only retention decision.
 4. Delete TODO items 4/7; append their CHANGELOG entries.

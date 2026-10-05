@@ -86,7 +86,7 @@
 
 Nothing destructive. Honest waste and mistakes:
 
-1. **rg flag misuse twice** (`rg -rn`, `rg -rln` — `-r` is *replace*, not
+1. **rg flag misuse twice** (`rg -rn`, `rg -rln` — `-r` is _replace_, not
    recursive): mangled output; one accidental broadened search over `/mnt` and
    the module cache burned a large chunk of context.
 2. **Context-dumping fetch:** the raw proxy.golang.org toolchain list (~100KB)

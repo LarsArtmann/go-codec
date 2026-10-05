@@ -17,10 +17,10 @@ passed every acceptance check, and the clean data is staged at
 benchstat, the baseline-doc rewrite, and the TODO 4/7 close-out are the next
 session's first move, per the standing wait-for-instructions order.
 
-| Mode | Window | Duration | RawCodec_Encode canary | Peak load | Verdict |
-| ---- | ------ | -------- | ---------------------- | --------- | ------- |
-| v1 (`env -u GOEXPERIMENT`) | 02:16:46–02:31:06 | 843.8s | 11.4n (old clean: 16.35n) | 8.10 | ACCEPTED |
-| v2 (`GOEXPERIMENT=jsonv2`) | 02:32:22–02:46:42 | 840.2s | 13.4n | 9.96 | ACCEPTED |
+| Mode                       | Window            | Duration | RawCodec_Encode canary    | Peak load | Verdict  |
+| -------------------------- | ----------------- | -------- | ------------------------- | --------- | -------- |
+| v1 (`env -u GOEXPERIMENT`) | 02:16:46–02:31:06 | 843.8s   | 11.4n (old clean: 16.35n) | 8.10      | ACCEPTED |
+| v2 (`GOEXPERIMENT=jsonv2`) | 02:32:22–02:46:42 | 840.2s   | 13.4n                     | 9.96      | ACCEPTED |
 
 Acceptance contract (gate `/tmp/codec-bench-gate2.sh`): 1-min load < 8 with
 zero build storms (or < 5) sustained 90s before launch; canary mean ≤ 25n

@@ -59,4 +59,22 @@ result
 result-*
 .envrc
 .direnv/
+
+## Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.ipynb_checkpoints/
+.hypothesis/
+cython_debug/
+.coverage
+htmlcov/
 # <<< buildflow-managed (.gitignore) <<<

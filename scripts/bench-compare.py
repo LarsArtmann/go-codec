@@ -50,7 +50,10 @@ def parse_file(path: Path) -> dict[str, dict[str, list[float]]]:
             try:
                 metrics.setdefault(label, []).append(float(value))
             except ValueError:
-                print(f"WARN: unparseable value {value!r} for {name} {label}", file=sys.stderr)
+                print(
+                    f"WARN: unparseable value {value!r} for {name} {label}",
+                    file=sys.stderr,
+                )
     return results
 
 
@@ -64,8 +67,12 @@ def main() -> int:
     )
     parser.add_argument("baseline", type=Path)
     parser.add_argument("candidate", type=Path)
-    parser.add_argument("--lower", type=float, default=0.33, help="lower sanity bound (default 0.33)")
-    parser.add_argument("--upper", type=float, default=3.0, help="upper sanity bound (default 3.0)")
+    parser.add_argument(
+        "--lower", type=float, default=0.33, help="lower sanity bound (default 0.33)"
+    )
+    parser.add_argument(
+        "--upper", type=float, default=3.0, help="upper sanity bound (default 3.0)"
+    )
     args = parser.parse_args()
 
     for path in (args.baseline, args.candidate):
@@ -82,7 +89,9 @@ def main() -> int:
     for label, names in (("baseline", baseline), ("candidate", candidate)):
         other = candidate if label == "baseline" else baseline
         for name in sorted(set(names) - set(other)):
-            print(f"WARN: {name} only present in {label} file (skipped)", file=sys.stderr)
+            print(
+                f"WARN: {name} only present in {label} file (skipped)", file=sys.stderr
+            )
 
     common = sorted(set(baseline) & set(candidate))
     if not common:
@@ -111,13 +120,22 @@ def main() -> int:
             if verdict != "OK":
                 failures += 1
             ratio_text = "inf" if ratio == float("inf") else f"{ratio:.3f}"
-            print(f"{name:<48} {metric:<10} {base_mean:>12.2f} {cand_mean:>12.2f} {ratio_text:>8}  {verdict}")
+            print(
+                f"{name:<48} {metric:<10} {base_mean:>12.2f} {cand_mean:>12.2f} {ratio_text:>8}  {verdict}"
+            )
 
     compared = sum(
-        1 for name in common for metric in METRICS if baseline[name].get(metric) and candidate[name].get(metric)
+        1
+        for name in common
+        for metric in METRICS
+        if baseline[name].get(metric) and candidate[name].get(metric)
     )
-    print(f"\n{compared} metric means compared across {len(common)} benchmarks; {failures} out of bounds")
-    print(f"bounds: [{args.lower}, {args.upper}] — wide sanity gate only; use benchstat for A/B statistics")
+    print(
+        f"\n{compared} metric means compared across {len(common)} benchmarks; {failures} out of bounds"
+    )
+    print(
+        f"bounds: [{args.lower}, {args.upper}] — wide sanity gate only; use benchstat for A/B statistics"
+    )
     return 1 if failures else 0
 
 

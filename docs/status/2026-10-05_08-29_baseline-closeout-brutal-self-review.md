@@ -11,14 +11,14 @@
 
 ## Verification snapshot (end of session)
 
-| Check                                        | Result                                        |
-| -------------------------------------------- | --------------------------------------------- |
-| `nix fmt`                                    | 0 changed                                     |
-| `go build ./...` (v1 + v2 modes)             | OK / OK                                       |
-| `nix run .#tripwires` (4 scripts)            | 4/4 PASS (32 codes, versions agree, etc.)     |
-| bench-compare self (clean v1 vs v1)          | exit 0, 210/210 in bounds                     |
-| bench-compare cross (clean v1 vs v2)         | exit 0, 210/210 in bounds, worst ratio 1.32   |
-| Race/test suite                              | NOT re-run — no Go files touched (deliberate) |
+| Check                                | Result                                        |
+| ------------------------------------ | --------------------------------------------- |
+| `nix fmt`                            | 0 changed                                     |
+| `go build ./...` (v1 + v2 modes)     | OK / OK                                       |
+| `nix run .#tripwires` (4 scripts)    | 4/4 PASS (32 codes, versions agree, etc.)     |
+| bench-compare self (clean v1 vs v1)  | exit 0, 210/210 in bounds                     |
+| bench-compare cross (clean v1 vs v2) | exit 0, 210/210 in bounds, worst ratio 1.32   |
+| Race/test suite                      | NOT re-run — no Go files touched (deliberate) |
 
 ## a) FULLY DONE (this session)
 
@@ -160,7 +160,7 @@
     start; confirm they are committed before any filing work resumes).
 15. Next session step-0: `/proc/loadavg` (now encoded in AGENTS.md — follow
     it).
-16–25. (No further honest items without researching beyond this session's
+    16–25. (No further honest items without researching beyond this session's
     scope, per instruction. Items 16–25 intentionally not padded.)
 
 ## g) Questions I cannot answer myself
@@ -179,5 +179,5 @@
 
 ---
 
-*Written 2026-10-05 08:29 CEST. Auto-commit daemon will pick this up; no
-manual commit made (harness contract: no commits without explicit request).*
+_Written 2026-10-05 08:29 CEST. Auto-commit daemon will pick this up; no
+manual commit made (harness contract: no commits without explicit request)._

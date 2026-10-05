@@ -111,7 +111,7 @@ main() {
 	local out_dir attempt deadline
 	out_dir="${1:?usage: scripts/bench-gate.sh OUT_DIR (somewhere durable, NOT /tmp)}"
 	mkdir -p "$out_dir"
-	deadline=$(( $(date +%s) + 10 * 3600 ))
+	deadline=$(($(date +%s) + 10 * 3600))
 	attempt=0
 	while [ "$(date +%s)" -lt "$deadline" ]; do
 		attempt=$((attempt + 1))

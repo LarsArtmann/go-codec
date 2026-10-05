@@ -243,10 +243,17 @@ nix run .#lint                        # lint both modes
   `go test -bench` under that load inflates ns/op uniformly 2-3x while
   B/op and allocs/op stay IDENTICAL (the tell: deterministic counters
   unchanged, timing scattered ±20-50% — a full 10-run suite was wasted this
-  way on 2026-10-05). Check `/proc/loadavg` before AND after any benchmark;
-  if the run overlapped load >10, discard it. Clean signal check:
-  `RawCodec_Encode` ≈16n at ±<10%. Gate re-runs on sustained load <8
-  (pattern: `CV/scripts/when-quiet.sh`).
+  way on 2026-10-05). Check `/proc/loadavg` as step 0 of any session that
+  will benchmark or run heavy verification sweeps, not reactively mid-task;
+  and remember a quiet window may be a sibling tenant's window too (CV
+  parity jobs and other agents gate on the same silence — keep quiet-window
+  occupancy minimal, prefer load-tolerant correctness checks when the box is
+  busy). Discard any benchmark run that overlapped 1-min load >10. Clean
+  canary: `RawCodec_Encode` ≈11-13n on go1.27 at ±<10% (reject above 25n).
+  For baseline-grade runs use `scripts/bench-gate.sh OUT_DIR`
+  (storm-aware sustained-idle entry, canary early-abort, peak-load watch —
+  the 2026-10-05 dual-mode baseline was captured this way). The canonical
+  baseline table lives in `docs/benchmark-baseline.md`.
 
 ## Dependencies
 

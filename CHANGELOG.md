@@ -27,7 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `scripts/bench-gate.sh`: quiet-machine gate for benchmark baselining on a
   multi-tenant box — storm-aware sustained-idle entry, `RawCodec_Encode`
   canary early-abort (> 25n), peak-load watch during the runs (abort ≥ 12),
-  up to 8 attempts. The 2026-10-05 dual-mode baseline ran behind it.
+  up to 8 attempts. The 2026-10-05 dual-mode baseline ran behind its /tmp
+  prototype of identical design; this is the repo-ized, tested version.
 - dependabot `github-actions` ecosystem entry (weekly, grouped) and explicit
   `cache: true` on all six `setup-go` steps in CI.
 - Least-privilege top-level `permissions: contents: read` in ci.yml. All five

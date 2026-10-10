@@ -3,7 +3,7 @@ module github.com/larsartmann/go-codec
 go 1.27
 
 require (
-	github.com/fxamacker/cbor/v2 v2.9.4
+	github.com/fxamacker/cbor/v2 v2.9.6
 	github.com/gkampitakis/go-snaps v0.5.23
 	github.com/larsartmann/go-error-family v0.11.0
 	github.com/onsi/gomega v1.44.0

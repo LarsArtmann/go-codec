@@ -58,7 +58,7 @@ LiteStream+LTX as backup/replication for go-cqrs-lite's SQLite engines.
 
 1. **Source coverage of ltx** — ~70% of core, less elsewhere.
    - Missing: decoder.go 405-574 (contains `streamPageIndex` and
-     `pageIndexValidator` implementations — I cited their *behavior* from Close()
+     `pageIndexValidator` implementations — I cited their _behavior_ from Close()
      usage but did not read the implementations); ltx.go 460-642 (`LockPgno` and
      remaining helpers); compactor.go merge logic (~75% unread); cmd/ltx main,
      verify, dump, list, checksum (~430 ln unread); internal/hexdump.go; test
@@ -141,22 +141,22 @@ LiteStream+LTX as backup/replication for go-cqrs-lite's SQLite engines.
 
 ## f) Next tasks (ranked, session-derived)
 
-| #  | Task                                                              | Impact   | Effort | Category      |
-|----|-------------------------------------------------------------------|----------|--------|---------------|
-| 1  | docs-health HARVEST: route this report's opportunities into TODO_LIST/ROADMAP | High | S | Documentation |
-| 2  | Write compression-vs-signing invariant note (ADR or COSE docs section in go-codec) | High | S | Documentation |
-| 3  | Fix: add fuzz-target gap observation to the ltx report's findings | Medium | S | Documentation |
-| 4  | Read ltx decoder.go 405-574 + compactor.go fully; amend findings if behavior differs from citations | Medium | S | Quality |
-| 5  | Decide go-cqrs-lite position: evaluate LiteStream+LTX as sqlite-engine backup (cross-repo task; needs Lars) | High | M | Feature |
-| 6  | Add "never-zero distinguished bit" pattern to go-codec envelope design notes (future-work note) | Medium | S | Documentation |
-| 7  | Add ltx upstream watch items (#77 HPKE, #98/#101/#103 fixes) to ROADMAP | Low | S | Documentation |
-| 8  | Re-run ltx suite with `-race`; note result in report appendix | Low | S | Quality |
-| 9  | Add #scorecard to the report's sidebar nav | Low | S | Cleanup |
-| 10 | Add docs/research/index.md listing deep-dives (if more follow) | Low | S | Documentation |
-| 11 | Record the "hero claims last" rule into my workflow (personal lesson, logged here as the record) | Medium | S | Process |
-| 12 | If go-codec ever adds envelope checksums: steal ChecksumFlag bit pattern (ROADMAP fuel) | Medium | M | Feature |
-| 13 | Compare COSE_Encrypt0 vs HPKE framing when ltx #77 lands (ROADMAP watch) | Low | M | Documentation |
-| 14 | Cross-reference prior docs/status reports for open loops in a follow-up session | Low | S | Process |
+| #  | Task                                                                                                        | Impact | Effort | Category      |
+| -- | ----------------------------------------------------------------------------------------------------------- | ------ | ------ | ------------- |
+| 1  | docs-health HARVEST: route this report's opportunities into TODO_LIST/ROADMAP                               | High   | S      | Documentation |
+| 2  | Write compression-vs-signing invariant note (ADR or COSE docs section in go-codec)                          | High   | S      | Documentation |
+| 3  | Fix: add fuzz-target gap observation to the ltx report's findings                                           | Medium | S      | Documentation |
+| 4  | Read ltx decoder.go 405-574 + compactor.go fully; amend findings if behavior differs from citations         | Medium | S      | Quality       |
+| 5  | Decide go-cqrs-lite position: evaluate LiteStream+LTX as sqlite-engine backup (cross-repo task; needs Lars) | High   | M      | Feature       |
+| 6  | Add "never-zero distinguished bit" pattern to go-codec envelope design notes (future-work note)             | Medium | S      | Documentation |
+| 7  | Add ltx upstream watch items (#77 HPKE, #98/#101/#103 fixes) to ROADMAP                                     | Low    | S      | Documentation |
+| 8  | Re-run ltx suite with `-race`; note result in report appendix                                               | Low    | S      | Quality       |
+| 9  | Add #scorecard to the report's sidebar nav                                                                  | Low    | S      | Cleanup       |
+| 10 | Add docs/research/index.md listing deep-dives (if more follow)                                              | Low    | S      | Documentation |
+| 11 | Record the "hero claims last" rule into my workflow (personal lesson, logged here as the record)            | Medium | S      | Process       |
+| 12 | If go-codec ever adds envelope checksums: steal ChecksumFlag bit pattern (ROADMAP fuel)                     | Medium | M      | Feature       |
+| 13 | Compare COSE_Encrypt0 vs HPKE framing when ltx #77 lands (ROADMAP watch)                                    | Low    | M      | Documentation |
+| 14 | Cross-reference prior docs/status reports for open loops in a follow-up session                             | Low    | S      | Process       |
 
 Not listed: anything requiring research into go-codec itself — this session touched
 only `docs/` outputs, and the tree was otherwise clean.
@@ -179,5 +179,5 @@ only `docs/` outputs, and the tree was otherwise clean.
 
 ---
 
-*Generated 2026-10-10 05:30 CEST · Session-scoped: covers only this session's
-ltx-review run and defects noticed in it · Auto-commit daemon owns the commit*
+_Generated 2026-10-10 05:30 CEST · Session-scoped: covers only this session's
+ltx-review run and defects noticed in it · Auto-commit daemon owns the commit_

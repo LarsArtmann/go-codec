@@ -847,3 +847,643 @@
       }
     </style>
   </head>
+  <body>
+    <div class="top-bar">
+      <span>Library Deep Review &middot; Prospective</span>
+      <span>2026-10-10</span>
+      <span>go-codec / go-cqrs-lite stack</span>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar" data-nav>
+        <nav>
+          <div class="label">Contents</div>
+          <a href="#summary">Summary</a>
+          <a href="#what-it-is">What LTX is</a>
+          <a href="#strengths">Strengths</a>
+          <a href="#findings">Findings</a>
+          <a href="#relevance">Relevance to go-codec</a>
+          <a href="#versions">Version currency</a>
+          <a href="#opportunities">Opportunities</a>
+          <a href="#appendix">Appendix</a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <header class="hero">
+          <div class="hero-shapes">
+            <div class="bar"></div>
+            <div class="circle"></div>
+            <div class="square"></div>
+            <div class="tri"></div>
+          </div>
+          <div class="eyebrow">LIBRARY DEEP DIVE &middot; 2026-10-10</div>
+          <h1>superfly/ltx — the LTX transactional file format, reviewed for go-codec</h1>
+          <p class="subtitle">
+            LTX is the page-level transactional file format behind LiteStream v0.5 and
+            fly.io&rsquo;s Liteserver. This review reads the whole library at commit
+            <code>f299ac5</code> (v0.5.3), runs its test suite, and answers the question
+            that matters here: what does this library mean for go-codec and the wider
+            go-cqrs-lite event-sourcing stack?
+          </p>
+          <div class="meta">
+            <span class="tag amber">Reviewed: v0.5.3 (f299ac5, 2026-09-10)</span>
+            <span class="tag">License: Apache-2.0</span>
+            <span class="tag">Deps: 1 (pierrec/lz4/v4)</span>
+            <span class="tag teal">Tests: PASS (verified run)</span>
+          </div>
+        </header>
+
+        <section id="scorecard" class="scorecard">
+          <div class="score-card score-good">
+            <div class="score">v3</div>
+            <div class="label">Format version</div>
+          </div>
+          <div class="score-card score-good">
+            <div class="score">~2.3k</div>
+            <div class="label">Core LOC (no cgo, no driver)</div>
+          </div>
+          <div class="score-card score-warn">
+            <div class="score">2</div>
+            <div class="label">Fresh open bugs (post-release)</div>
+          </div>
+          <div class="score-card score-warn">
+            <div class="score">1</div>
+            <div class="label">Primary maintainer (bus factor)</div>
+          </div>
+          <div class="score-card score-bad">
+            <div class="score">No</div>
+            <div class="label">On-disk format version field</div>
+          </div>
+        </section>
+
+        <section id="summary">
+          <h2><span class="num">00</span>Summary</h2>
+          <p>
+            LTX is a small, sharply scoped, production-grade Go library for a
+            self-describing, checksummed, LZ4-compressed transaction file format over
+            SQLite pages. The engineering quality is high: streaming with bounded
+            memory on both encode and decode, a logical-content checksum that survives
+            recompression, chained database-state checksums, and an encoder state
+            machine that cannot emit a structurally incomplete file with a valid
+            checksum. Adoption is real: LiteStream (14,471 stars) builds its v0.5 core
+            on it, and the format is the backbone of fly.io&rsquo;s Liteserver.
+          </p>
+          <p>
+            For <strong>this</strong> repository the verdict is two-sided.
+            As a <em>dependency of go-codec</em>: no &mdash; wrong layer, zero overlap
+            with go-codec&rsquo;s payload-codec contract, and importing it would couple
+            a pure serialization library to SQLite page semantics. As a <em>design
+            reference</em> and as <em>infrastructure for the wider go-cqrs-lite
+            stack</em>: genuinely valuable &mdash; several of its invariants are exactly
+            the problems go-codec&rsquo;s COSE/envelope layer will face if compression
+            or framing is ever added, and any SQLite-backed event store in the
+            go-cqrs-lite metaengine gets a battle-tested backup/replication story for
+            free through LiteStream+LTX.
+          </p>
+          <div class="callout callout-amber">
+            <strong>The bottom line</strong>
+            Do not add ltx to go-codec. Do steal its invariants: checksum the logical
+            (uncompressed) content, keep checksums non-zero and distinguishable from
+            &ldquo;unset&rdquo;, and make partial writes unfinishable. If a
+            go-cqrs-lite storage engine ever backs onto SQLite, LTX via LiteStream is
+            the replication/backup answer to evaluate first &mdash; pending the
+            caveats in the findings.
+          </div>
+        </section>
+
+        <section id="what-it-is">
+          <h2><span class="num">01</span>What LTX is</h2>
+          <p>
+            An LTX file represents one or more SQLite transactions as a four-section
+            stream: a fixed 100-byte header, a page block of page frames, a varint
+            page index for random access, and a 16-byte trailer. Files form a chain:
+            each non-snapshot file carries the database checksum <em>before</em> it is
+            applied (<code>PreApplyChecksum</code>) and the trailer carries the
+            checksum <em>after</em>, so a replica can prove contiguity by position
+            (<code>Pos = TXID + PostApplyChecksum</code>) before applying.
+          </p>
+
+          <div class="dep-tree"><span class="root">LTX file (format v3, magic "LTX1")</span>
+Header (100B)   flags, page size, commit size, MinTXID..MaxTXID, timestamp,
+                PreApplyChecksum, WAL provenance, NodeID
+Page block      frames in ascending pgno: [pgno u32][flags u16][csize u32][LZ4-block data]
+                terminated by a zero page header (6 zero bytes)
+Page index      per page: varint (pgno, offset, size), zero-terminated, sized
+Trailer (16B)   PostApplyChecksum | FileChecksum (CRC64-ISO over logical content)</div>
+
+          <p>
+            Two checksum domains are kept deliberately separate. The <em>database
+            checksum</em> is an order-independent XOR of per-page CRC64 values
+            (page number mixed in, lock page excluded), chained from file to file.
+            The <em>file checksum</em> is a CRC-ISO-64 over the header, the page
+            headers and size prefixes <em>as stored</em>, the <strong>decompressed</strong>
+            page data, the index, and the trailer&rsquo;s post-apply field &mdash;
+            so two valid LZ4 encodings of the same logical content produce the same
+            file checksum. The top bit (<code>ChecksumFlag = 1&lt;&lt;63</code>) is
+            always set on live checksums, keeping them non-zero and distinguishable
+            from &ldquo;unset&rdquo;.
+          </p>
+
+          <p>
+            The public API is three streaming types &mdash; <code>Encoder</code>,
+            <code>Decoder</code>, <code>Compactor</code> (merges contiguous input
+            files into one) &mdash; plus checksum helpers and a <code>cmd/ltx</code>
+            CLI (<code>encode-db</code>, <code>apply</code>, <code>verify</code>,
+            <code>dump</code>, <code>list</code>). Notably, the SQLite-aware logic
+            lives in the CLI, not the library: the core package parses SQLite&rsquo;s
+            100-byte database header itself and never links a SQLite driver.
+          </p>
+        </section>
+
+        <section id="strengths">
+          <h2><span class="num">02</span>What is already excellent</h2>
+          <div class="strengths">
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Logical checksum decoupled from compression</strong>
+                <span>File checksum hashes decompressed page data, so recompression never invalidates integrity. Compare: signing the compressed bytes would break the moment a codec or level changes.</span>
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Chained state positions, not just sequence numbers</strong>
+                <span>Pos = TXID + PostApplyChecksum; a replica proves it is contiguous with a file before applying it. This is the event-store &ldquo;global position with proof&rdquo; pattern, done at the storage layer.</span>
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Memory bounded in both directions</strong>
+                <span>Encoder spills its page index to a temp file past 1M entries (litestream #1477); decoder can stream-validate the index without retaining it, using a running hash of decoded page numbers to prove index/pages agreement (decoder.go:43-46, 132-137).</span>
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Unfinishable partial files</strong>
+                <span>The encoder is an explicit state machine with a terminal <code>aborted</code> state: any failed write aborts it, and Close after Cleanup refuses to emit a second end-marker plus empty index with a valid checksum (encoder.go:62-103, 346-366).</span>
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Dependency hygiene</strong>
+                <span>One dependency (lz4). No SQLite driver in the library, no cgo, go.mod at Go 1.24. The apply/encode logic that needs SQLite knowledge ships as CLI commands.</span>
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Real adoption and real tests</strong>
+                <span>LiteStream v0.5 (14,471 stars, active) depends on superfly/ltx v0.5.2 (verified in its go.mod); wjordan/syzy (LiteFS-compatible server) on v0.5.1. Golden-file, spill, and index-validation tests; full suite passes (ran 2026-10-10, 6.9s).</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="findings">
+          <h2><span class="num">03</span>Findings</h2>
+          <p>Risks and design debts, ordered by impact on anyone depending on this format.</p>
+
+          <div class="issue issue-critical" id="finding-version">
+            <span class="severity severity-critical">Design debt &middot; High impact</span>
+            <h3>No on-disk format version field &mdash; v2/v3 share one magic</h3>
+            <div class="where">README.md (format spec) &middot; ltx.go:18-24 &middot; issue trail: format v3 bump, 2025-09-16</div>
+            <p>
+              Versions 2 and 3 both use the <code>LTX1</code> magic. The spec says it
+              plainly: &ldquo;A reader cannot determine the format version from the
+              file alone and must know it out of band.&rdquo; Version 3 changed the
+              page frame layout (6-byte header + size prefix vs 4-byte header), and
+              the decoder disambiguates per-frame via a page-header flag that the
+              spec itself says &ldquo;is not a format version field.&rdquo; For a
+              long-lived storage format this is the single biggest liability: future
+              format changes have no honest escape hatch, and mixed-version archives
+              rely on side knowledge.
+            </p>
+            <div class="callout callout-teal">
+              <strong>Lesson for go-codec</strong>
+              go-codec already stamps <code>Encoding()</code> into payloads so blind
+              stores stay self-describing. Keep it that way: any future framing or
+              envelope in go-codec must carry a version/magic of its own &mdash;
+              never rely on out-of-band knowledge.
+            </div>
+          </div>
+
+          <div class="issue issue-critical" id="finding-fresh-bugs">
+            <span class="severity severity-critical">Open bugs &middot; High impact if NoChecksum mode is used</span>
+            <h3>NoChecksum mode is undertested edge territory</h3>
+            <div class="where">Issues #103, #101 (filed 2026-09-17, after v0.5.3) &middot; issue #88</div>
+            <p>
+              Two fresh bugs landed days after the latest release: the encoder cannot
+              produce zero-length deletion files with
+              <code>HeaderFlagNoChecksum</code> (#103), and the compactor both fails
+              on NoChecksum inputs and silently ignores mismatched input flags
+              (#101). A third (#88): <code>ChecksumReader</code> returns bare
+              <code>0</code> instead of <code>ChecksumFlag</code> for an empty
+              database, breaking the &ldquo;live checksums are never zero&rdquo;
+              invariant at one edge. The always-checksum path (what LiteStream
+              exercises in production) is solid; the opt-out path is where the
+              splinters are.
+            </p>
+            <div class="callout callout-teal">
+              <strong>Lesson for go-codec</strong>
+              Feature flags that weaken an invariant (like DeterministicCodec&rsquo;s
+              strictness, or RawCodec&rsquo;s escape hatches) need the same property
+              and contract tests as the mainline path &mdash; the edge mode is where
+              bugs cluster once real users find it.
+            </div>
+          </div>
+
+          <div class="issue issue-important" id="finding-snapshot-validation">
+            <span class="severity severity-important">Validation gap &middot; Medium impact</span>
+            <h3>Decoder does not verify snapshot completeness</h3>
+            <div class="where">decoder.go:155 (TODO) &middot; issue #98 (open)</div>
+            <p>
+              The decoder never checks that a snapshot&rsquo;s last decoded page
+              equals the header&rsquo;s <code>Commit</code> size; the encoder
+              enforces page completeness on write (encoder.go:305-323) but the reader
+              trusts it. A snapshot missing trailing pages still validates its
+              checksums. Known and tracked, but open.
+            </p>
+          </div>
+
+          <div class="issue issue-important" id="finding-bus-factor">
+            <span class="severity severity-important">Sustainability &middot; Medium impact</span>
+            <h3>Single-maintainer bus factor with a dormancy precedent</h3>
+            <div class="where">git history: no commits 2023-09 &rarr; 2025-01; recent work dominated by one author</div>
+            <p>
+              The project went quiet for ~15 months between the original LiteStream
+              era and its revival for Liteserver, and current activity rides on
+              essentially one maintainer (Ben Johnson). The format is documented and
+              the code is readable enough to fork, but any deep dependency should
+              assume upstream may pause again.
+            </p>
+          </div>
+
+          <div class="issue issue-important" id="finding-crypto">
+            <span class="severity severity-important">Scope boundary &middot; Medium impact</span>
+            <h3>CRC64 is corruption detection, not tamper protection &mdash; and encryption is still a proposal</h3>
+            <div class="where">checksum.go:185-188 &middot; issue #77 (HPKE proposal, open since 2026-02)</div>
+            <p>
+              The README sells &ldquo;can be encrypted&rdquo;, but the library only
+              shapes bytes for it: per-page encryption via HPKE (RFC 9180) is an open
+              proposal, not code. Interesting contrast with go-codec, which already
+              ships COSE (RFC 9052) SigStructure/Encrypt0 shaping &mdash; the two
+              libraries sit at opposite ends of the same &ldquo;shape bytes for the
+              crypto layer&rdquo; idea.
+            </p>
+          </div>
+
+          <div class="issue issue-nice" id="finding-hygiene">
+            <span class="severity severity-nice">Hygiene &middot; Low impact</span>
+            <h3>Committed 1.7 MB binary in the repo</h3>
+            <div class="where">dist/ltx (1,707,520 bytes, executable) &middot; issue #93</div>
+            <p>
+              A built CLI binary is committed at <code>dist/ltx</code> and
+              .gitignore does not cover build output. Cosmetic for consumers, but it
+              bloats clones and invites accidental staleness.
+            </p>
+          </div>
+        </section>
+
+        <section id="relevance">
+          <h2><span class="num">04</span>Relevance to go-codec</h2>
+
+          <h3>As a dependency: no</h3>
+          <p>
+            Verified against go-codec&rsquo;s go.mod: the dependency set is
+            fxamacher/cbor, go-error-family, and test-only libraries; ltx appears
+            nowhere, and nothing in the repo references superfly. The layers do not
+            touch: go-codec serializes <em>event payloads</em> (CBOR/JSON/Raw + COSE
+            structure helpers), LTX frames <em>database pages</em> into
+            transactional files. Pulling ltx in would drag SQLite page semantics and
+            an lz4 dependency into a pure serialization library for zero functional
+            gain. This is the same reasoning that keeps go-codec dependency-minimal
+            today.
+          </p>
+
+          <h3>As design reference: five transferable invariants</h3>
+          <div class="issue issue-nice">
+            <span class="severity severity-nice">Pattern &middot; Adopt if compression ever lands</span>
+            <h3>Checksum the logical content, not the container bytes</h3>
+            <div class="where">encoder.go:368 (&ldquo;hash the uncompressed data&rdquo;) &middot; README file-checksum section</div>
+            <p>
+              LTX hashes page headers <em>as stored</em> but page data
+              <em>decompressed</em>, making the checksum invariant under
+              recompression. go-codec currently signs encoded bytes (COSE
+              SigStructure over the codec&rsquo;s output) with no compression layer,
+              which is correct today. The moment compression or any
+              re-encodable framing is introduced, the signed/checksummed domain must
+              be decided deliberately &mdash; sign the logical payload and keep the
+              compression envelope outside the signature, or accept that any
+              re-encode invalidates.
+            </p>
+          </div>
+          <div class="issue issue-nice">
+            <span class="severity severity-nice">Pattern &middot; Cheap invariant</span>
+            <h3>&ldquo;Never zero&rdquo; distinguished values (ChecksumFlag)</h3>
+            <div class="where">ltx.go:59-60 &middot; checksum.go:105, 121</div>
+            <p>
+              Setting bit 63 on every live checksum makes zero mean
+              &ldquo;unset&rdquo; unambiguously and is validated on read
+              (<code>PreApplyChecksum&amp;ChecksumFlag == 0</code> &rarr; error).
+              If go-codec ever adds envelope checksums or sequence stamps, this
+              trick removes an entire class of zero-value ambiguity bugs.
+            </p>
+          </div>
+          <div class="issue issue-nice">
+            <span class="severity severity-nice">Pattern &middot; Streaming robustness</span>
+            <h3>Explicit encoder state machine with a terminal abort state</h3>
+            <div class="where">encoder.go:62-103 &middot; ltx.go:62-73</div>
+            <p>
+              go-codec&rsquo;s streaming wrappers (NewCBOREncoder/NewJSONEncoder,
+              NDJSON) are thin delegates; their correctness rests on the underlying
+              encoder. LTX&rsquo;s pattern &mdash; named states, abort on first
+              partial write, Close-after-abort refuses to &ldquo;finish&rdquo; a
+              broken stream &mdash; is the reference if go-codec ever grows its own
+              multi-frame envelope writer where partial output is detectable.
+            </p>
+          </div>
+          <div class="issue issue-nice">
+            <span class="severity severity-nice">Pattern &middot; Memory escalation path</span>
+            <h3>Spill-to-disk for unbounded accumulations</h3>
+            <div class="where">encoder.go:16-19, 37-48, 396-494 &middot; commits #95/#97 (2026-09-10)</div>
+            <p>
+              The encoder&rsquo;s page index grows in doubling chunks (map replaced:
+              ~4x memory savings), then spills to a temp file past 1M entries so
+              memory stops scaling with database size. go-codec&rsquo;s buffer pool
+              (pool.go, maxPoolBufferSize) handles the small-buffer case; LTX shows
+              the shaped escalation path for the &ldquo;the thing I must accumulate
+              is bigger than RAM&rdquo; case &mdash; spill in final on-disk format
+              and stream it back through the same write/hash path on Close.
+            </p>
+          </div>
+          <div class="issue issue-nice">
+            <span class="severity severity-nice">Pattern &middot; Proof without retention</span>
+            <h3>Hash-of-sequence instead of materialized set</h3>
+            <div class="where">decoder.go:43-46, 115-137</div>
+            <p>
+              To prove the page index names exactly the decoded pages without
+              keeping either set, the decoder keeps a running CRC over decoded page
+              numbers and compares it to the same hash over index entries. A neat
+              O(1)-memory equality proof, reusable anywhere two streams must be
+              shown to contain the same elements.
+            </p>
+          </div>
+
+          <h3>For the wider go-cqrs-lite stack: the real angle</h3>
+          <p>
+            The go-cqrs-lite metaengine runs projections over interchangeable
+            engines including SQLite (and Turso). Every SQLite-backed store needs a
+            backup/replication story, and that is exactly what LTX was built for:
+            LiteStream v0.5 continuously ships WAL transactions as LTX files to
+            object storage and restores to any point via checksum-chained
+            compaction. A go-cqrs-lite deployment using the sqlite engine could get
+            point-in-time restore and replica bootstrapping through
+            LiteStream+LTX with zero custom format code. Caveat, untested here: the
+            store&rsquo;s write pattern (single-writer WAL mode, no
+            <code>ATTACH</code>-heavy multi-db churn) must be LiteStream-compatible;
+            verify against the actual engine before relying on it.
+          </p>
+        </section>
+
+        <section id="versions">
+          <h2><span class="num">05</span>Version currency</h2>
+          <p>
+            Latest release is v0.5.3 (2026-09-10), identical to the reviewed commit.
+            Recent trajectory, verified from the release list and git log:
+          </p>
+          <table class="compare">
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Notable change</th>
+                <th>Relevance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>v0.5.3</td>
+                <td>2026-09-10</td>
+                <td>Perf</td>
+                <td>Streamed decoder page index; encoder index spills to disk; chunked index slices (map removed)</td>
+                <td class="yes">High &mdash; the memory-boundedness strengths above land here</td>
+              </tr>
+              <tr>
+                <td>v0.5.2</td>
+                <td>2026-08-03</td>
+                <td>Fix</td>
+                <td>Checksum-free files honored; safe snapshot encoding; lock-page checksum exclusion fixes</td>
+                <td class="no">Introduced the NoChecksum edge now buggy (#101/#103)</td>
+              </tr>
+              <tr>
+                <td>v0.5.1</td>
+                <td>2025-12-17</td>
+                <td>Feature</td>
+                <td>Compactor progress tracking; release workflow fixes</td>
+                <td>Low</td>
+              </tr>
+              <tr>
+                <td>v0.5.0</td>
+                <td>2025-09-16</td>
+                <td>Breaking</td>
+                <td>Page flags added; format version 3</td>
+                <td class="no">The unversioned v2&rarr;v3 transition this review flags</td>
+              </tr>
+              <tr>
+                <td>v0.4.0</td>
+                <td>2025-08-19</td>
+                <td>Feature</td>
+                <td>Standalone page encode/decode</td>
+                <td>Low</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            API churn is real across v0.3&rarr;v0.5 (per-page compression and the
+            page index landed mid-2025, LZ4 frame&rarr;block switch in 2026-01), so
+            consumers should pin and read release notes; there is no compatibility
+            promise beyond the pre-1.0 convention.
+          </p>
+        </section>
+
+        <section id="opportunities">
+          <h2><span class="num">06</span>Opportunities &mdash; what to do with this review</h2>
+          <table class="compare">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Action</th>
+                <th>Where</th>
+                <th>Impact</th>
+                <th>Ease</th>
+                <th>Priority</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Record the compression-vs-signing invariant (checksum/sign logical content; compression stays outside the signed domain) as an ADR note in the COSE/envelope docs</td>
+                <td>go-codec docs</td>
+                <td class="yes">4</td>
+                <td class="yes">5</td>
+                <td><span class="highlight">20</span></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>If envelope checksums/stamps are ever added, adopt the never-zero distinguished-bit invariant</td>
+                <td>go-codec future</td>
+                <td>3</td>
+                <td class="yes">4</td>
+                <td><span class="highlight">12</span></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Evaluate LiteStream+LTX as the backup/replication story for the sqlite metaengine engine (verify WAL single-writer compatibility first)</td>
+                <td>go-cqrs-lite</td>
+                <td>5</td>
+                <td>2</td>
+                <td><span class="highlight">10</span></td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Watch issue #77 (HPKE per-page encryption) against go-codec&rsquo;s COSE_Encrypt0 shaping &mdash; two answers to the same design question, worth a comparison when it lands</td>
+                <td>go-codec</td>
+                <td>2</td>
+                <td>5</td>
+                <td><span class="highlight">10</span></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Adopt ltx as a go-codec dependency</td>
+                <td>go-codec</td>
+                <td class="no">0</td>
+                <td>1</td>
+                <td><span class="highlight">0 &middot; rejected</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="appendix">
+          <h2><span class="num">07</span>Appendix &mdash; verification and method</h2>
+          <p>
+            Every external claim in this report was checked against a primary source
+            on 2026-10-10: the repository was cloned at commit
+            <code>f299ac5b951c</code> (2026-09-10) and read directly; the test suite
+            was executed (<code>go test ./...</code> &mdash; both packages pass);
+            repository metadata, releases, and issues came from the GitHub API;
+            downstream adoption was verified in consumers&rsquo; go.mod files, not
+            from documentation claims.
+          </p>
+          <table class="compare">
+            <thead>
+              <tr>
+                <th>Claim</th>
+                <th>Source</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Latest release v0.5.3 (2026-09-10); repo pushed same day</td>
+                <td>gh release list / repo metadata</td>
+                <td class="yes">Verified</td>
+              </tr>
+              <tr>
+                <td>Test suite passes at reviewed commit</td>
+                <td>go test ./... run 2026-10-10</td>
+                <td class="yes">Verified</td>
+              </tr>
+              <tr>
+                <td>LiteStream (14,471 stars) depends on superfly/ltx v0.5.2</td>
+                <td>benbjohnson/litestream go.mod via GitHub API</td>
+                <td class="yes">Verified</td>
+              </tr>
+              <tr>
+                <td>349 stars, 15 forks, Apache-2.0</td>
+                <td>gh repo view superfly/ltx</td>
+                <td class="yes">Verified</td>
+              </tr>
+              <tr>
+                <td>Sole dependency pierrec/lz4/v4 v4.1.23; go 1.24</td>
+                <td>cloned go.mod</td>
+                <td class="yes">Verified</td>
+              </tr>
+              <tr>
+                <td>Open issues #98, #101, #103, #88, #93, #77 as described</td>
+                <td>gh issue list</td>
+                <td class="yes">Verified</td>
+              </tr>
+              <tr>
+                <td>15-month dormancy (2023-09 &rarr; 2025-01)</td>
+                <td>git log month histogram</td>
+                <td class="yes">Verified</td>
+              </tr>
+              <tr>
+                <td>LiteStream compatibility of go-cqrs-lite&rsquo;s sqlite engine</td>
+                <td>Not tested &mdash; flagged as pending verification</td>
+                <td class="no">Unverified, hedged</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Method note: this is a prospective review, not a utilization audit &mdash;
+            ltx is not (and per the analysis should not become) a go-codec
+            dependency, so there is no adoption score. The utilization framing was
+            replaced by relevance analysis: library-quality findings plus
+            transferable-design findings for go-codec and its sibling stack.
+          </p>
+        </section>
+
+        <footer class="footer">
+          <p>
+            Generated 2026-10-10 &middot; Reviewed at superfly/ltx f299ac5 (v0.5.3)
+            &middot; All external claims verified against primary sources where noted
+          </p>
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+        if (!("IntersectionObserver" in window)) return;
+        var nav = document.querySelector("[data-nav]");
+        if (!nav) return;
+        var links = nav.querySelectorAll('a[href^="#"]');
+        var ids = Array.from(links).map(function (l) {
+          return l.getAttribute("href").slice(1);
+        });
+        var sections = ids
+          .map(function (id) {
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
+        if (!sections.length) return;
+        var observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                links.forEach(function (link) {
+                  link.classList.toggle(
+                    "active",
+                    link.getAttribute("href") === "#" + entry.target.id,
+                  );
+                });
+              }
+            });
+          },
+          { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
+        );
+        sections.forEach(function (s) {
+          observer.observe(s);
+        });
+      })();
+    </script>
+  </body>
+</html>

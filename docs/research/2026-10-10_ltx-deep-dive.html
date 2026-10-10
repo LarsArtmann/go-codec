@@ -881,10 +881,13 @@
           <h1>superfly/ltx — the LTX transactional file format, reviewed for go-codec</h1>
           <p class="subtitle">
             LTX is the page-level transactional file format behind LiteStream v0.5 and
-            fly.io&rsquo;s Liteserver. This review reads the whole library at commit
-            <code>f299ac5</code> (v0.5.3), runs its test suite, and answers the question
-            that matters here: what does this library mean for go-codec and the wider
-            go-cqrs-lite event-sourcing stack?
+            fly.io&rsquo;s Liteserver. This review reads the library&rsquo;s core at
+            commit <code>f299ac5</code> (v0.5.3) &mdash; encoder, decoder, checksums,
+            format types, and the encode-db CLI in full; ltx.go to ~70%;
+            compactor and remaining CLI commands structurally &mdash; runs its test
+            suite, and answers the question that matters here: what does this
+            library mean for go-codec and the wider go-cqrs-lite event-sourcing
+            stack?
           </p>
           <div class="meta">
             <span class="tag amber">Reviewed: v0.5.3 (f299ac5, 2026-09-10)</span>
@@ -1375,8 +1378,12 @@ Trailer (16B)   PostApplyChecksum | FileChecksum (CRC64-ISO over logical content
           <p>
             Every external claim in this report was checked against a primary source
             on 2026-10-10: the repository was cloned at commit
-            <code>f299ac5b951c</code> (2026-09-10) and read directly; the test suite
-            was executed (<code>go test ./...</code> &mdash; both packages pass);
+            <code>f299ac5b951c</code> (2026-09-10) and its core read directly
+            (encoder.go, decoder.go to ~line 405, checksum.go, file_spec.go, and
+            encode_db.go in full; ltx.go to line 460; compactor and the remaining
+            CLI commands structurally); the test suite
+            was executed (<code>go test ./...</code> &mdash; both packages pass, no
+            race detector);
             repository metadata, releases, and issues came from the GitHub API;
             downstream adoption was verified in consumers&rsquo; go.mod files, not
             from documentation claims.

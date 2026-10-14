@@ -5,7 +5,7 @@ go 1.27
 require (
 	github.com/fxamacker/cbor/v2 v2.9.6
 	github.com/gkampitakis/go-snaps v0.5.23
-	github.com/larsartmann/go-error-family v0.11.0
+	github.com/larsartmann/go-error-family v0.12.0
 	github.com/onsi/gomega v1.44.0
 	pgregory.net/rapid v1.3.0
 )
@@ -25,6 +25,6 @@ require (
 	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/net v0.59.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/net v0.61.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 )

@@ -1,5 +1,13 @@
 # Status Report — Pareto Execution: v0.3.2 Shipped + Plan M2–M27 Swept
 
+> **SUPERSEDED same-session (2026-10-16 08:25):** this mid-session snapshot
+> was written before the final pushes, the fuzz+bench dispatch completed, the
+> summary job's first live run, and the pkg.go.dev/bench-chain state. The
+> authoritative report for this work is
+> `2026-10-16_08-25_pareto-execution-complete-v032-shipped.md`; its §d-1/§d-2
+> also correct two claims here (the handoff's CI-green premise and the
+> commit-race count). Kept unarchived only until the next rotation pass.
+
 **Date:** 2026-10-16 08:13 CEST
 **Scope:** Execution of `docs/planning/2026-10-16_06-40_pareto-ship-v0.3.2-execution-plan.md`
 (the operator's "GET SHIT DONE — the whole list" instruction), M2→M27 minus the

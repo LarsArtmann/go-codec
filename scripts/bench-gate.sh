@@ -29,13 +29,33 @@
 #   OUT_DIR receives codec-bench-{v1,v2}.txt (+ .ok, .txt.loadpeak).
 #   Use a path that survives reboots and /tmp cleaners, and run inside the
 #   devShell (needs `go` on PATH). Expect ~30 min per suite.
+#
+# Other modes:
+#   scripts/bench-gate.sh --selftest   run the wait_quiet acceptance self-test
+#   scripts/bench-gate.sh --help       show this usage
+#
+# Test hooks (not for production runs):
+#   BENCH_GATE_SNAPSHOTS=DIR    load1() reads snapshots DIR/1,DIR/2,... in
+#                               round-robin instead of /proc/loadavg (selftest)
+#   BENCH_GATE_SAMPLE_SECS=N    wait_quiet sleep between samples (default 15)
 
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Selftest sampler state (see BENCH_GATE_SNAPSHOTS in the header).
+_snapshot_count=0
+
 load1() {
-	awk '{print $1}' /proc/loadavg
+	if [ -n "${BENCH_GATE_SNAPSHOTS:-}" ]; then
+		local n
+		n=$(cat "$BENCH_GATE_SNAPSHOTS/.counter" 2>/dev/null || echo 0)
+		n=$((n + 1))
+		printf '%s\n' "$n" >"$BENCH_GATE_SNAPSHOTS/.counter"
+		awk '{print $1}' "$BENCH_GATE_SNAPSHOTS/$(( ((n - 1) % _snapshot_count) + 1 ))"
+	else
+		awk '{print $1}' /proc/loadavg
+	fi
 }
 
 # True when the float in $1 compares < the float in $2.
@@ -58,7 +78,7 @@ wait_quiet() {
 		fi
 		prev=$sample
 		if [ "$consecutive" -lt 6 ]; then
-			sleep 15
+			sleep "$BENCH_GATE_SAMPLE_SECS"
 		fi
 	done
 }
@@ -111,6 +131,62 @@ suite_ok() {
 	tail -n 1 "$out" | grep -q '^ok'
 }
 
+# wait_quiet acceptance self-test: four synthetic load histories driven
+# through the snapshot sampler (BENCH_GATE_SNAPSHOTS) assert that sustained
+# quiet converges quickly while storm/band/high histories never do.
+selftest() {
+	local dir expected failures=0 name rc
+	dir=$(mktemp -d)
+	trap 'rm -rf "$dir"' RETURN
+
+	# runs wait_quiet against DIR with a hard timeout; echoes 0 when it
+	# converged (exit 0), 1 when it was still waiting when the timeout fired.
+	run_wait() {
+		if timeout "$2" env "BENCH_GATE_SNAPSHOTS=$1" "$0" --selftest-probe >/dev/null 2>&1; then
+			echo 0
+		else
+			echo 1
+		fi
+	}
+
+	scenario() {
+		name="$1"
+		shift
+		rc=$(run_wait "$@")
+		if [ "$rc" = "$expected" ]; then
+			echo "ok: $name"
+		else
+			echo "FAIL: $name (got converge=$rc, want $expected)" >&2
+			failures=$((failures + 1))
+		fi
+	}
+
+	BENCH_GATE_SAMPLE_SECS=15
+
+	mkdir -p "$dir/quiet"
+	printf '2.0 2.0 2.0 5/100 1\n' >"$dir/quiet/1"
+	expected=0 scenario "flat quiet load converges" "$dir/quiet" 5
+
+	mkdir -p "$dir/band"
+	printf '6.5 6.5 6.5 5/100 1\n' >"$dir/band/1"
+	expected=0 scenario "load in the 5..8 band without a storm converges" "$dir/band" 5
+
+	mkdir -p "$dir/high"
+	printf '30.0 30.0 30.0 5/100 1\n' >"$dir/high/1"
+	expected=1 scenario "sustained load >= 8 never converges" "$dir/high" 2
+
+	mkdir -p "$dir/storm"
+	printf '2.0 2.0 2.0 5/100 1\n' >"$dir/storm/1"
+	printf '7.0 7.0 7.0 5/100 1\n' >"$dir/storm/2"
+	expected=1 scenario "rising storm under 8 never converges" "$dir/storm" 2
+
+	if [ "$failures" -gt 0 ]; then
+		echo "selftest: FAIL ($failures scenario(s))" >&2
+		return 1
+	fi
+	echo "selftest: PASS (4 scenarios)"
+}
+
 main() {
 	local out_dir attempt deadline
 	out_dir="${1:?usage: scripts/bench-gate.sh OUT_DIR (somewhere durable, NOT /tmp)}"
@@ -157,5 +233,23 @@ main() {
 }
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then
-	main "$@"
+	case "${1:-}" in
+		--selftest)
+			selftest
+			;;
+		--selftest-probe)
+			# internal helper of --selftest: one wait_quiet pass with 0s sleeps
+			BENCH_GATE_SAMPLE_SECS=0
+			_snapshot_count=$(find "${BENCH_GATE_SNAPSHOTS:?}" -maxdepth 1 -type f | wc -l)
+			wait_quiet
+			;;
+		--help | -h)
+			echo "usage: scripts/bench-gate.sh OUT_DIR" >&2
+			echo "       scripts/bench-gate.sh --selftest" >&2
+			echo "       scripts/bench-gate.sh --help" >&2
+			;;
+		*)
+			main "$@"
+			;;
+	esac
 fi

@@ -6,18 +6,31 @@ name: Release
 # CHANGELOG.md section for the tagged version, falling back to GitHub's
 # generated notes when no section exists. Never delete/re-push a tag: the
 # module proxy makes tag content immutable.
+#
+# workflow_dispatch is always a dry run: it exercises the gates and the
+# note-cutting for the `version` input and publishes nothing. Use it to
+# validate the workflow before cutting a real tag.
 
 on:
   push:
     tags: [v*]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to simulate (e.g. v0.3.2). Dispatch never publishes.'
+        required: true
+        default: v0.3.2
 
 permissions:
   contents: write
 
 jobs:
   release:
-    name: GitHub Release (${{ github.ref_name }})
+    name: >-
+      Release (${{ github.event_name == 'workflow_dispatch' && format('dry-run {0}', inputs.version) || github.ref_name }})
     runs-on: ubuntu-latest
+    env:
+      RELEASE_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -43,7 +56,7 @@ jobs:
           GOEXPERIMENT=jsonv2 go test ./... -count=1
       - name: Cut release notes from CHANGELOG.md
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${RELEASE_REF#v}"
           awk -v ver="$version" '
             /^## \[/ {
               if (found) exit
@@ -53,15 +66,16 @@ jobs:
             found { print }
           ' CHANGELOG.md | sed -e '/./,$!d' > notes.md
           if [ -s notes.md ]; then
-            echo "notes: using CHANGELOG.md section for ${GITHUB_REF_NAME}"
+            echo "notes: using CHANGELOG.md section for ${RELEASE_REF}"
           else
-            echo "notes: no CHANGELOG.md section for ${GITHUB_REF_NAME}; will generate" >&2
+            echo "notes: no CHANGELOG.md section for ${RELEASE_REF}; will generate" >&2
           fi
       - name: Create or refresh GitHub Release
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          args=(--title "$GITHUB_REF_NAME")
+          args=(--title "$RELEASE_REF")
           case "$GITHUB_REF_NAME" in
             *-rc*|*-alpha*|*-beta*) args+=(--prerelease) ;;
             *) args+=(--latest) ;;
@@ -71,9 +85,19 @@ jobs:
           else
             args+=(--generate-notes)
           fi
-          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            echo "release exists; refreshing notes for $GITHUB_REF_NAME"
-            gh release edit "$GITHUB_REF_NAME" "${args[@]}"
+          if gh release view "$RELEASE_REF" > /dev/null 2>&1; then
+            echo "release exists; refreshing notes for $RELEASE_REF"
+            gh release edit "$RELEASE_REF" "${args[@]}"
           else
-            gh release create "$GITHUB_REF_NAME" "${args[@]}"
+            gh release create "$RELEASE_REF" "${args[@]}"
+          fi
+      - name: Dry-run summary (no release published)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "DRY RUN OK: gates passed for ${RELEASE_REF}; nothing was published."
+          if [ -s notes.md ]; then
+            echo "--- notes.md preview (first 40 lines) ---"
+            head -40 notes.md
+          else
+            echo "(no CHANGELOG.md section for ${RELEASE_REF}; a live tag run would fall back to --generate-notes)"
           fi

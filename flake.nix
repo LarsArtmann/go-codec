@@ -52,7 +52,7 @@
           # `nix build` work without network access at build time.
           # `go` is an outer-param of buildGoModule in this nixpkgs — passing it
           # as a call argument is silently ignored (GOTOOLCHAIN=local then runs
-          # nixpkgs' default go, e.g. 1.26.8 against a go.mod requiring 1.27.1).
+          # nixpkgs' default go, e.g. 1.26.8 against a go.mod requiring 1.27.2).
           goModule = (pkgs.buildGoModule.override { go = goPkg; }) {
             pname = "go-codec";
             version = "unstable";
@@ -68,15 +68,15 @@
           # ambient GitHub credentials and network — it is therefore NOT a flake
           # input (that would force auth for every nix command) and NOT part of
           # any sandboxed check. GOEXPERIMENT=jsonv2 is required because
-          # erraudit v0.4.x imports encoding/json/v2, which go 1.26 only builds
-          # with the experiment enabled. Version must match the ci.yml pin.
+          # erraudit imports encoding/json/v2, which go only builds with the
+          # experiment enabled. Version must match the ci.yml pin.
           errauditApp = pkgs.writeShellApplication {
             name = "erraudit";
             runtimeInputs = [ goPkg ];
             text = ''
               export GOPRIVATE="github.com/larsartmann/*"
               export GOEXPERIMENT=jsonv2
-              exec go run github.com/larsartmann/erraudit/cmd/erraudit@v0.4.0 "$@"
+              exec go run github.com/larsartmann/erraudit/cmd/erraudit@v0.7.0 "$@"
             '';
           };
         in
@@ -108,6 +108,7 @@
               errauditApp
               pkgs.golangci-lint
               pkgs.gopls
+              pkgs.shellcheck
               pkgs.trash-cli
             ];
 
@@ -196,6 +197,13 @@
               bash scripts/check-error-codes.sh
               bash scripts/check-erraudit-version.sh
               echo "tripwires: all four checks passed"
+            '';
+
+            # Quiet-machine gate for baseline-grade benchmark runs (see the
+            # script header for the contract). --selftest exercises the
+            # wait_quiet acceptance logic without waiting for real quiet.
+            bench-gate = mkApp "bench-gate" [ goPkg ] ''
+              exec bash scripts/bench-gate.sh "$@"
             '';
 
             clean = mkApp "clean" [ goPkg pkgs.trash-cli ] ''

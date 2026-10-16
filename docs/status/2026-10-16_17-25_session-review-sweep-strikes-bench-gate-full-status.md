@@ -10,15 +10,15 @@ mandate ("keep going until everything works"). Everything below happened in
 `go-codec` unless marked otherwise. Evidence = run IDs, commit IDs, fresh CLI
 outputs from this session only (per instruction, no unrelated research).
 
-| Quick stats | |
-| --- | --- |
-| CI runs this session (triggered or triaged) | 15+; final state: ALL green |
-| Commits (hand-made, descriptive) | `d543914` `faab46c` `9c70450` `1128d12` `70d7040` `26556e7` (+ this report) |
-| Daemon commits raced/recovered | 3 (`c7462bf`, `924a3e3` scooped my staged work; `940912b` carried strike 2) |
-| Real bugs found | 2 (sweep strikes; bench-gate silent no-op) |
-| Bench gate | ghost → fixed → validated live: 210/210 comparisons OK |
-| pkg.go.dev `@v0.3.2` | 404 at 09:00 → **live** at 16:45 |
-| Tripwires | 5/5 passing at every commit and at report time |
+| Quick stats                                 |                                                                             |
+| ------------------------------------------- | --------------------------------------------------------------------------- |
+| CI runs this session (triggered or triaged) | 15+; final state: ALL green                                                 |
+| Commits (hand-made, descriptive)            | `d543914` `faab46c` `9c70450` `1128d12` `70d7040` `26556e7` (+ this report) |
+| Daemon commits raced/recovered              | 3 (`c7462bf`, `924a3e3` scooped my staged work; `940912b` carried strike 2) |
+| Real bugs found                             | 2 (sweep strikes; bench-gate silent no-op)                                  |
+| Bench gate                                  | ghost → fixed → validated live: 210/210 comparisons OK                      |
+| pkg.go.dev `@v0.3.2`                        | 404 at 09:00 → **live** at 16:45                                            |
+| Tripwires                                   | 5/5 passing at every commit and at report time                              |
 
 ---
 
@@ -167,6 +167,7 @@ outputs from this session only (per instruction, no unrelated research).
 ## f) UP TO 50 THINGS WE SHOULD GET DONE NEXT
 
 **Operator decisions (gated on you):**
+
 1. **TODO #25 — reconfigure the buildflow --fix loop** (pin its Go to 1.27.2,
    or exclude go.mod/.golangci.yml/.go-version from its fix profile). THE
    root-cause kill; everything else on this list is secondary to it.
@@ -188,96 +189,96 @@ outputs from this session only (per instruction, no unrelated research).
 
 **CI hardening (I can do on instruction):**
 11. Bench job: fail or warn loudly on anomalous re-seed (found=no artifact
-    while a prior bench-results exists in the chain).
+while a prior bench-results exists in the chain).
 12. A cheap dispatchable bench-SMOKE job (fetch loop + compare against the
-    last artifact with a synthetic candidate) so gate validation stops
-    costing 15-minute full dispatches.
+last artifact with a synthetic candidate) so gate validation stops
+costing 15-minute full dispatches.
 13. `concurrency:` group on ci.yml (cancel superseded pushes — the daemon's
-    rapid commits currently run full 9-gate CI per docs push).
+rapid commits currently run full 9-gate CI per docs push).
 14. `paths-ignore: ['**.md']` for the heavy jobs (docs-only pushes run
-    tripwires + summary only).
+tripwires + summary only).
 15. Surface the bench-compare table (or its top deltas) in the Gate Summary
-    step-summary, not just in the artifact.
+step-summary, not just in the artifact.
 16. Tripwire #6 candidate: verify pinned action SHAs match their version
-    comments via the API (read-only) — today's v6.1.0 claim was unverifiable
-    locally.
+comments via the API (read-only) — today's v6.1.0 claim was unverifiable
+locally.
 17. Shellcheck integration for embedded script steps in CI's actionlint run
-    (`actionlint -shellcheck`), if not already active there.
+(`actionlint -shellcheck`), if not already active there.
 18. Add a tiny selftest to `scripts/bench-compare.py` (parity + a planted
-    regression) and wire it into `.#tripwires` or the bench job.
+regression) and wire it into `.#tripwires` or the bench job.
 19. Pin the python3 minor used by bench-compare in CI (ubuntu-latest drift).
 20. Consider `--latest=false`-style backfill hygiene check: tripwire that
-    every `## [vX.Y.Z]` heading in CHANGELOG.md has a matching compare-link
-    reference (would have caught today's link rot).
+every `## [vX.Y.Z]` heading in CHANGELOG.md has a matching compare-link
+reference (would have caught today's link rot).
 21. A `scripts/recover-daemon-scoop.sh` helper encoding the sanctioned
-    soft-reset + amend pattern (used 3× today).
+soft-reset + amend pattern (used 3× today).
 22. Sweep canary: a scheduled CI job that greps the three version files and
-    opens an ISSUE (not a push) on drift — visible even when I'm not in
-    session.
+opens an ISSUE (not a push) on drift — visible even when I'm not in
+session.
 23. Run the fuzz corpus consume-side check (uploaded corpus actually feeds
-    the next run's seeds).
+the next run's seeds).
 
 **Bench & performance:**
 24. Add a v2-mode bench leg (or explicit rationale why v1-only is honest —
-    the v2 streaming comparison benchmarks exist but aren't gated).
+the v2 streaming comparison benchmarks exist but aren't gated).
 25. After TODO #1 lands, revisit whether the bench gate should also anchor to
-    `docs/benchmark-baseline.md` bounds (absolute sanity floor under the
-    self-relative chain).
+`docs/benchmark-baseline.md` bounds (absolute sanity floor under the
+self-relative chain).
 26. Document the CI-chain-vs-local-baseline relationship in
-    `docs/benchmark-baseline.md` (one paragraph).
+`docs/benchmark-baseline.md` (one paragraph).
 27. Re-run the 10-run local baseline (quiet window, `bench-gate.sh`) next
-    time the box is idle, to keep the reference table fresh.
+time the box is idle, to keep the reference table fresh.
 
 **Docs & knowledge:**
 28. CONTRIBUTING: document the five tripwires + pre-commit hook for outside
-    contributors (partially done; needs the secrets note from #7).
+contributors (partially done; needs the secrets note from #7).
 29. Fold strike-2 (recurrence + culprit) into CHANGELOG `[Unreleased]` for a
-    single-stop narrative (currently split across AGENTS + reports).
+single-stop narrative (currently split across AGENTS + reports).
 30. Status-corpus rotation: archive today's 08:25 + 16:50 reports once their
-    content is fully harvested (TODO #25 done).
+content is fully harvested (TODO #25 done).
 31. README: figures/policy render check on pkg.go.dev after the next tag
-    (the README there still shows the pre-tag-era section titles).
+(the README there still shows the pre-tag-era section titles).
 32. Write the "sweep strike runbook" as a doc (not just AGENTS bullet):
-    detect → root-cause probe → restore → tripwire → descriptive commit →
-    report.
+detect → root-cause probe → restore → tripwire → descriptive commit →
+report.
 33. ADR-0002 (compress-then-sign) still Proposed — needs your decision or a
-    decision deadline.
+decision deadline.
 34. Add the unknown-flag lesson to `references/lessons.md` in crush-config
-    (cross-project class) — I can draft it for your commit.
+(cross-project class) — I can draft it for your commit.
 
 **Ecosystem / sibling:**
 35. After the sibling's parallel agent finishes its error-taxonomy work:
-    re-verify `GOWORK=off` builds of the five adopted modules (their go.sum
-    churn today was theirs, not mine).
+re-verify `GOWORK=off` builds of the five adopted modules (their go.sum
+churn today was theirs, not mine).
 36. TODO #24 execution plan: `nix run .#deps` in the sibling, release-train
-    script, CHANGELOG entry — ready to start on your go-ahead.
+script, CHANGELOG entry — ready to start on your go-ahead.
 37. Verify the sibling's daemon-pushed go.sum commits still satisfy its own
-    vendorHash/nix checks (out of my session's scope today — flagging).
+vendorHash/nix checks (out of my session's scope today — flagging).
 38. Registration-API idea already routed to ROADMAP theme 1 — no action.
 
 **Hygiene / small:**
 39. Replace my manual version-file edits history with a `write-go-version`
-    round-trip next time (tool adoption).
+round-trip next time (tool adoption).
 40. Stop using `rm` even on scratch dirs (use `trash`); today: 1 violation.
 41. `.gitignore`-check: confirm no CI-side scratch names (`bench-previous.txt`,
-    `bench-current.txt`) can ever land in a local tree by accident.
+`bench-current.txt`) can ever land in a local tree by accident.
 42. Evaluate `gh` version pin for contributors (the `-O` trap was
-    version-independent, but flag drift is a class).
+version-independent, but flag drift is a class).
 43. Consider labeling daemon commits (`[skip ci]` for docs-only scoops) —
-    policy change, gated on #6.
+policy change, gated on #6.
 44. Gate Summary: include run duration per gate (cheap, aids triage).
 45. Pre-commit hook: add the go-version check to `pre-push` as well (defense
-    in depth for bypasses).
+in depth for bypasses).
 46. Keep the golangci floor guard's rationale current (v2.14.0 floor note).
 47. Review `.golangci.yml` enable-list for other "sweep bait" (linters an
-    enable-all profile would add) and consider an explicit comment banner.
+enable-all profile would add) and consider an explicit comment banner.
 48. Confirm the fuzz jobs' matrix label rendering
-    (`Fuzz (JSON ${{ matrix.json-mode }})` shows literally in skipped
-    summaries — cosmetic).
+(`Fuzz (JSON ${{ matrix.json-mode }})` shows literally in skipped
+summaries — cosmetic).
 49. Add the Ubuntu 26 migration date to AGENTS gotchas if we float runners
-    (decision #3), or delete the concern if we pin.
+(decision #3), or delete the concern if we pin.
 50. Post-#1: flip the error-audit gate from skip-reason to enforcing and
-    re-baseline its findings before trusting green.
+re-baseline its findings before trusting green.
 
 ## g) THREE QUESTIONS I CANNOT FIGURE OUT MYSELF
 
@@ -295,10 +296,10 @@ outputs from this session only (per instruction, no unrelated research).
 
 ---
 
-*Sources: every claim above is from this session's own commands — `gh run
+_Sources: every claim above is from this session's own commands — `gh run
 view/list` logs (38860891898, 38862596496, 38864602942, 38864642165,
 38915649152, 38915648800, 38915753690, 38920999357), artifact downloads
 (`/tmp/bench-final`), local tripwire runs at every commit, actionlint, the
 local fetch-loop simulation, proxy `@v/list`, and pkg.go.dev fetches at 09:00
 (404) and 16:45 (live). No benchmarks were run locally; no unrelated research
-was done.*
+was done._

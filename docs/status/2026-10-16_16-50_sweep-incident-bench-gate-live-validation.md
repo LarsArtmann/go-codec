@@ -4,13 +4,13 @@
 fixes, the self-relative benchmark gate is validated end-to-end, and
 pkg.go.dev serves v0.3.2. Session grew out of the 08:25 report's addendum.**
 
-| Quick stats | |
-| --- | --- |
-| Incidents | 2 (version-contract sweep ×2 strikes, bench-gate silent no-op) |
-| Fixes | `d543914` + re-restore (via `1128d12`), bench-gate `1128d12` |
-| Bench gate | COMPARES live: 210/210 verdicts OK (run 38915649152) |
-| pkg.go.dev | v0.3.2 indexed and served (was 404 this morning) |
-| Master | `70d7040` pushed, all runs green, tripwires 5/5 |
+| Quick stats |                                                                |
+| ----------- | -------------------------------------------------------------- |
+| Incidents   | 2 (version-contract sweep ×2 strikes, bench-gate silent no-op) |
+| Fixes       | `d543914` + re-restore (via `1128d12`), bench-gate `1128d12`   |
+| Bench gate  | COMPARES live: 210/210 verdicts OK (run 38915649152)           |
+| pkg.go.dev  | v0.3.2 indexed and served (was 404 this morning)               |
+| Master      | `70d7040` pushed, all runs green, tripwires 5/5                |
 
 ## a) Incident 1 — automated sweep broke the version contract (twice)
 
@@ -68,10 +68,10 @@ pkg.go.dev serves v0.3.2. Session grew out of the 08:25 report's addendum.**
   daemon policy (M11/TODO #3 — now including the buildflow-loop toolchain),
   sibling-push of future trains (TODO #24), M24 builders, M25 LTX.
 
-*Verification sources: fresh CLI runs this session — five tripwires
+_Verification sources: fresh CLI runs this session — five tripwires
 (pre-commit + `nix run .#tripwires`), dual-mode builds on 1.27.2, actionlint,
 local artifact-structure + parity-compare simulation, `gh run view` logs for
 every CI claim (38860891898, 38862596496, 38864602942, 38864642165,
 38915649152 and the push runs listed above), the bench-results artifact
 download, proxy @v/list, and pkg.go.dev fetches at 09:00 (404) and 16:45
-(v0.3.2 live). No local benchmarks were run.*
+(v0.3.2 live). No local benchmarks were run._

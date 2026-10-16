@@ -214,9 +214,23 @@ With flake.nix (preferred in LarsArtmann projects): `nix build`,
   contract.** One sweep rewrote go.mod/.golangci.yml to 2-part versions
   (`go 1.27`), added an unreviewed `lll` linter, and bumped a pinned action;
   the daemon committed AND pushed it, leaving master red on every push (the
-  go-version tripwire caught it in CI, as designed). After any foreign sweep:
-  diff the semantic files (go.mod, .golangci.yml, ci.yml) before assuming
-  formatting-only, and run `nix run .#tripwires` locally before pushing.
+  go-version tripwire caught it in CI, as designed). The strike RECURS: the
+  culprit is the `projects-management-automation … buildflow --fix` loop
+  running under the ambient go1.27.0 toolchain, which "aligns" the version
+  declarations downward (strikes at 08:19 and 12:54 on 2026-10-16; the
+  pre-commit tripwire also blocks the next human commit on the broken tree).
+  Permanent fix is operator-side: point that loop at go1.27.2 or exclude the
+  three version files from its fix profile. Until then, after any foreign
+  sweep: diff the semantic files (go.mod, .golangci.yml, ci.yml) before
+  assuming formatting-only, run `nix run .#tripwires` locally before pushing,
+  and expect the daemon to scoop staged work within seconds — amend its
+  unpushed `chore:` commits into descriptive messages instead of fighting it.
+- **Unknown CLI flags fail silently behind `2>/dev/null`.** The bench gate
+  called `gh run download -O` — no such flag — and the swallowed exit 1 made
+  every run look artifact-less, so the self-relative comparison never ran
+  while the job stayed green (exposed only on the path's first live
+  exercise). Corollary: a green CI job proves only what its steps can fail
+  on; exercise new gate paths end-to-end once before trusting the schedule.
 - **Benchmarks need a quiet machine — this box is multi-tenant.** Sibling
   tenants routinely push loadavg to 30-60; running `go test -bench` under load
   inflates ns/op uniformly 2-3x while B/op and allocs/op stay IDENTICAL (the

@@ -210,6 +210,16 @@ nix run .#lint                        # lint both modes
 - **`RawCodec` copies on Decode.** The target `*[]byte` receives a fresh copy so
   callers can't mutate the input buffer. Encode accepts only `[]byte` or
   `rawJSONValue`.
+- **Go-version bump: all three files need the full patch version.** The
+  tripwire (`scripts/check-go-version.sh`) requires go.mod `go`, `.go-version`,
+  and `.golangci.yml` `run.go` to be the IDENTICAL string; precedent
+  (v0.1.0–v0.3.0) is full patch in go.mod (`go 1.26.5` → `1.26.6` → `1.26.7`).
+  The 1.27 bump dropped go.mod to `go 1.27` and quoted `.golangci.yml`'s
+  `go: "1.27"` — the tripwire sat red from the v0.3.1 tag until fixed
+  2026-10-16 (nobody noticed; v0.3.1 shipped that way). Two traps: unquoted
+  2-part YAML (`go: 1.27`) parses as a float, so golangci "needs" quotes — but
+  the tripwire awk compares raw tokens including quotes, so a quoted value can
+  never pass. Full 3-part unquoted (`go: 1.27.1` everywhere) satisfies both.
 - **nixpkgs lags Go patch releases.** After bumping the Go version (go.mod,
   `.go-version`, `.golangci.yml` — kept in sync by `scripts/check-go-version.sh`),
   hermetic checks (`nix flake check`: format/build/test) go RED until nixpkgs

@@ -9,13 +9,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+### Changed
+
+- Nothing yet.
+
+## [v0.3.2] — 2026-10-16
+
+Tooling, policy, and hardening release. **No breaking changes and no Go file
+changes** — the only consumer-visible commitment move is the toolchain floor:
+`go 1.27.1` → `go 1.27.2` (four net/http stdlib security fixes; toolchains
+older than 1.27.2 fetch it automatically via `GOTOOLCHAIN=auto`).
+
+### Added
+
+- Release dry-run mode: `release.yml` gained `workflow_dispatch` with a
+  `version` input. A dispatch run exercises the release gates and the
+  CHANGELOG note-cutting and prints a dry-run summary, but never creates or
+  edits a GitHub Release (that step is gated on tag pushes). The workflow had
+  never executed before its first real tag; the dry-run retires that blind
+  first run.
+- Pre-commit tripwire hooks: `.githooks/pre-commit` runs the five repo
+  consistency checks before every commit, fast-failing with a per-check fix
+  hint. Opt in per clone with `git config core.hooksPath .githooks`.
+- `scripts/write-go-version.sh` (nix app `write-go-version`): one-argument
+  toolchain bump — writes go.mod, `.go-version` and `.golangci.yml` from the
+  same full-patch string, rejects two-part versions, ends by running the
+  version tripwire as the verification of record (ADR-0003).
+- `scripts/check-golangci-pin.sh`: the ci.yml golangci-lint pin must stay at
+  or above the known-good floor (v2.14.0, which fixed the 2026-10-15 buildir
+  panic on the go1.27.1 stdlib). Wired as the fifth tripwire (ci.yml v1 leg,
+  `.#tripwires`, pre-commit hook).
+- `scripts/bench-gate.sh` gains `--selftest` (four synthetic load histories
+  through a snapshot-injecting sampler: flat quiet and the 5..8 band must
+  converge; sustained ≥ 8 and a rising sub-8 storm must never) and `--help`;
+  flake app `nix run .#bench-gate`. The wait_quiet acceptance logic is now
+  testable without waiting for real quiet.
+- `nix run .#tripwires` now runs five checks (adds the golangci pin guard).
+- ADR-0002 (`docs/adr/0002-compress-then-sign.md`, Proposed candidate):
+  compress-then-sign ordering contract pinned before any compression feature
+  exists, so signing safety is decided at design time.
+- ADR-0003 (`docs/adr/0003-go-version-policy.md`, Accepted): the Go version
+  contract — one full-patch string across go.mod (authoritative consumer
+  floor), `.go-version`, and `.golangci.yml run.go`; bumps are atomic;
+  enforcement is mechanical.
+- Indicative-figures propagation policy (top of `docs/benchmark-baseline.md`,
+  cited from FEATURES.md): every `~` figure is anchored to the baseline
+  table's date and toolchain; re-baselining sweeps README/FEATURES/doc.go in
+  the same change.
+- CONTRIBUTING: "Repository Checks Without Nix" — the five tripwire scripts
+  runnable on a plain toolchain, plus the JSON-mode pinning discipline
+  (`env -u GOEXPERIMENT`) for ambient-shell safety.
 - Tag-push release workflow (`.github/workflows/release.yml`): scoped
   `contents: write`, gates (replace/pseudo-version leak checks, `go mod
   verify`, build + test in both JSON modes), release notes cut from the
   CHANGELOG section for the tag with `--generate-notes` fallback, idempotent
   create-or-refresh, `--latest` for stable tags / `--prerelease` for
   rc/alpha/beta.
-- `.#tripwires` nix app: runs all four check scripts in CI-leg order with one
+- `.#tripwires` nix app: runs the check scripts in CI-leg order with one
   command (`nix run .#tripwires`) — devShell parity with CI.
 - `scripts/bench-compare.py`: sanity-gates two raw `go test -bench` outputs
   (per-benchmark mean of ns/op, B/op, allocs/op across counts; ratio bounds
@@ -44,6 +100,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **The vulnerability-scan CI leg went red on go1.27.1**: govulncheck flagged
+  four net/http stdlib vulnerabilities (GO-2026-6617 HPACK encoder race,
+  GO-2026-6613 CONNECT desync, GO-2026-6611 initial-window CPU exhaustion,
+  GO-2026-6603 trailer-header memory exhaustion), all fixed in go1.27.2. The
+  library ships no HTTP surface, so the honest fix was the toolchain bump
+  across the whole tripwire contract (go.mod, `.go-version`,
+  `.golangci.yml`), not a gate suppression. nixpkgs `go_1_27` already shipped
+  1.27.2, so the hermetic flake checks followed without an update.
 - **CI lint legs panicked on both JSON modes** (exit 3 since 2026-10-15):
   golangci-lint v2.12.2's bundled staticcheck (`buildir`) cannot parse Go
   1.27.1's stdlib `internal/poll` (`unexpected expr: *ast.KeyValueExpr`). Pin
@@ -75,6 +139,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Toolchain floor bumped 1.27.1 → 1.27.2** (see Fixed above for the
+  driver). Atomic across go.mod / `.go-version` / `.golangci.yml` per
+  ADR-0003; dual-mode build, full test suite, and dual-mode golangci-lint
+  verified green on 1.27.2.
+- **erraudit pin v0.4.0 → v0.7.0** in ci.yml and the flake erraudit app
+  (kept in lockstep by the version tripwire). v0.7.0 is additive for this
+  repo's usage (`--enforce-go-error-family --type-aware` plus the
+  legacy_as/legacy_is zero-baselines); smoke-tested locally: zero findings,
+  baselines hold.
+- The mermaid CI job caches the npx mermaid-cli tree and the Puppeteer
+  Chromium download (actions/cache v4.3.0, keyed on the CLI version) — the
+  render job previously re-downloaded Chromium on every push.
 - **Toolchain bumped to Go 1.27.1** (deliberate, all five sources moved
   together: go.mod, `.go-version`, `.golangci.yml`, flake `go_1_27`, and the
   overridden `buildGoModule` go). Both JSON modes build, the full test suite

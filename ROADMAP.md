@@ -35,8 +35,10 @@ Raw ideas:
 - Explore whether hot payload types benefit from pre-warming the CBOR type cache
   at startup (trading a few ms of init time for consistent first-request latency)
 - Benchmark regression detection in CI (baseline comparison, `benchstat`, a
-  `nix run .#bench` app) — benchmarks exist, but nothing guards against
-  regressions
+  `nix run .#bench` app) — the tooling half exists now (`scripts/bench-gate.sh`
+  quiet-gate, `scripts/bench-compare.py` sanity gate, `docs/benchmark-baseline.md`
+  reference tables); what remains is a scheduled CI job that re-runs the suites
+  behind the gate and diffs against the committed baseline
 - Lazy normalization: only convert `map[interface{}]interface{}` keys when the
   v1 marshaler actually chokes, instead of always normalizing
 
@@ -105,6 +107,23 @@ Raw ideas:
   pairs with the v1.0.0 discussion
 - Audit other LarsArtmann repos beyond `go-cqrs-lite` that require `go-codec`
   (adoption sweep after each release)
+- Single-source version generation: one input writes go.mod, `.go-version`, and
+  `.golangci.yml`, replacing the detect-drift-after-the-fact tripwire (the
+  2026-10-16 lesson: the gate caught v0.3.1's drift but prevented none)
+- golangci-lint CI-pin guard: the ci.yml `go install @vX` pin is hand-maintained
+  (dependabot's ecosystems don't cover it) and v2.12.2 panicked on go1.27.1
+  stdlib IR until bumped — a floor/agreement check against the devShell version
+  would catch the next stdlib-IR incompatibility before CI goes red
+- CI job-summary step posting per-gate statuses for at-a-glance red detection
+- SQLite backup/replication angle (cross-repo, research-derived): evaluate
+  LiteStream + LTX for the go-cqrs-lite SQLite engines — ltx deep-dive verdict
+  and evidence: `docs/research/2026-10-10_ltx-deep-dive.html`
+- Envelope design fuel from the ltx invariants: a never-zero distinguished bit
+  pattern and a checksum flag bit for the envelope header, if the envelope
+  layer ever evolves (steal `ChecksumFlag` bit semantics, not the format)
+- Compression-vs-signing invariant note (ADR-0002 candidate): pin the
+  compress-then-sign ordering contract before any compression feature lands,
+  so signing safety is decided at design time, not discovered at incident time
 
 ### 6. Error-contract maturity
 
@@ -139,6 +158,20 @@ a behavioral family, and structured context. Raw ideas for going further
 - ErrorContext() keys as godoc constants; registry generation tooling that
   emits `docs/error-codes.md` from source; per-code FAMILY comparison in the
   tripwire
+
+## 7. Demand-gated backlog (unblocks only on a consumer signal)
+
+Test/tooling ideas that are real but have no consumer demand yet. Dispositioned
+repeatedly as "no consumer demand" in archived reports (2026-09-26 §g-3); they
+live here so they are findable in one place instead of re-litigated per pass:
+
+- `FuzzEncodePooled` (rapid-generated payloads through the pool path)
+- NDJSON golden snapshots and empty-JSON-stream / `io.PipeWriter` streaming tests
+- `StreamCodec` / `EncodeStream` first-class streaming abstractions
+- Concurrent `GetBuffer`/`PutBuffer` stress test beyond the current coverage
+- Full-chain integration test: encode → envelope → detect → decode
+- Depth-cap case through the full `TranscodeToJSON` path
+- `DecodeEnvelopeOrLegacy` unwrapped-error guarantee in the rapid suite
 
 ## Non-goals
 

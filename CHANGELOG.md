@@ -44,11 +44,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **CI lint legs panicked on both JSON modes** (exit 3 since 2026-10-15):
+  golangci-lint v2.12.2's bundled staticcheck (`buildir`) cannot parse Go
+  1.27.1's stdlib `internal/poll` (`unexpected expr: *ast.KeyValueExpr`). Pin
+  bumped `v2.12.2` → `v2.14.0` (the version the nixpkgs devShell already
+  ships). A latent `gocognit` violation in the v2 streaming-decoder comparison
+  benchmark (shipped unlinted by a daemon commit) surfaced once the panic was
+  gone; sub-benchmark bodies extracted into helpers. Both lint legs 0 issues
+  again.
+- **The go-version tripwire had been red since before the v0.3.1 tag** (go.mod
+  `go 1.27` vs `.go-version`/`.golangci.yml` `1.26.7`, then a quoted `"1.27"`
+  that could never pass the raw-token compare). All three declarations now
+  agree on `1.27.1`, and the tripwire itself is hardened: YAML quoting is
+  stripped before compare and a 2-part go.mod value is rejected with an
+  explanatory error, so the unsatisfiable state fails fast instead of silently.
 - `go.mod`'s `go` directive had been silently bumped to `1.27.1` by tooling
   (auto-commit `ed85a26`) while `.go-version`, `.golangci.yml`, and the flake
   still said `1.26.7` — the version tripwire went red on master. Reverted to
-  `1.26.7`; a deliberate Go 1.27 bump remains a `TODO_LIST.md` item that moves
-  all five sources together.
+  `1.26.7`; the deliberate Go 1.27.1 bump subsequently landed 2026-10-04 with
+  all five sources moved together (see Changed below).
 - Hermetic build pinned the wrong Go: `buildGoModule`'s `go` is an outer
   `.override` param in current nixpkgs, so a call-argument `go = …` was
   silently ignored and the sandbox built with nixpkgs' default go. Now
@@ -78,6 +92,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   JSON engine moved several allocation figures in both directions (v1 and
   v2 builds now byte-identical per row) — the new table is the only valid
   comparison anchor.
+- Documentation health pass (2026-10-16): the eight open status reports
+  (2026-09-26 → 2026-10-16) annotated inline and archived; open items harvested
+  into `TODO_LIST.md` (rows 14–21) and `ROADMAP.md` (ltx-derived ideas,
+  version-generation, demand-gated backlog). FEATURES.md re-anchored to the
+  2026-10-05 dual-mode baseline (stale "baseline" figures refreshed, the
+  go1.26-era "v2 35-40% faster" normalize finding marked obsolete after a
+  parity re-measure), coverage stamp updated to 92.6/92.4 (go1.27.1),
+  CONTRIBUTING gained a Benchmarks section and the `.#tripwires` command,
+  `doc.go` # Errors now points at the code registry and ADR, and
+  `scripts/bench-gate.sh` documents its sub-60s-burst blind spot.
 - Documentation health pass (2026-09-26): all 26 historical status/planning
   reports now carry inline per-item verdicts (`done at <hash>` / Won't
   implement / explicit open-routing) and are archived under

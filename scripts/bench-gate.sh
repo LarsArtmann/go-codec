@@ -18,6 +18,10 @@
 #     (clean ~11-16n, polluted ~40n+). Abort the attempt otherwise.
 #   - Watch: 1-min load sampled every 20s during each suite; abort at >= 12.
 #     The running peak is recorded to <out>.loadpeak for post-hoc audit.
+#     Known blind spot: a load burst shorter than the 1-min loadavg window
+#     (sub-~60s) can pollute rows without ever crossing 12 — after acceptance,
+#     eyeball benchstat variance against the previous baseline before
+#     enshrining (suspiciously wide ranges on normally-tight rows = reject).
 #   - Retry: up to 8 attempts within a 10h deadline.
 #   - Success: both suites end `ok` -> <out>.ok markers; exit 0.
 #

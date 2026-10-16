@@ -20,9 +20,10 @@ nix run .#test       # run tests in BOTH JSON modes (v1 and v2)
 nix run .#test-race  # race-test both modes
 nix run .#lint       # lint both modes
 nix run .#build      # build both modes
+nix run .#tripwires  # all four repo-consistency check scripts
 ```
 
-Without Nix, use the plain Go toolchain (Go 1.26+):
+Without Nix, use the plain Go toolchain (Go 1.27.1+):
 
 ```bash
 # Build (v1 JSON is the default)
@@ -94,6 +95,21 @@ GOEXPERIMENT=jsonv2 go test -run '^$' -fuzz='FuzzCBORCodec_Roundtrip' -fuzztime=
 - If a fuzz run finds a crasher, Go writes the input into `testdata/fuzz/`.
   Fix the bug, then keep that file as a committed regression seed with a
   descriptive name (e.g. `seed-number-float64-overflow`).
+
+## Benchmarks
+
+`Benchmark*` targets run as normal tests (compile-checked on every `go test`).
+For baseline-grade timing runs on this multi-tenant machine, use the gate —
+never a bare `go test -bench` under load (contention inflates ns/op ~3x with
+identical allocs):
+
+```bash
+scripts/bench-gate.sh OUT_DIR                 # quiet-machine gate + both JSON-mode suites
+python3 scripts/bench-compare.py OLD NEW      # sanity-gate two raw outputs (ratio bounds 0.33..3)
+```
+
+The reference tables live in [`docs/benchmark-baseline.md`](docs/benchmark-baseline.md);
+diff against them with benchstat before accepting performance-sensitive changes.
 
 ## Reporting Issues
 

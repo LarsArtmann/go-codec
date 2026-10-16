@@ -163,6 +163,11 @@
 //	        e.Code(), e.ErrorFamily(), e.ErrorContext()["encoding"])
 //	}
 //
+// The full code table lives in docs/error-codes.md (registry, tripwired in
+// CI by scripts/check-error-codes.sh); the design rationale, including the
+// WrapOnce rule and the classified-vs-passthrough split, is in
+// docs/adr/0001-error-taxonomy.md.
+//
 // # Format Detection
 //
 // AutoDetect infers the encoding (json/cbor/raw) of unknown payload bytes from

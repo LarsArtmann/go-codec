@@ -8,6 +8,13 @@ engine's allocation profile (see notes), so cross-toolchain comparisons for
 JSON paths are not like-for-like. Figures elsewhere that cite indicative `~`
 values should be re-checked against this table when next touched.
 
+**Indicative-figures propagation policy:** every `~` figure in README.md,
+FEATURES.md, and doc.go is anchored to THIS table's date and toolchain. When a
+new baseline is accepted here, sweep those files in the same change: update
+stale `~` values to the new table, re-stamp their "(baseline ...)" markers,
+and mark superseded findings OBSOLETE rather than deleting them. A figure that
+cannot be re-verified against the current table loses its `~` and says so.
+
 ## Environment
 
 | Factor    | Value                                                                                                                      |

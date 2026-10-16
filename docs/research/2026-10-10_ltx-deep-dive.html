@@ -862,6 +862,7 @@
           <a href="#what-it-is">What LTX is</a>
           <a href="#strengths">Strengths</a>
           <a href="#findings">Findings</a>
+          <a href="#scorecard">Scorecard</a>
           <a href="#relevance">Relevance to go-codec</a>
           <a href="#versions">Version currency</a>
           <a href="#opportunities">Opportunities</a>
@@ -1148,6 +1149,20 @@ Trailer (16B)   PostApplyChecksum | FileChecksum (CRC64-ISO over logical content
               A built CLI binary is committed at <code>dist/ltx</code> and
               .gitignore does not cover build output. Cosmetic for consumers, but it
               bloats clones and invites accidental staleness.
+            </p>
+          </div>
+
+          <div class="issue issue-nice" id="finding-fuzz">
+            <span class="severity severity-nice">Quality gap &middot; Low impact (for ltx)</span>
+            <h3>Zero fuzz targets for an untrusted-bytes format decoder</h3>
+            <div class="where">repo-wide: no <code>*_fuzz_test.go</code> &middot; observed 2026-10-10</div>
+            <p>
+              ltx parses untrusted container bytes (lengths, page indexes,
+              checksums) yet ships no Go fuzz targets; its suite is example- and
+              unit-based (3 benchmarks, 0 fuzz). go-codec fuzzes every decoder
+              path (round-trip, NDJSON framing, transcode, normalize) and keeps
+              crashers as committed regression seeds &mdash; a transferable
+              discipline, and a quality differentiator for byte-format code.
             </p>
           </div>
         </section>

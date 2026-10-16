@@ -251,6 +251,27 @@ releases v0.1.0/v0.2.0/v0.3.1 were backfilled. The 06:35 report was rotated
 **State: ALL EXECUTABLE PLAN ITEMS DONE AND VERIFIED. WAITING FOR OPERATOR
 INSTRUCTIONS** (the four standing decisions + the two owed checks above).
 
+---
+
+## Addendum (09:10 same morning): automated sweep broke the version contract — fixed
+
+Twenty minutes after this report, an automated formatter/lint sweep (daemon
+commit `397b3b2`, 38 files) rewrote go.mod/.golangci.yml to 2-part versions
+(`go 1.27`), added an unreviewed `lll` linter, and bumped the pinned
+actions/cache v4.3.0 → v6.1.0; the daemon pushed it and master went red on
+every push (the go-version tripwire caught it in CI, exactly as designed).
+Restored in `d543914` (full-patch 1.27.2 floor, reviewed linter set, reviewed
+cache pin; pure formatting kept) — CI green again (run 38864602942, all 9
+gates). Sweep hazard + foreign-sweep checklist recorded in AGENTS.md Gotchas.
+Also fixed on sight: CHANGELOG compare links (v0.3.1/v0.3.2 refs missing,
+[Unreleased] stale) in `faab46c`.
+
+**Owed checks update:** pkg.go.dev still 404 on `@v0.3.2` at 09:00 (proxy
+serves it; indexing lag). The bench self-relative comparison was NOT left to
+Sunday's cron: a workflow_dispatch (run 38864642165) was fired at 09:01 to
+exercise the compare chain against the seeded artifact immediately — outcome
+recorded in CHANGELOG [Unreleased] and any successor report.
+
 *Verification sources: fresh CLI runs this session — five tripwires,
 dual-mode build/test/lint on go1.27.2, `nix flake check` (job log), actionlint,
 shellcheck, `go mod verify` on both repos, the scratch go-get round-trip,

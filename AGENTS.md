@@ -210,6 +210,13 @@ With flake.nix (preferred in LarsArtmann projects): `nix build`,
   pushed history stays. The error-contract overhaul shipped with no meaningful
   commit message anywhere — CHANGELOG and status reports were the only
   narrative.
+- **Automated formatter/lint sweeps ride the daemon and can break the version
+  contract.** One sweep rewrote go.mod/.golangci.yml to 2-part versions
+  (`go 1.27`), added an unreviewed `lll` linter, and bumped a pinned action;
+  the daemon committed AND pushed it, leaving master red on every push (the
+  go-version tripwire caught it in CI, as designed). After any foreign sweep:
+  diff the semantic files (go.mod, .golangci.yml, ci.yml) before assuming
+  formatting-only, and run `nix run .#tripwires` locally before pushing.
 - **Benchmarks need a quiet machine — this box is multi-tenant.** Sibling
   tenants routinely push loadavg to 30-60; running `go test -bench` under load
   inflates ns/op uniformly 2-3x while B/op and allocs/op stay IDENTICAL (the

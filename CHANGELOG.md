@@ -37,6 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   the v0.3.0 report's TOP-50 brainstorm table ledger-exempted. Tool fix
   riding along: check-rows now recognizes GFM single-dash separator rows
   (previously misclassified as phantom CLEAN-row failures).
+- **Go 1.27.2 version contract restored** after an automated config sweep
+  rewrote go.mod/.golangci.yml to 2-part versions (which the tripwire rejects
+  by design), went red on every push, and rode along an unreviewed `lll`
+  linter enablement and an actions/cache v4.3.0 → v6.1.0 major bump. The
+  reviewed pins are restored; pure formatting from the sweep is kept.
+- **CHANGELOG compare links repaired**: v0.3.1 and v0.3.2 had no reference
+  links (section headings rendered as broken links) and [Unreleased] still
+  diffed against v0.3.0.
 
 ## [v0.3.2] — 2026-10-16
 
@@ -651,7 +659,9 @@ serialization, tag at `3f8ac9d`.
   (matching the original cqrs-lite source), which Go allows for multi-return
   functions used as statements
 
-[Unreleased]: https://github.com/larsartmann/go-codec/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-codec/compare/v0.3.2...HEAD
+[v0.3.2]: https://github.com/larsartmann/go-codec/compare/v0.3.1...v0.3.2
+[v0.3.1]: https://github.com/larsartmann/go-codec/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/larsartmann/go-codec/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/larsartmann/go-codec/compare/v0.1.0...v0.2.0
 [v0.1.0]: https://github.com/larsartmann/go-codec/releases/tag/v0.1.0

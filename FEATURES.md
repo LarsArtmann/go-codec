@@ -15,9 +15,9 @@
 
 > All statuses verified by running `go test ./...` and
 > `GOEXPERIMENT=jsonv2 go test ./...` with `-race` (both JSON modes green;
-> re-verified 2026-09-26).
-> Test coverage: **90.3%** (v1) / **90.8%** (v2) of statements
-> (measured 2026-09-26, go1.26.7).
+> re-verified 2026-10-16).
+> Test coverage: **92.6%** (v1) / **92.4%** (v2) of statements
+> (measured 2026-10-16, go1.27.1).
 > Drift-guarded in CI by `scripts/check-features-planned.sh`: a symbol marked
 > `PLANNED` that actually resolves in the package fails the build.
 
@@ -25,21 +25,23 @@
 
 | Benchmark                                                           | What it measures                                                                            | Key finding                                                                                                                                                                                     |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BenchmarkNormalizeForJSON` / `BenchmarkJSONCodec_MarshalUnmarshal` | v1 vs v2 JSON paths (incl. normalizer)                                                      | v2: 35-40% lower latency, ~50-63% fewer allocations                                                                                                                                             |
+| `BenchmarkNormalizeForJSON` / `BenchmarkJSONCodec_MarshalUnmarshal` | v1 vs v2 JSON paths (incl. normalizer)                                                      | go1.26-era result ("v2 35-40% faster, 50-63% fewer allocs") is OBSOLETE: on go1.27.1 both builds are at parity (normalize 208 B / 9 allocs, ~0.7µs; measured 2026-10-16) — the v1 engine now shares the v2 JSON implementation                                     |
 | `BenchmarkTagTradeoffs_Encode/Decode`                               | map vs toarray vs keyasint across small/medium/large payloads                               | toarray smallest (23-41% size reduction); keyasint close behind (18-37%)                                                                                                                        |
-| `BenchmarkCBORReflectionCache`                                      | Cold (first encode) vs warm (cached) CBOR encode                                            | Cold ~117µs/104 allocs (one-off, not in the baseline suite); warm 332ns ± 6%/2 allocs (baseline). No codegen needed                                                                             |
+| `BenchmarkCBORReflectionCache`                                      | Cold (first encode) vs warm (cached) CBOR encode                                            | Cold ~117µs/104 allocs (one-off, not in the baseline suite); warm 271ns ± 1%/2 allocs (baseline, go1.27.1). No codegen needed                                                                            |
 | `BenchmarkEncodePooled`                                             | Pool-backed encode vs plain Encode                                                          | Eliminates per-call []byte allocation via sync.Pool callback                                                                                                                                    |
 | `BenchmarkTranscodeToJSON_*`                                        | CBOR→JSON transcoding vs JSON passthrough                                                   | Nested-deep and passthrough paths quantified                                                                                                                                                    |
-| `BenchmarkAutoDetect` / `BenchmarkAutoDetectDebug`                  | Format-detection cost (JSON/CBOR/unknown payloads)                                          | First-byte decide 81-99ns; trial-decode path 135ns + 4 allocs (baseline)                                                                                                                        |
-| `BenchmarkWrapEncode` / `BenchmarkUnwrapDecode`                     | Envelope wrap/unwrap overhead vs bare encode                                                | 275ns ± 12% wrap / 772ns ± 14% unwrap on a 3-field payload (baseline)                                                                                                                           |
-| `BenchmarkSize`                                                     | JSON-vs-CBOR size comparison helper                                                         | 370ns ± 41%, 2 allocs (baseline; noisy on the reference machine)                                                                                                                                |
-| `BenchmarkCBORCompact_vs_Canon_Decode`                              | Compact vs canonical CBOR decode cost                                                       | Parity — 265ns canonical vs 261ns compact (baseline); key-sort choice costs nothing at decode                                                                                                   |
-| `BenchmarkRealisticPayload_Encode/Decode`                           | CBOR vs JSON on a realistic 7-field order payload (map vs `toarray` vs `keyasint` shapes)   | Baseline (encode): JSON 860ns, CBOR 513ns, compact `toarray` 280ns; decode 2.23µs / 1.05µs / 671ns. README `When to Use CBOR vs JSON` cites these; re-run on your hardware for absolute numbers |
+| `BenchmarkAutoDetect` / `BenchmarkAutoDetectDebug`                  | Format-detection cost (JSON/CBOR/unknown payloads)                                          | First-byte decide 72–99ns; trial-decode path (AutoDetectDebug) 139ns ± 16% (baseline)                                                                                                           |
+| `BenchmarkWrapEncode` / `BenchmarkUnwrapDecode`                     | Envelope wrap/unwrap overhead vs bare encode                                                | 297ns ± 1% wrap / 244ns ± 1% unwrap on a 3-field payload (baseline)                                                                                                                             |
+| `BenchmarkSize`                                                     | JSON-vs-CBOR size comparison helper                                                         | 370ns ± 41%, 2 allocs (not in the 2026-10-05 baseline suite; noisy on the reference machine)                                                                                                     |
+| `BenchmarkCBORCompact_vs_Canon_Decode`                              | Compact vs canonical CBOR decode cost                                                       | Parity — 231ns canonical vs 226ns compact (baseline); key-sort choice costs nothing at decode                                                                                                   |
+| `BenchmarkRealisticPayload_Encode/Decode`                           | CBOR vs JSON on a realistic 7-field order payload (map vs `toarray` vs `keyasint` shapes)   | Baseline (encode): JSON 521ns, CBOR 273ns, compact `toarray` 247ns; decode 777ns / 804ns / 650ns. README `When to Use CBOR vs JSON` cites these; re-run on your hardware for absolute numbers |
 | `BenchmarkObserveCodec`                                             | `ObservableCodec` decorator overhead vs the raw codec (encode/decode/pooled sub-benchmarks) | Sizes the telemetry cost when wrapping a codec                                                                                                                                                  |
 
-Figures marked "baseline" are 10-run benchstat means from the v1-mode reference
-baseline (2026-08-15, go1.26.5, AMD Ryzen AI MAX+ 395) recorded in
-[`docs/benchmark-baseline.md`](docs/benchmark-baseline.md) — re-run and compare
+Figures marked "baseline" are 10-run benchstat means from the dual-mode
+reference baseline (2026-10-05, go1.27.1, v1 and v2 builds, AMD Ryzen AI MAX+
+395) recorded in [`docs/benchmark-baseline.md`](docs/benchmark-baseline.md) —
+the 2026-09-11 v1-only table it supersedes is not a valid comparison anchor
+(Go 1.27 changed the JSON engine's allocation profile). Re-run and compare
 there before accepting performance-sensitive changes.
 
 ## Codecs

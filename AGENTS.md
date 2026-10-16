@@ -220,6 +220,9 @@ nix run .#lint                        # lint both modes
   2-part YAML (`go: 1.27`) parses as a float, so golangci "needs" quotes — but
   the tripwire awk compares raw tokens including quotes, so a quoted value can
   never pass. Full 3-part unquoted (`go: 1.27.1` everywhere) satisfies both.
+  Since 2026-10-16 the tripwire itself strips quotes and rejects 2-part go.mod
+  values with an explanatory error, so the unsatisfiable state now fails fast
+  with a message instead of silently — the full-patch contract stands.
 - **nixpkgs lags Go patch releases.** After bumping the Go version (go.mod,
   `.go-version`, `.golangci.yml` — kept in sync by `scripts/check-go-version.sh`),
   hermetic checks (`nix flake check`: format/build/test) go RED until nixpkgs
@@ -263,7 +266,10 @@ nix run .#lint                        # lint both modes
   For baseline-grade runs use `scripts/bench-gate.sh OUT_DIR`
   (storm-aware sustained-idle entry, canary early-abort, peak-load watch —
   the 2026-10-05 dual-mode baseline was captured this way). The canonical
-  baseline table lives in `docs/benchmark-baseline.md`.
+  baseline table lives in `docs/benchmark-baseline.md`; the accepted raw
+  outputs (plus `.ok`/`.loadpeak` markers and the benchstat copy) live
+  machine-locally in `~/bench-artifacts/go-codec/` — /tmp is not safe for
+  them (the cleaner ate two suites' worth of evidence in one night).
 
 ## Dependencies
 

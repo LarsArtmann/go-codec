@@ -59,28 +59,28 @@
    (actual location `/home/lars/projects/SKILLS/github-voice`). The two draft
    bodies are **not yet written** to `docs/drafts/` — evidence is ready, this
    is the immediate next step. Filing stays gated on explicit instruction.
-~~2. **Item 12 — hermetic tail.** `nix build` / `nix flake check` not yet re-run.~~ done — 2026-10-05 — nix flake check fully green, vendorHash updated
+   ~~2. **Item 12 — hermetic tail.** `nix build` / `nix flake check` not yet re-run.~~ done — 2026-10-05 — nix flake check fully green, vendorHash updated
    The flake `vendorHash` predates the daemon's Sep-29 dependency bumps
    (gomega 1.43→1.44 + indirects), so a hash mismatch is **expected** and
    needs the `got:` hash pasted in.
-~~3. **Final verification sweep** not yet run: actionlint (new release.yml,~~ done — 2026-10-05 sweep; re-verified 2026-10-16 (lint/race/fmt/tripwires)
+   ~~3. **Final verification sweep** not yet run: actionlint (new release.yml,~~ done — 2026-10-05 sweep; re-verified 2026-10-16 (lint/race/fmt/tripwires)
    edited ci.yml), golangci-lint both modes, `go test -race` both modes,
    `nix fmt` drift check.
 
 ## c) NOT STARTED
 
 ~~1. **Items 4+7 — benchmark re-baseline.** Deliberately sequenced after the~~ done — 2026-10-05 — dual-mode 10-run baseline accepted behind the quiet gate
-   toolchain settle (a baseline on the retired toolchain would be instantly
-   stale); nothing run yet. Includes: 10-count runs v1+v2 on go1.27.1,
-   benchstat, recreating `scripts/bench-compare.py` (raw-vs-raw, per-metric,
-   0.33–3 sanity bounds), the raw-output retention decision, and the
-   `docs/benchmark-baseline.md` rewrite.
+toolchain settle (a baseline on the retired toolchain would be instantly
+stale); nothing run yet. Includes: 10-count runs v1+v2 on go1.27.1,
+benchstat, recreating `scripts/bench-compare.py` (raw-vs-raw, per-metric,
+0.33–3 sanity bounds), the raw-output retention decision, and the
+`docs/benchmark-baseline.md` rewrite.
 ~~2. **Docs sync.** TODO_LIST.md (delete 5/6/9/11/12, annotate 2/4/7),~~ done — 2026-10-05 + 2026-10-16 doc passes
-   CHANGELOG.md Unreleased entries, AGENTS.md (`.#tripwires` command, Go 1.27
-   references), README Go floor line (1.26.7+ → 1.27.1+), SECURITY.md check.
+CHANGELOG.md Unreleased entries, AGENTS.md (`.#tripwires` command, Go 1.27
+references), README Go floor line (1.26.7+ → 1.27.1+), SECURITY.md check.
 3. **Item 10** — gated on item 1's direction (deferred user decision). **→ TODO_LIST #10**
 4. **Blocked items untouched:** 1 (ERRAUDIT_PAT), 3 (daemon policy), **→ TODO_LIST #1/#3/#8**
-   8 (release backfill).
+8 (release backfill).
 
 ## d) TOTALLY FUCKED UP!
 
@@ -109,16 +109,16 @@ Nothing destructive. Honest waste and mistakes:
 1. **Pre-commit tripwire:** hook `check-go-version.sh` (and friends) into **→ TODO_LIST #22 (pre-commit tripwire hooks)**
    pre-commit so daemon/user commits fail fast instead of leaving red CI +
    session-start repair. Two silent go.mod bumps in two weeks.
-~~2. **CHANGELOG drift:** tag `v0.3.1` exists with **no matching CHANGELOG~~ done — 2026-10-05 — v0.3.1 section added from the tag diff
+   ~~2. **CHANGELOG drift:** tag `v0.3.1` exists with **no matching CHANGELOG~~ done — 2026-10-05 — v0.3.1 section added from the tag diff
    section** (Unreleased jumps to [v0.3.0]). release.yml would fall back to
    generated notes for it. Reconcile.
-~~3. **Tag-push duplication:** ci.yml and release.yml both fire gates on tag~~ **Won't implement — accepted for now — documented in the release.yml header.**
+   ~~3. **Tag-push duplication:** ci.yml and release.yml both fire gates on tag~~ **Won't implement — accepted for now — documented in the release.yml header.**
    push. Accepted for now (documented in workflow header); could be slimmed
    into one workflow later.
-~~4. **Fan-out integrity:** run `bash ~/.config/crush/scripts/check-skill-fanout.sh`~~ done — symlink repaired 2026-10-05 (checker gap is crush-config-side)
+   ~~4. **Fan-out integrity:** run `bash ~/.config/crush/scripts/check-skill-fanout.sh`~~ done — symlink repaired 2026-10-05 (checker gap is crush-config-side)
    after this session; fix the dangling github-voice link.
-~~5. **rg discipline:** `-r` replaces. Use `-l`/`-n` separately.~~ done — adopted
-~~6. **Reproducible bench tooling:** provision benchstat via pinned nixpkgs or a~~ done — 2026-10-05 — pinned x/perf version recorded in the baseline doc
+   ~~5. **rg discipline:** `-r` replaces. Use `-l`/`-n` separately.~~ done — adopted
+   ~~6. **Reproducible bench tooling:** provision benchstat via pinned nixpkgs or a~~ done — 2026-10-05 — pinned x/perf version recorded in the baseline doc
    dedicated GOBIN, not ad-hoc installs.
 
 ## f) Next tasks

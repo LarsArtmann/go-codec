@@ -52,7 +52,7 @@ load1() {
 		n=$(cat "$BENCH_GATE_SNAPSHOTS/.counter" 2>/dev/null || echo 0)
 		n=$((n + 1))
 		printf '%s\n' "$n" >"$BENCH_GATE_SNAPSHOTS/.counter"
-		awk '{print $1}' "$BENCH_GATE_SNAPSHOTS/$(( ((n - 1) % _snapshot_count) + 1 ))"
+		awk '{print $1}' "$BENCH_GATE_SNAPSHOTS/$((((n - 1) % _snapshot_count) + 1))"
 	else
 		awk '{print $1}' /proc/loadavg
 	fi
@@ -234,22 +234,22 @@ main() {
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then
 	case "${1:-}" in
-		--selftest)
-			selftest
-			;;
-		--selftest-probe)
-			# internal helper of --selftest: one wait_quiet pass with 0s sleeps
-			BENCH_GATE_SAMPLE_SECS=0
-			_snapshot_count=$(find "${BENCH_GATE_SNAPSHOTS:?}" -maxdepth 1 -type f | wc -l)
-			wait_quiet
-			;;
-		--help | -h)
-			echo "usage: scripts/bench-gate.sh OUT_DIR" >&2
-			echo "       scripts/bench-gate.sh --selftest" >&2
-			echo "       scripts/bench-gate.sh --help" >&2
-			;;
-		*)
-			main "$@"
-			;;
+	--selftest)
+		selftest
+		;;
+	--selftest-probe)
+		# internal helper of --selftest: one wait_quiet pass with 0s sleeps
+		BENCH_GATE_SAMPLE_SECS=0
+		_snapshot_count=$(find "${BENCH_GATE_SNAPSHOTS:?}" -maxdepth 1 -type f | wc -l)
+		wait_quiet
+		;;
+	--help | -h)
+		echo "usage: scripts/bench-gate.sh OUT_DIR" >&2
+		echo "       scripts/bench-gate.sh --selftest" >&2
+		echo "       scripts/bench-gate.sh --help" >&2
+		;;
+	*)
+		main "$@"
+		;;
 	esac
 fi

@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to simulate (e.g. v0.3.2). Dispatch never publishes.'
+        description: "Version to simulate (e.g. v0.3.2). Dispatch never publishes."
         required: true
         default: v0.3.2
 

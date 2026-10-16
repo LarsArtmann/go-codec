@@ -13,7 +13,7 @@ go-codec shapes the bytes that the sibling `signing` and `encryption` modules
 protect. No compression feature exists in the codec today, but the ROADMAP
 keeps the idea alive, and the ltx deep-dive (2026-10-10) surfaced how a
 storage format's invariants interact with integrity protection. The failure
-mode to avoid is deciding the compress/sign ordering *after* a compression
+mode to avoid is deciding the compress/sign ordering _after_ a compression
 feature ships — at which point one ordering is already baked into stored
 bytes, and the safe ordering may be the incompatible one.
 
@@ -38,8 +38,8 @@ Reasons, in force order:
 3. **`DeterministicCodec` composes only with byte-deterministic transforms.**
    The signing module accepts `DeterministicCodec`, whose `Encode` must be
    byte-deterministic (that is what makes signatures reproducible). A
-   compression stage inserted *after* signing is outside the codec contract
-   entirely; one inserted *before* it must itself be deterministic
+   compression stage inserted _after_ signing is outside the codec contract
+   entirely; one inserted _before_ it must itself be deterministic
    (level/dictionary pinned) to preserve the property.
 
 ## Decision (to bind when a compression feature lands)

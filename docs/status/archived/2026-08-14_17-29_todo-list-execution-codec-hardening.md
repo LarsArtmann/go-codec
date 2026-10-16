@@ -44,14 +44,14 @@ Nothing is partially done. Each started item was carried to completion, verified
 
 These items were not started in this session. They are either larger, lower-priority, or require user/CI decisions:
 
-| #  | Task                                                                                                                                    | Why not started                                                                                              |
-| -- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| ~~1~~ | ~~Decide release strategy and create GitHub Release~~ resolved — superseded by the v0.2.0 and v0.3.0 releases (`9094137`) | ~~Blocked on user decision~~ resolved (v0.2.0/v0.3.0 cut; `v0.1.0` untouched) |
-| ~~3~~ | Add CI fuzz job (cron + seed corpus) ~~done at `699fad9` (30s/target cron + seed corpus)~~ | ~~Requires CI design decision on fuzztime, runner budget, and corpus seeding workflow. Non-trivial (~1-2h).~~ |
-| ~~17~~ | Prometheus/OpenTelemetry exporter example ~~done at `699fad9` — resolved dependency-free via `ExampleMetricsHook`~~ | ~~**Blocked on user decision** (dependency-free pseudo-metrics vs real `prometheus/client_golang` dev-dep).~~ |
-| ~~18~~ | CI step: `golangci-lint run --out-format json` artifact ~~done at `699fad9` (`lint-report-json-v1/v2` artifacts, 14-day retention)~~ | ~~CI-only improvement; lower priority than code changes.~~ |
-| ~~19~~ | Add architecture diagram to README ~~done at `699fad9` (mermaid diagram in README §Architecture)~~ | ~~Documentation polish; can be batched with remaining README work.~~ |
-| ~~20~~ | Streaming benchmarks ~~done at `699fad9` (`streaming_benchmark_test.go` + v2 decoder comparison)~~ | ~~Lower priority than the streaming tests added in #7; could be done after profiling needs are clearer.~~ |
+| #      | Task                                                                                                                                    | Why not started                                                                                                  |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| ~~1~~  | ~~Decide release strategy and create GitHub Release~~ resolved — superseded by the v0.2.0 and v0.3.0 releases (`9094137`)               | ~~Blocked on user decision~~ resolved (v0.2.0/v0.3.0 cut; `v0.1.0` untouched)                                    |
+| ~~3~~  | Add CI fuzz job (cron + seed corpus) ~~done at `699fad9` (30s/target cron + seed corpus)~~                                              | ~~Requires CI design decision on fuzztime, runner budget, and corpus seeding workflow. Non-trivial (~1-2h).~~    |
+| ~~17~~ | Prometheus/OpenTelemetry exporter example ~~done at `699fad9` — resolved dependency-free via `ExampleMetricsHook`~~                     | ~~**Blocked on user decision** (dependency-free pseudo-metrics vs real `prometheus/client_golang` dev-dep).~~    |
+| ~~18~~ | CI step: `golangci-lint run --out-format json` artifact ~~done at `699fad9` (`lint-report-json-v1/v2` artifacts, 14-day retention)~~    | ~~CI-only improvement; lower priority than code changes.~~                                                       |
+| ~~19~~ | Add architecture diagram to README ~~done at `699fad9` (mermaid diagram in README §Architecture)~~                                      | ~~Documentation polish; can be batched with remaining README work.~~                                             |
+| ~~20~~ | Streaming benchmarks ~~done at `699fad9` (`streaming_benchmark_test.go` + v2 decoder comparison)~~                                      | ~~Lower priority than the streaming tests added in #7; could be done after profiling needs are clearer.~~        |
 | ~~22~~ | README: add Streaming JSON (NDJSON), `EncodePooled`, and `Size`/`SizeResult` sections ~~done at `699fad9` (dedicated README sections)~~ | ~~README already has some streaming content; full dedicated sections are docs polish that pairs well with #19.~~ |
 
 _(Note: the original list had 20 numbered items; the table above lists 7 not-started items because some were deferred together.)_

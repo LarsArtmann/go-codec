@@ -11,11 +11,11 @@ AGENTS.md "nixpkgs lags Go patch releases" gotcha
 
 The Go toolchain version appears in three declarations that must agree:
 
-| File             | Role                                                                   |
-| ---------------- | ---------------------------------------------------------------------- |
-| `go.mod` `go`    | **Authoritative.** Consumer-visible minimum floor; CI setup-go reads it |
-| `.go-version`    | Tooling pin (editors, direnv, version managers)                        |
-| `.golangci.yml` `run.go` | Linter's target Go version (golangci-lint analyzes against it) |
+| File                     | Role                                                                    |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `go.mod` `go`            | **Authoritative.** Consumer-visible minimum floor; CI setup-go reads it |
+| `.go-version`            | Tooling pin (editors, direnv, version managers)                         |
+| `.golangci.yml` `run.go` | Linter's target Go version (golangci-lint analyzes against it)          |
 
 Before this policy the contract lived only in an AGENTS.md gotcha, and drift
 happened in practice: `.golangci.yml` once carried a quoted value
@@ -53,7 +53,7 @@ toolchain via `goPkg`. A drifted declaration makes one of these layers lie.
    floor is consumer-visible and hermetic builders re-vendor against it — and
    confirm nixpkgs ships the matching `go_1_N` before tagging. Since flake.nix
    pins `goPkg = pkgs.go_1_27` and overrides `buildGoModule`/`checks.format`
-   with it, only nixpkgs' *default* go can lag, which affects auxiliary
+   with it, only nixpkgs' _default_ go can lag, which affects auxiliary
    tooling, not the package/build/format checks.
 
 5. **Generation over hand-editing (direction).** The generator

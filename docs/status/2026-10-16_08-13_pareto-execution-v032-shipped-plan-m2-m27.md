@@ -29,14 +29,14 @@ fix: GFM single-dash separators). Old releases v0.1.0/v0.2.0/v0.3.1 were
 backfilled. The 06:35 report was annotated (39 verdicts) and archived with a
 manifest row; this report is the new rotation source.
 
-| Quick stats | |
-| --- | --- |
-| Plan items executed | M2–M13, M14–M23, M26 (18 of 27; M1 was done at plan time) |
-| Operator-gated, untouched | M11, M12, M17, M24, M25, M27 (TODO #1/#2/#3/#10 + infra/product calls) |
-| Releases | v0.3.2 shipped live + v0.1.0/v0.2.0/v0.3.1 backfilled |
-| TODO_LIST | 14 rows → 5 (11 closed, 1 new #24) |
-| New tool | `docs-health` annotate.go `repair-partial` (+ separator-regression fix, 40 new fixture assertions) |
-| Commits | 12 hand-made descriptive commits (daemon scoops soft-reset re-committed, unpushed only) |
+| Quick stats               |                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| Plan items executed       | M2–M13, M14–M23, M26 (18 of 27; M1 was done at plan time)                                          |
+| Operator-gated, untouched | M11, M12, M17, M24, M25, M27 (TODO #1/#2/#3/#10 + infra/product calls)                             |
+| Releases                  | v0.3.2 shipped live + v0.1.0/v0.2.0/v0.3.1 backfilled                                              |
+| TODO_LIST                 | 14 rows → 5 (11 closed, 1 new #24)                                                                 |
+| New tool                  | `docs-health` annotate.go `repair-partial` (+ separator-regression fix, 40 new fixture assertions) |
+| Commits                   | 12 hand-made descriptive commits (daemon scoops soft-reset re-committed, unpushed only)            |
 
 ## a) FULLY DONE
 
@@ -202,9 +202,9 @@ manifest row; this report is the new rotation source.
 
 **NEXT: final gates → push → CI watch → hand back to operator.**
 
-*Verification sources: fresh CLI runs this session (five tripwires, actionlint,
+_Verification sources: fresh CLI runs this session (five tripwires, actionlint,
 shellcheck, dual-mode build/test/lint on 1.27.2, `nix flake check` green,
 `go mod verify` both repos, scratch go-get round-trip, release/proxy checks,
 check-rows 32/32), `gh run` logs for every CI claim (runs 38853654809,
 38854028654, 38854057247, 38854403846, 38854629170, 38854807927/38854807936).
-No benchmark numbers were produced locally (loadavg 15-19 all session).*
+No benchmark numbers were produced locally (loadavg 15-19 all session)._

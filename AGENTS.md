@@ -231,21 +231,21 @@ With flake.nix (preferred in LarsArtmann projects): `nix build`,
 
 ## High-Value References
 
-| File | Why it matters |
-| --- | --- |
-| `doc.go` | Package-level overview, codec-choice guidance, tag usage |
-| `README.md` | User-facing usage + when-to-use matrix; sibling cross-refs |
-| `FEATURES.md` | Honest feature inventory with status |
-| `codec.go` | `Codec`/`BufferEncoder`/`DeterministicCodec` contracts |
-| `errors.go` | Stable error sentinels and codes |
-| `docs/error-codes.md` | The error-code registry (family, meaning, emit site per code) — update whenever codes change |
-| `docs/adr/0001-error-taxonomy.md` | Error-contract ADR: families, WrapOnce rule, typed-errors-v2 direction |
-| `docs/adr/0002-compress-then-sign.md` | Compress-then-sign ordering contract for any future compression (Proposed candidate) |
-| `docs/adr/0003-go-version-policy.md` | Go-version contract: one full-patch string, three declarations, mechanical enforcement |
-| `scripts/check-go-version.sh` | Go-version single-source tripwire (three declarations must agree); runs in CI |
-| `scripts/check-error-codes.sh` | Error-code drift tripwire (source literals equal the docs registry, both directions) |
-| `scripts/check-features-planned.sh` | FEATURES.md drift tripwire (PLANNED symbols must not resolve via `go doc`); runs in CI |
-| `scripts/check-erraudit-version.sh` | erraudit pin tripwire (ci.yml ↔ flake.nix agree) |
-| `scripts/check-golangci-pin.sh` | golangci CI-pin floor guard (pin >= known-good floor) |
-| `scripts/write-go-version.sh` | One-argument toolchain bump: writes all three declarations, runs the tripwire (ADR-0003) |
-| `docs/benchmark-baseline.md` | 10-run benchstat reference baseline (dual-mode) — diff here before perf-sensitive changes |
+| File                                  | Why it matters                                                                               |
+| ------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `doc.go`                              | Package-level overview, codec-choice guidance, tag usage                                     |
+| `README.md`                           | User-facing usage + when-to-use matrix; sibling cross-refs                                   |
+| `FEATURES.md`                         | Honest feature inventory with status                                                         |
+| `codec.go`                            | `Codec`/`BufferEncoder`/`DeterministicCodec` contracts                                       |
+| `errors.go`                           | Stable error sentinels and codes                                                             |
+| `docs/error-codes.md`                 | The error-code registry (family, meaning, emit site per code) — update whenever codes change |
+| `docs/adr/0001-error-taxonomy.md`     | Error-contract ADR: families, WrapOnce rule, typed-errors-v2 direction                       |
+| `docs/adr/0002-compress-then-sign.md` | Compress-then-sign ordering contract for any future compression (Proposed candidate)         |
+| `docs/adr/0003-go-version-policy.md`  | Go-version contract: one full-patch string, three declarations, mechanical enforcement       |
+| `scripts/check-go-version.sh`         | Go-version single-source tripwire (three declarations must agree); runs in CI                |
+| `scripts/check-error-codes.sh`        | Error-code drift tripwire (source literals equal the docs registry, both directions)         |
+| `scripts/check-features-planned.sh`   | FEATURES.md drift tripwire (PLANNED symbols must not resolve via `go doc`); runs in CI       |
+| `scripts/check-erraudit-version.sh`   | erraudit pin tripwire (ci.yml ↔ flake.nix agree)                                             |
+| `scripts/check-golangci-pin.sh`       | golangci CI-pin floor guard (pin >= known-good floor)                                        |
+| `scripts/write-go-version.sh`         | One-argument toolchain bump: writes all three declarations, runs the tripwire (ADR-0003)     |
+| `docs/benchmark-baseline.md`          | 10-run benchstat reference baseline (dual-mode) — diff here before perf-sensitive changes    |

@@ -30,11 +30,11 @@ golangci_go=${golangci_go//\"/}
 golangci_go=${golangci_go//\'/}
 
 case "$go_mod" in
-	*.*.*) ;;
-	*)
-		echo "FAIL: go.mod says '$go_mod' (2-part). The repo contract is a full-patch version (e.g. 1.27.1) in all three declarations: a 2-part value parses as a YAML float in .golangci.yml, making the exact-match compare unsatisfiable." >&2
-		exit 1
-		;;
+*.*.*) ;;
+*)
+	echo "FAIL: go.mod says '$go_mod' (2-part). The repo contract is a full-patch version (e.g. 1.27.1) in all three declarations: a 2-part value parses as a YAML float in .golangci.yml, making the exact-match compare unsatisfiable." >&2
+	exit 1
+	;;
 esac
 
 status=0

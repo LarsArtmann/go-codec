@@ -64,17 +64,17 @@
 ## b) PARTIALLY DONE
 
 ~~1. **bench-compare "real-output verification"** — the prior session verified~~ done — the same hour (re-run on clean data, CHANGELOG corrected)
-   it on the REJECTED suites; this session I extended the CHANGELOG claim
-   before re-running it on the clean data (see d-1). Caught during
-   self-review prep, re-run immediately: self exit 0, cross exit 0, bullet
-   corrected. Right outcome, wrong order of operations.
+it on the REJECTED suites; this session I extended the CHANGELOG claim
+before re-running it on the clean data (see d-1). Caught during
+self-review prep, re-run immediately: self exit 0, cross exit 0, bullet
+corrected. Right outcome, wrong order of operations.
 2. **`scripts/bench-gate.sh`**: tested only via ad-hoc sourced-bash probes **→ TODO_LIST #15 (shellcheck/flake-app wiring still open)**
-   (not shellcheck'd — unavailable in devshell and on PATH; not wired as a
-   flake app). It is a faithful reconstruction of the design INTENT from the
-   session summary; the original prototype is gone, so byte-fidelity is
-   unverifiable by construction.
+(not shellcheck'd — unavailable in devshell and on PATH; not wired as a
+flake app). It is a faithful reconstruction of the design INTENT from the
+session summary; the original prototype is gone, so byte-fidelity is
+unverifiable by construction.
 ~~3. **`benchstat-clean-ab.txt`** was generated early but never actually read;~~ **Won't implement — superseded by the bench-compare cross run (noted at write time).**
-   the bench-compare cross run ended up superseding it as the read artifact.
+the bench-compare cross run ended up superseding it as the read artifact.
 
 ## c) NOT STARTED (all user-gated, by standing instruction)
 
@@ -119,49 +119,49 @@
 
 ~~1. Re-anchor inherited claims when their evidence is replaced (d-1 rule).~~ done — adopted (applied in this pass's re-derivations)
 ~~2. Record the machine-local artifact location (`~/bench-artifacts/go-codec/`)~~ done — 2026-10-16 (AGENTS.md artifact-location pointer)
-   somewhere durable (AGENTS.md line or a pointer in the baseline doc) —
-   right now only this report knows it exists.
+somewhere durable (AGENTS.md line or a pointer in the baseline doc) —
+right now only this report knows it exists.
 ~~3. Quiet-gate split brain: CV's `when-quiet.sh` and our `bench-gate.sh`~~ **Won't implement — deferred until a third repo needs a quiet gate (the item's own condition).**
-   encode the same concept in two repos — consolidate into a shared sibling
-   (collector-utils-style home) when a third repo needs one.
+encode the same concept in two repos — consolidate into a shared sibling
+(collector-utils-style home) when a third repo needs one.
 ~~4. `bench-gate.sh` header does not document the known sub-60s-burst blind~~ done — 2026-10-16 (header note added)
-   spot (1-min loadavg lag) that the 07-40 report called out; add it.
+spot (1-min loadavg lag) that the 07-40 report called out; add it.
 ~~5. Ad-hoc test discipline: fail-on-mismatch assertions (d-3).~~ done — adopted
 6. Wire `bench-gate.sh` as `nix run .#bench-gate` (tripwires-style) and get **→ TODO_LIST #15**
-   shellcheck into the devshell; both are 10-minute items.
+shellcheck into the devshell; both are 10-minute items.
 7. The CHANGELOG Unreleased section now carries real user-facing content **→ TODO_LIST #14**
-   (release workflow, re-baseline, tooling) — a v0.3.2 tag is getting due;
-   cut it deliberately rather than letting Unreleased grow unbounded.
+(release workflow, re-baseline, tooling) — a v0.3.2 tag is getting due;
+cut it deliberately rather than letting Unreleased grow unbounded.
 
 ## f) Next things (ordered by impact; ⏳ = user-gated)
 
 1. ⏳ Answer g-1/g-3 below → unblocks items 1/2/3/8/10 + number propagation. **→ TODO_LIST #3 (g-3 propagation done 2026-10-16)**
-~~2. Hand-make one descriptive commit for today's baseline/v0.3.1/gate changes~~ **Won't implement — harness-gated (operator commit instruction).**
+   ~~2. Hand-make one descriptive commit for today's baseline/v0.3.1/gate changes~~ **Won't implement — harness-gated (operator commit instruction).**
    before any push (daemon flattening otherwise erases the narrative).
-~~3. Add the artifact-location pointer (e-2) to AGENTS.md (2 min).~~ done — 2026-10-16
-~~4. Add the sub-60s blind-spot note to `bench-gate.sh` header (2 min).~~ done — 2026-10-16
-5. Cut v0.3.2 from Unreleased (release.yml is ready; notes cut from **→ TODO_LIST #14**
+   ~~3. Add the artifact-location pointer (e-2) to AGENTS.md (2 min).~~ done — 2026-10-16
+   ~~4. Add the sub-60s blind-spot note to `bench-gate.sh` header (2 min).~~ done — 2026-10-16
+2. Cut v0.3.2 from Unreleased (release.yml is ready; notes cut from **→ TODO_LIST #14**
    CHANGELOG — verify the workflow end-to-end on a scratch tag first).
-~~6. Propagate new baseline numbers into FEATURES.md/README once g-3 answered.~~ done — 2026-10-16
-7. Wire `.#bench-gate` flake app; add shellcheck to devShell. **→ TODO_LIST #15**
-~~8. Consolidate quiet-gate scripts across CV + go-codec (e-3).~~ **Won't implement — deferred until a third repo needs it (the item's own condition).**
-9. Item 10 (contributor secrets note) once item 1's direction is set. **→ TODO_LIST #10**
-~~10. Re-run the FULL test suite (race ×2 modes) at the next natural Go change;~~ done — 2026-10-16 (race green both modes)
-    today's scope-down was justified but must not become the norm.
-~~11. Record `benchstat` version pinning strategy (it was installed @latest —~~ done — 2026-10-05 (pinned x/perf recorded in the baseline doc)
-    a future run may diff against a different benchstat; consider `go run`
-    with a pinned x/perf version in the flake).
-12. Consider a tiny self-test mode (`bench-gate.sh --selftest`) encoding the **→ TODO_LIST #15 (fold into the wiring)**
-    four wait_quiet scenarios so the logic tests live with the script.
-~~13. Sweep FEATURES.md status claims against the new baseline table (drift~~ done — 2026-10-16 (FEATURES re-anchor sweep)
-    check) — folds into 6.
-~~14. Check whether `docs/drafts/` still holds the two erraudit drafts in the~~ done — confirmed 2026-10-16 (both drafts tracked in git)
-    working tree (git status showed them added-then-deleted at session
-    start; confirm they are committed before any filing work resumes).
-~~15. Next session step-0: `/proc/loadavg` (now encoded in AGENTS.md — follow~~ done — followed — step-0 loadavg checked in this pass
-    it).
-    16–25. (No further honest items without researching beyond this session's
-    scope, per instruction. Items 16–25 intentionally not padded.)
+   ~~6. Propagate new baseline numbers into FEATURES.md/README once g-3 answered.~~ done — 2026-10-16
+3. Wire `.#bench-gate` flake app; add shellcheck to devShell. **→ TODO_LIST #15**
+   ~~8. Consolidate quiet-gate scripts across CV + go-codec (e-3).~~ **Won't implement — deferred until a third repo needs it (the item's own condition).**
+4. Item 10 (contributor secrets note) once item 1's direction is set. **→ TODO_LIST #10**
+   ~~10. Re-run the FULL test suite (race ×2 modes) at the next natural Go change;~~ done — 2026-10-16 (race green both modes)
+   today's scope-down was justified but must not become the norm.
+   ~~11. Record `benchstat` version pinning strategy (it was installed @latest —~~ done — 2026-10-05 (pinned x/perf recorded in the baseline doc)
+   a future run may diff against a different benchstat; consider `go run`
+   with a pinned x/perf version in the flake).
+5. Consider a tiny self-test mode (`bench-gate.sh --selftest`) encoding the **→ TODO_LIST #15 (fold into the wiring)**
+   four wait_quiet scenarios so the logic tests live with the script.
+   ~~13. Sweep FEATURES.md status claims against the new baseline table (drift~~ done — 2026-10-16 (FEATURES re-anchor sweep)
+   check) — folds into 6.
+   ~~14. Check whether `docs/drafts/` still holds the two erraudit drafts in the~~ done — confirmed 2026-10-16 (both drafts tracked in git)
+   working tree (git status showed them added-then-deleted at session
+   start; confirm they are committed before any filing work resumes).
+   ~~15. Next session step-0: `/proc/loadavg` (now encoded in AGENTS.md — follow~~ done — followed — step-0 loadavg checked in this pass
+   it).
+   16–25. (No further honest items without researching beyond this session's
+   scope, per instruction. Items 16–25 intentionally not padded.)
 
 ## g) Questions I cannot answer myself
 
@@ -173,7 +173,7 @@
 2. **erraudit drafts:** file the two prepared upstream issues now, or do you **→ TODO_LIST #2**
    want to read them first? (External write; drafts were voice-checked
    2026-10-04 but their working-tree state needs the check in f-14.)
-~~3. **Benchmark numbers in user-facing docs:** propagate the new dual-mode~~ done — 2026-10-16 (re-anchored + parity measure)
+   ~~3. **Benchmark numbers in user-facing docs:** propagate the new dual-mode~~ done — 2026-10-16 (re-anchored + parity measure)
    table into FEATURES.md/README now, or leave the `~` values until each
    doc is next touched for other reasons?
 

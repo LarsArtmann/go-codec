@@ -72,25 +72,25 @@ gate fired, so attempt 1 ran clean end to end.
 
 ## b) PARTIALLY DONE
 
-1. **Item 4 (benchmark re-baseline)** — data collection DONE and clean;
+~~1. **Item 4 (benchmark re-baseline)** — data collection DONE and clean;~~ done — 2026-10-05 08:29 (benchstat, rewrite, TODO 4/7 closed, CHANGELOG)
    everything downstream NOT STARTED: benchstat summaries (binary survives
    at `/tmp/go-tools/benchstat`), variance eyeball vs the old baseline before
    trusting (the peak-watch has a residual blind spot, see e-4),
    `docs/benchmark-baseline.md` rewrite (prose draft staged at
    `/tmp/baseline-draft-head.md` — /tmp-volatile, re-derivable from TODO 4's
    note), TODO row deletion, CHANGELOG entries.
-2. **Item 7 (bench-compare + retention decision)** — tool committed and
+~~2. **Item 7 (bench-compare + retention decision)** — tool committed and~~ done — 2026-10-05 08:29 (retention decision encoded in the baseline doc)
    now real-output-verified; the artifact-only retention decision gets
    encoded in the baseline doc rewrite, then the row closes together with
    item 4. One row, one close.
 
 ## c) NOT STARTED
 
-1. Baseline doc rewrite + TODO 4/7 close-out + CHANGELOG entries (blocked on
+~~1. Baseline doc rewrite + TODO 4/7 close-out + CHANGELOG entries (blocked on~~ done — 2026-10-05 08:29
    processing the staged clean data — deliberately not done per wait order).
-2. FEATURES.md indicative-figures pass after the re-baseline (user-gated,
+~~2. FEATURES.md indicative-figures pass after the re-baseline (user-gated,~~ done — 2026-10-16 (FEATURES re-anchored)
    question g-3).
-3. Item 13 (v0.3.1 CHANGELOG section) — **agent-executable, not user-gated**
+~~3. Item 13 (v0.3.1 CHANGELOG section) — **agent-executable, not user-gated**~~ done — 2026-10-05 08:29
    (see d-1: I wrongly bucketed it as blocked last night).
 
 ## d) TOTALLY FUCKED UP — honest accounting
@@ -153,39 +153,39 @@ gate fired, so attempt 1 ran clean end to end.
 
 ## e) WHAT WE SHOULD IMPROVE
 
-1. **Machine-state check as session step 0** for any benchmark-adjacent or
+~~1. **Machine-state check as session step 0** for any benchmark-adjacent or~~ done — 2026-10-05 08:29 (AGENTS step-0 gotcha)
    CPU-heavy work: loadavg, rustc/nixbld storm count, and any waiting
    `when-quiet` jobs. Cheap (seconds), prevents the d-2 class of failure
    entirely. The AGENTS.md gotcha covers benchmarks; extend it to "sessions
    doing heavy verification".
-2. **Repo-ize the gate.** `/tmp/codec-bench-gate2.sh` is now a
+~~2. **Repo-ize the gate.** `/tmp/codec-bench-gate2.sh` is now a~~ done — 2026-10-05 08:29 (scripts/bench-gate.sh)
    battle-proven pattern (three protections, first-attempt success); as a
    /tmp file it can vanish. Move it to `scripts/bench-gate.sh` (or fold the
    semantics into a documented recipe in AGENTS.md) so the next re-baseline
    starts from the working version, not from this conversation.
-3. **Copy clean benchmark data out of /tmp immediately on landing.** The
+~~3. **Copy clean benchmark data out of /tmp immediately on landing.** The~~ done — 2026-10-05 08:29 (~/bench-artifacts/go-codec/; AGENTS pointer 2026-10-16)
    `.txt` outputs should be moved somewhere age-safe (even
    `docs/status/attachments/` or a gitignored `bench/` dir) the moment the
    `.ok` markers appear — /tmp has now eaten artifacts twice in one night.
-4. **Residual gate blind spot — document the backstop.** The peak-watch
+~~4. **Residual gate blind spot — document the backstop.** The peak-watch~~ done — 2026-10-16 (blind-spot note in the bench-gate.sh header)
    samples 1-min loadavg every 20s; a burst shorter than the loadavg window
    could pollute some rows without ever crossing 12. The mitigation is the
    variance eyeball: when processing the staged data, compare benchstat ±
    ranges against the 2026-09-11 table before enshrining — suspiciously wide
    ranges on normally-tight rows (the old table had ±1–5% on hot paths) mean
    reject and re-gate. This check is in TODO 4's note; keep it there.
-5. **Name rejected artifacts as rejected.** Anything derived from polluted
+~~5. **Name rejected artifacts as rejected.** Anything derived from polluted~~ done — adopted as discipline
    data should carry `REJECTED-`/`polluted-` in the filename so a future
    session can't mistake scratch for signal (moot this time only because
    /tmp cleaned it all).
-6. **Pin the benchstat version.** Both installs were `@latest`; a future
+~~6. **Pin the benchstat version.** Both installs were `@latest`; a future~~ done — 2026-10-05 (x/perf version recorded in the baseline doc)
    benchstat release could change output format and silently break
    comparability with the baseline doc's tables. Record the version used
    (or install a pinned rev) in the baseline doc's environment table.
-7. **Cross-tenant courtesy** (from d-9): one sentence in AGENTS.md is
+~~7. **Cross-tenant courtesy** (from d-9): one sentence in AGENTS.md is~~ done — 2026-10-05 08:29 (AGENTS courtesy line)
    enough — "before CPU-heavy verification, check for sibling when-quiet
    jobs; delay them knowingly or gate yourself."
-8. **Old-doc count reconciliation**: the 2026-09-11 doc claims "67
+~~8. **Old-doc count reconciliation**: the 2026-09-11 doc claims "67~~ done — 2026-10-05 08:29 (70 stated in the new baseline)
    benchmarks" but its own table lists 68 rows (my extraction). When
    rewriting, state the real count (68 → 70 with the two
    `StreamingJSONV2_DecoderComparison` sub-benchmarks) rather than
@@ -193,45 +193,45 @@ gate fired, so attempt 1 ran clean end to end.
 
 ## f) Next — ranked, honestly sized (not padded to 50)
 
-1. [agent, ~20min] **Process the staged clean data**: benchstat v1+v2 (binary
+~~1. [agent, ~20min] **Process the staged clean data**: benchstat v1+v2 (binary~~ done — 2026-10-05 08:29
    present at `/tmp/go-tools/benchstat`), variance eyeball vs 2026-09-11,
    rewrite `docs/benchmark-baseline.md` from the draft + clean tables,
    delete TODO 4/7, CHANGELOG entries. Copy the raw outputs out of /tmp
    first (e-3).
-2. [agent, ~10min] **Item 13**: add the missing v0.3.1 CHANGELOG section (or
+~~2. [agent, ~10min] **Item 13**: add the missing v0.3.1 CHANGELOG section (or~~ done — 2026-10-05 08:29
    explicitly mark the tag notes-only). Not user-gated — my mistake to park
    it (d-1).
-3. [agent, ~5min] **Repo-ize the bench gate** (e-2) or fold its recipe into
+~~3. [agent, ~5min] **Repo-ize the bench gate** (e-2) or fold its recipe into~~ done — 2026-10-05 08:29 (canary values in AGENTS)
    AGENTS.md; update the RawCodec canary knowledge (clean ≈11–13n on
    go1.27.1, threshold 25n still correct).
-4. [user] Answer g-1/g-2/g-3 (below) — they gate items 1/2/3/8/10 and the
+4. [user] Answer g-1/g-2/g-3 (below) — they gate items 1/2/3/8/10 and the **→ TODO_LIST #2/#3 (g-3 propagation done 2026-10-16)**
    erraudit filing.
-5. [user] Item 1: `ERRAUDIT_PAT` secret vs publish erraudit (DEFERRED since
+5. [user] Item 1: `ERRAUDIT_PAT` secret vs publish erraudit (DEFERRED since **→ TODO_LIST #1**
    2026-09-11).
-6. [user] Item 3: auto-commit daemon policy (now also covers the wipe
+6. [user] Item 3: auto-commit daemon policy (now also covers the wipe **→ TODO_LIST #3**
    incident).
-7. [user] Item 8: v0.1.0/v0.2.0 releases backfill preference.
-8. [agent, gated on item 1] Item 10: CONTRIBUTING note on sibling-repo
+7. [user] Item 8: v0.1.0/v0.2.0 releases backfill preference. **→ TODO_LIST #8**
+8. [agent, gated on item 1] Item 10: CONTRIBUTING note on sibling-repo **→ TODO_LIST #10**
    secrets.
-9. [agent, ~15min] AGENTS.md additions from e-1/e-7 (session step-0 machine
+~~9. [agent, ~15min] AGENTS.md additions from e-1/e-7 (session step-0 machine~~ done — 2026-10-05 08:29
    check; sibling-tenant courtesy line).
-10. [agent, rides on 1] README performance claims cross-check against the
+~~10. [agent, rides on 1] README performance claims cross-check against the~~ done — 2026-10-16 (README figures qualitative; FEATURES re-anchored)
     new baseline (README says floor 1.27.1+; any cited figures need the same
     propagation decision as FEATURES.md).
-11. [agent, ~5min] Pin/record benchstat version (e-6) during item f-1.
-12. [agent, opportunistic] If another emulated aarch64 build is planned,
+~~11. [agent, ~5min] Pin/record benchstat version (e-6) during item f-1.~~ done — 2026-10-05
+~~12. [agent, opportunistic] If another emulated aarch64 build is planned,~~ **Won't implement — out of repo scope (sibling-tenant infra).**
     consider `nix store`-level scheduling or nice isolation so it stops
     eating the machine for hours — this one polluted two full benchmark
     suites and delayed a sibling parity job.
 
 ## g) Questions I cannot answer myself (unchanged, now blocking)
 
-1. **What caused the between-sessions working-tree wipe?** (daemon vs
+1. **What caused the between-sessions working-tree wipe?** (daemon vs **→ TODO_LIST #3**
    git-town vs other — needs your daemon config/logs; the 00:32 report §g-1).
-2. **File the erraudit drafts upstream now, or do you want to review
+2. **File the erraudit drafts upstream now, or do you want to review **→ TODO_LIST #2**
    `docs/drafts/erraudit-issue-*.md` first?** (external write action, gated
    on your instruction).
-3. **After the clean re-baseline lands in the doc: propagate the new numbers
+~~3. **After the clean re-baseline lands in the doc: propagate the new numbers~~ done — 2026-10-16 (propagated + parity measured)
    into FEATURES.md (and README), or leave the current indicative figures?**
 
 ## Self-review checklist (skill questions, quick pass)

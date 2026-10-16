@@ -1000,15 +1000,20 @@
         <h2 id="next"><span class="num">05</span>Next</h2>
         <div class="card">
           <ol>
-            <li><span class="badge badge-high">High</span> When <code>/tmp/codec-bench2-v1.ok</code> +
-            <code>-v2.ok</code> exist: benchstat, rewrite baseline doc, close TODO 4/7, CHANGELOG entries.</li>
-            <li><span class="badge badge-critical">User</span> Three unanswered questions from the 00:32
-            report (see Open Questions) &mdash; they gate items 1/2/3/8/10 and the erraudit filing.</li>
-            <li><span class="badge badge-medium">Med</span> TODO 13: v0.3.1 CHANGELOG section missing.</li>
-            <li><span class="badge badge-medium">Med</span> FEATURES.md indicative numbers pass after the
-            re-baseline (rides on user answer about propagation).</li>
-            <li><span class="badge badge-low">Low</span> If the gate&rsquo;s 10h deadline expires without
-            a quiet window (build storms persist), re-gate or coordinate a human-quiet window.</li>
+            <li><span class="badge badge-fixed">Done</span> <s>When <code>/tmp/codec-bench2-v1.ok</code> +
+            <code>-v2.ok</code> exist: benchstat, rewrite baseline doc, close TODO 4/7, CHANGELOG entries.</s>
+            done 2026-10-05 08:29 (clean data secured to <code>~/bench-artifacts/go-codec/</code>, baseline rewritten, TODO 4/7 closed).</li>
+            <li><span class="badge badge-critical">User</span> <s>Three unanswered questions from the 00:32
+            report (see Open Questions) &mdash; they gate items 1/2/3/8/10 and the erraudit filing.</s>
+            routed &mdash; TODO_LIST #1/#2/#3/#8/#10 (the FEATURES-propagation question was answered 2026-10-16: numbers re-anchored).</li>
+            <li><span class="badge badge-fixed">Done</span> <s>TODO 13: v0.3.1 CHANGELOG section missing.</s>
+            done 2026-10-05 08:29 (section added from the tag diff).</li>
+            <li><span class="badge badge-fixed">Done</span> <s>FEATURES.md indicative numbers pass after the
+            re-baseline (rides on user answer about propagation).</s>
+            done 2026-10-16 (FEATURES re-anchored to the 2026-10-05 dual-mode baseline).</li>
+            <li><span class="badge badge-fixed">Moot</span> <s>If the gate&rsquo;s 10h deadline expires without
+            a quiet window (build storms persist), re-gate or coordinate a human-quiet window.</s>
+            NOT-DO &mdash; the gate succeeded on attempt 1 at 02:46; the contingency never fired.</li>
           </ol>
         </div>
 

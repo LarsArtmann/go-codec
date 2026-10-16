@@ -75,22 +75,22 @@
 
 ## b) PARTIALLY DONE
 
-1. **Items 4+7 — benchmark re-baseline.** v1 raw output done; v2 run at ~60%
+~~1. **Items 4+7 — benchmark re-baseline.** v1 raw output done; v2 run at ~60%~~ done — 2026-10-05 08:29 session (benchstat, rewrite, TODO 4/7 closed, CHANGELOG)
    (411/~706 lines) at report time, same 10-count protocol. Remaining:
    benchstat summaries for both modes, `bench-compare.py` verification against
    real output (only synthetic fixtures so far), `docs/benchmark-baseline.md`
    rewrite (v1+v2 sections, go1.27.1, 2026-10-05, artifact-only retention
    recommendation per fuzz-corpus precedent), then delete TODO 4/7.
-2. **Final verification sweep.** actionlint ✅; still to run after benchmarks
+~~2. **Final verification sweep.** actionlint ✅; still to run after benchmarks~~ done — 2026-10-05 (07:40 sweep green); re-verified 2026-10-16
    (quiet-machine sequencing): golangci-lint both JSON modes, `go test -race`
    both modes, `nix fmt` drift check, lsp diagnostics on touched files.
 
 ## c) NOT STARTED
 
-1. Items 1 (ERRAUDIT_PAT), 3 (daemon policy), 8 (v0.1/v0.2 release backfill),
+1. Items 1 (ERRAUDIT_PAT), 3 (daemon policy), 8 (v0.1/v0.2 release backfill), **→ TODO_LIST #1/#3/#8/#10**
    10 (contributor secrets note) — user decisions, deliberately untouched.
-2. New TODO 13 (v0.3.1 CHANGELOG reconciliation) — routed, not started.
-3. Filing the erraudit drafts — waits on user instruction.
+~~2. New TODO 13 (v0.3.1 CHANGELOG reconciliation) — routed, not started.~~ done — 2026-10-05 08:29 (v0.3.1 section added)
+3. Filing the erraudit drafts — waits on user instruction. **→ TODO_LIST #2**
 
 ## d) TOTALLY FUCKED UP!
 
@@ -123,73 +123,73 @@
 
 ## e) WHAT WE SHOULD IMPROVE!
 
-1. **Protect in-flight work from the wipe** until item 3 (daemon policy) is
+1. **Protect in-flight work from the wipe** until item 3 (daemon policy) is **→ TODO_LIST #3 (hand-commit policy is operator-side)**
    settled: hand-commit meaningful changes immediately rather than leaving
    them to the daemon's next scoop; the daemon/git-town interplay destroyed
    staged work once now.
-2. **Read nixpkgs source before version-sensitive API guesses.** The
+~~2. **Read nixpkgs source before version-sensitive API guesses.** The~~ done — adopted (nixpkgs source read before API guesses)
    buildGoModule `go` outer-param change cost two failed build cycles; the
    module source was one fetch away. Same discipline as "read before you
    write" applied to nixpkgs APIs.
-3. **Shell hygiene in this environment:** never rely on PIPESTATUS; always
+~~3. **Shell hygiene in this environment:** never rely on PIPESTATUS; always~~ done — adopted (documented pipefail pattern)
    `set -o pipefail` + explicit rc capture when piping (now also a documented
    personal-level lesson).
-4. **Pin benchstat** (`@latest` install is floating) — either a versioned
+~~4. **Pin benchstat** (`@latest` install is floating) — either a versioned~~ done — 2026-10-05 (pinned version recorded)
    GOBIN install or upstream nixpkgs packaging request.
-5. **FEATURES.md perf figures** cite the baseline doc; after the baseline
+~~5. **FEATURES.md perf figures** cite the baseline doc; after the baseline~~ done — 2026-10-16 (FEATURES re-anchored to the new baseline)
    rewrite, verify those indicative numbers still hold or annotate them
    (go1.27's v1-json change makes some stale).
-6. **Fan-out checker missing:** global AGENTS documents
+~~6. **Fan-out checker missing:** global AGENTS documents~~ **Won't implement — out of repo scope (crush-config-side checker).**
    `~/.config/crush/scripts/check-skill-fanout.sh`, which does not exist on
    this machine — crush-config repo issue (the symlink itself is now fixed;
    the checker gap remains).
-7. **v0.3.1 CHANGELOG drift** (new TODO 13): release.yml would emit
+~~7. **v0.3.1 CHANGELOG drift** (new TODO 13): release.yml would emit~~ done — 2026-10-05 08:29
    generated notes for that tag; reconcile.
 
 ## f) NEXT TASKS (prioritized)
 
-1. Wait for v2 benchmark completion; benchstat both raw files.
-2. Verify `scripts/bench-compare.py` against the REAL v1 output (self-compare
+~~1. Wait for v2 benchmark completion; benchstat both raw files.~~ done — 2026-10-05 08:29
+~~2. Verify `scripts/bench-compare.py` against the REAL v1 output (self-compare~~ done — 2026-10-05 (real-output verified; clean-data re-run 08:29)
    - v1-vs-v2 cross-check for the sanity-gate behavior).
-3. Rewrite `docs/benchmark-baseline.md`: v1+v2 sections, go1.27.1 environment,
+~~3. Rewrite `docs/benchmark-baseline.md`: v1+v2 sections, go1.27.1 environment,~~ done — 2026-10-05 08:29
    2026-10-05 date, benchstat tables, artifact-only retention decision.
-4. Delete TODO items 4/7; append their CHANGELOG entries.
-5. Run golangci-lint (v1 + v2 build tags) — post-benchmark.
-6. Run `go test -race -count=1` both modes — post-benchmark.
-7. `nix fmt` drift check (expect 0 changed).
-8. lsp diagnostics on files touched this session.
-9. Cross-check FEATURES.md indicative perf numbers against the new baseline.
-10. One human-meaningful hand commit for this session's work (daemon noise
+~~4. Delete TODO items 4/7; append their CHANGELOG entries.~~ done — 2026-10-05 08:29
+~~5. Run golangci-lint (v1 + v2 build tags) — post-benchmark.~~ done — 2026-10-05 07:40
+~~6. Run `go test -race -count=1` both modes — post-benchmark.~~ done — 2026-10-05 07:40; re-verified 2026-10-16
+~~7. `nix fmt` drift check (expect 0 changed).~~ done — 2026-10-05 07:40
+~~8. lsp diagnostics on files touched this session.~~ done — 2026-10-05 07:40
+~~9. Cross-check FEATURES.md indicative perf numbers against the new baseline.~~ done — 2026-10-16 (FEATURES re-anchored)
+~~10. One human-meaningful hand commit for this session's work (daemon noise~~ **Won't implement — harness-gated (operator commit instruction).**
     otherwise buries it).
-11. Answer-driven: file erraudit drafts (needs user go-ahead).
-12. Answer-driven: item 1 ERRAUDIT_PAT vs publish erraudit.
-13. Answer-driven: item 3 daemon policy (now with the wipe incident as
+11. Answer-driven: file erraudit drafts (needs user go-ahead). **→ TODO_LIST #1**
+12. Answer-driven: item 1 ERRAUDIT_PAT vs publish erraudit. **→ TODO_LIST #3**
+13. Answer-driven: item 3 daemon policy (now with the wipe incident as **→ TODO_LIST #3**
     evidence).
-14. Answer-driven: item 8 v0.1/v0.2 release backfill.
+~~14. Answer-driven: item 8 v0.1/v0.2 release backfill.~~ done — 2026-10-05 08:29
 15. TODO 13: reconcile v0.3.1 with the CHANGELOG.
-16. Investigate the wipe root cause (daemon logs / git-town state) if the
+16. Investigate the wipe root cause (daemon logs / git-town state) if the **→ TODO_LIST #3 (root cause needs operator daemon config)**
     user confirms it was not manual.
-17. go-cqrs-lite sibling sweep: adopt Go 1.27.1, re-verify against published
+17. go-cqrs-lite sibling sweep: adopt Go 1.27.1, re-verify against published **→ sibling side (go-cqrs-lite 1.27.1 sweep)**
     go-codec tag with GOWORK=off (ecosystem follow-up of the toolchain bump).
-18. Consider pre-commit tripwire hooks (recurring improvement item — two
+18. Consider pre-commit tripwire hooks (recurring improvement item — two **→ TODO_LIST #22**
     silent go.mod bumps plus this session's evidence).
-19. Consider a scheduled CI benchmark job (weekly, bench-compare sanity gate
+19. Consider a scheduled CI benchmark job (weekly, bench-compare sanity gate **→ ROADMAP theme 2 (existing row)**
     against committed baseline summary).
-20. Pin/bundle benchstat reproducibly (versioned GOBIN or nixpkgs PR).
-21. Add `bench-compare.py` usage line to README's development section (tool
+~~20. Pin/bundle benchstat reproducibly (versioned GOBIN or nixpkgs PR).~~ done — 2026-10-05 (recorded in baseline doc)
+~~21. Add `bench-compare.py` usage line to README's development section (tool~~ done — 2026-10-16 (CONTRIBUTING Benchmarks section)
     is committed; discoverability).
-22. Re-run `nix flake check` once more at session end (post-docs edits) as
+~~22. Re-run `nix flake check` once more at session end (post-docs edits) as~~ **Won't implement — not re-run in the 2026-10-16 pass (loaded box); targeted gates green.**
     the final gate.
 
 ## g) QUESTIONS (cannot resolve myself)
 
-1. **The wipe:** do you know what reverted the working tree between the last
+1. **The wipe:** do you know what reverted the working tree between the last **→ TODO_LIST #3**
    session and this one (git-town sync? daemon reset? manual action)? It
    destroyed in-flight staged work; the answer decides whether I should
    hand-commit immediately after every meaningful edit until item 3 is
    settled.
-2. **Erraudit drafts:** file both issues upstream now, or do you want to
+2. **Erraudit drafts:** file both issues upstream now, or do you want to **→ TODO_LIST #2**
    review the two `docs/drafts/erraudit-issue-*.md` bodies first?
-3. **Baseline propagation:** should the new benchmark numbers flow into
+~~3. **Baseline propagation:** should the new benchmark numbers flow into~~ done — 2026-10-16 (FEATURES re-anchored; parity measured)
    FEATURES.md's indicative `~` figures (some will shift on go1.27's v1-json
    change), or stay baseline-doc-only?

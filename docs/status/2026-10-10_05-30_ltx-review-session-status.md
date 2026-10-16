@@ -56,7 +56,7 @@ LiteStream+LTX as backup/replication for go-cqrs-lite's SQLite engines.
 
 ## b) PARTIALLY DONE
 
-1. **Source coverage of ltx** — ~70% of core, less elsewhere.
+~~1. **Source coverage of ltx** — ~70% of core, less elsewhere.~~ **Won't implement — accepted for the verdict's purposes (completion is ltx-repo reading, not this backlog).**
    - Missing: decoder.go 405-574 (contains `streamPageIndex` and
      `pageIndexValidator` implementations — I cited their _behavior_ from Close()
      usage but did not read the implementations); ltx.go 460-642 (`LockPgno` and
@@ -66,13 +66,13 @@ LiteStream+LTX as backup/replication for go-cqrs-lite's SQLite engines.
    - Effort to finish: S (30-45 min of reading).
    - Impact of the gap: low for the verdict, medium for the two findings that lean
      on decoder/compactor behavior.
-2. **Test analysis** — counted test/bench/fuzz functions (3 benchmarks, zero fuzz
+~~2. **Test analysis** — counted test/bench/fuzz functions (3 benchmarks, zero fuzz~~ done — added to the report 2026-10-16 (finding-fuzz)
    targets — a real observation vs go-codec's fuzz discipline that did NOT make it
    into the report); suite run once, plain mode. No coverage measurement.
-3. **go-cqrs-lite angle** — identified and hedged ("verify WAL single-writer
+3. **go-cqrs-lite angle** — identified and hedged ("verify WAL single-writer **→ ROADMAP theme 5 (LiteStream+LTX evaluation)**
    compatibility before relying on it") but not validated; cross-repo check never
    attempted (out of this repo's scope, correctly deferred).
-4. **Report polish** — sidebar nav has 8 links for 9 sections (#scorecard missing
+~~4. **Report polish** — sidebar nav has 8 links for 9 sections (#scorecard missing~~ done — fixed 2026-10-16 (scorecard nav link added)
    from nav); no render check in a browser (structure validated mechanically only).
 
 ## c) NOT STARTED
@@ -81,16 +81,16 @@ LiteStream+LTX as backup/replication for go-cqrs-lite's SQLite engines.
    the status-report skill says section (f) feeds docs-health HARVEST; not run
    (user instructed: report only, no unrelated work). Risk: findings entombed in a
    timestamped file.
-2. **Compression-vs-signing ADR note** (report's #1 opportunity, priority 20) —
+2. **Compression-vs-signing ADR note** (report's #1 opportunity, priority 20) — **→ ROADMAP theme 5 (ADR-0002 candidate)**
    not written into docs/adr/.
-3. **Cross-referencing prior status/review reports** — docs/status and docs/reviews
+~~3. **Cross-referencing prior status/review reports** — docs/status and docs/reviews~~ done — 2026-10-16 (this pass cross-references all open reports)
    series not consulted for continuity (skill step; skipped under the user's
    "report based on this session only" constraint).
-4. **`go test -race` on ltx** — relevant because `ChecksumPages` spawns up to 24
+~~4. **`go test -race` on ltx** — relevant because `ChecksumPages` spawns up to 24~~ **Won't implement — out of repo scope (external research).**
    goroutines writing disjoint slices of a shared `checksums` backing array; I
    reasoned it safe but never ran the detector nor read edge behavior
    (nWorkers > nPages creates empty workers).
-5. **Watching ltx upstream** — #77 (HPKE), #98, #101, #103 flagged in the report
+5. **Watching ltx upstream** — #77 (HPKE), #98, #101, #103 flagged in the report **→ ROADMAP theme 5 (via the deep-dive reference)**
    but no tracking mechanism created anywhere.
 
 ## d) TOTALLY FUCKED UP
@@ -119,23 +119,23 @@ LiteStream+LTX as backup/replication for go-cqrs-lite's SQLite engines.
 
 ## e) WHAT WE SHOULD IMPROVE
 
-1. **Write hero/summary claims LAST, from the evidence log** — the d)1 failure is
+~~1. **Write hero/summary claims LAST, from the evidence log** — the d)1 failure is~~ done — adopted (recorded discipline)
    structural: narrative written before the audit trail is complete. Rule: no
    scope/superlative claim in a deliverable unless a reading log line backs it.
-2. **Dependency-trace playbook: gh api first, Sourcegraph second** — for "who
+~~2. **Dependency-trace playbook: gh api first, Sourcegraph second** — for "who~~ done — adopted
    imports X," `gh api repos/<owner>/<repo>/contents/go.mod` is precise and cheap;
    Sourcegraph belongs only when candidates are unknown.
-3. **Finish cited files** — if a finding cites behavior of code I haven't read
+~~3. **Finish cited files** — if a finding cites behavior of code I haven't read~~ done — adopted
    (pageIndexValidator), either read it or hedge in place. Cite-what-you-read.
-4. **Race-run foreign test suites** — when a review claims "tests: PASS," running
+~~4. **Race-run foreign test suites** — when a review claims "tests: PASS," running~~ done — adopted
    `go test -race` costs ~2x time and upgrades the claim materially, especially
    when concurrency is visible in the API surface.
-5. **Report nav completeness** — mechanical checklist: every section id appears in
+~~5. **Report nav completeness** — mechanical checklist: every section id appears in~~ done — fixed 2026-10-16
    the sidebar nav. (Trivial, but it shipped wrong once.)
-6. **One-shot skill dispatch note** — when deviating from a skill's letter
+~~6. **One-shot skill dispatch note** — when deviating from a skill's letter~~ done — adopted
    (not-a-dependency pivot), state the deviation in the response, not only inside
    the artifact.
-7. **Fuzz-gap observation should have made the report** — ltx has zero fuzz
+~~7. **Fuzz-gap observation should have made the report** — ltx has zero fuzz~~ done — added to the report 2026-10-16
    targets while parsing untrusted bytes (a format decoder!); go-codec fuzzes.
    That is a real quality differentiator I noticed and dropped.
 
@@ -143,36 +143,36 @@ LiteStream+LTX as backup/replication for go-cqrs-lite's SQLite engines.
 
 | #  | Task                                                                                                        | Impact | Effort | Category      |
 | -- | ----------------------------------------------------------------------------------------------------------- | ------ | ------ | ------------- |
-| 1  | docs-health HARVEST: route this report's opportunities into TODO_LIST/ROADMAP                               | High   | S      | Documentation |
-| 2  | Write compression-vs-signing invariant note (ADR or COSE docs section in go-codec)                          | High   | S      | Documentation |
-| 3  | Fix: add fuzz-target gap observation to the ltx report's findings                                           | Medium | S      | Documentation |
-| 4  | Read ltx decoder.go 405-574 + compactor.go fully; amend findings if behavior differs from citations         | Medium | S      | Quality       |
-| 5  | Decide go-cqrs-lite position: evaluate LiteStream+LTX as sqlite-engine backup (cross-repo task; needs Lars) | High   | M      | Feature       |
-| 6  | Add "never-zero distinguished bit" pattern to go-codec envelope design notes (future-work note)             | Medium | S      | Documentation |
-| 7  | Add ltx upstream watch items (#77 HPKE, #98/#101/#103 fixes) to ROADMAP                                     | Low    | S      | Documentation |
-| 8  | Re-run ltx suite with `-race`; note result in report appendix                                               | Low    | S      | Quality       |
-| 9  | Add #scorecard to the report's sidebar nav                                                                  | Low    | S      | Cleanup       |
-| 10 | Add docs/research/index.md listing deep-dives (if more follow)                                              | Low    | S      | Documentation |
-| 11 | Record the "hero claims last" rule into my workflow (personal lesson, logged here as the record)            | Medium | S      | Process       |
-| 12 | If go-codec ever adds envelope checksums: steal ChecksumFlag bit pattern (ROADMAP fuel)                     | Medium | M      | Feature       |
-| 13 | Compare COSE_Encrypt0 vs HPKE framing when ltx #77 lands (ROADMAP watch)                                    | Low    | M      | Documentation |
-| 14 | Cross-reference prior docs/status reports for open loops in a follow-up session                             | Low    | S      | Process       |
+| 1 **→ done 2026-10-16 (ROADMAP themes 5/7)** | docs-health HARVEST: route this report's opportunities into TODO_LIST/ROADMAP | High | S | Documentation |
+| 2 **→ ROADMAP theme 5 (ADR-0002 candidate)** | Write compression-vs-signing invariant note (ADR or COSE docs section in go-codec) | High | S | Documentation |
+| ~~3~~ done — added 2026-10-16 (finding-fuzz) | ~~Fix: add fuzz-target gap observation to the ltx report's findings~~ | ~~Medium~~ | ~~S~~ | ~~Documentation~~ |
+| ~~4~~ **Won't implement — ltx-repo reading; out of this repo's backlog.** | ~~Read ltx decoder.go 405-574 + compactor.go fully; amend findings if behavior differs from citations~~ | ~~Medium~~ | ~~S~~ | ~~Quality~~ |
+| 5 **→ ROADMAP theme 5 (LiteStream+LTX evaluation)** | Decide go-cqrs-lite position: evaluate LiteStream+LTX as sqlite-engine backup (cross-repo task; needs Lars) | High | M | Feature |
+| 6 **→ ROADMAP theme 5 (envelope design fuel)** | Add "never-zero distinguished bit" pattern to go-codec envelope design notes (future-work note) | Medium | S | Documentation |
+| 7 **→ ROADMAP theme 5 (deep-dive reference)** | Add ltx upstream watch items (#77 HPKE, #98/#101/#103 fixes) to ROADMAP | Low | S | Documentation |
+| ~~8~~ **Won't implement — out of repo scope.** | ~~Re-run ltx suite with `-race`; note result in report appendix~~ | ~~Low~~ | ~~S~~ | ~~Quality~~ |
+| ~~9~~ done — fixed 2026-10-16 | ~~Add #scorecard to the report's sidebar nav~~ | ~~Low~~ | ~~S~~ | ~~Cleanup~~ |
+| ~~10~~ **Won't implement — declined — single report; index only if more follow.** | ~~Add docs/research/index.md listing deep-dives (if more follow)~~ | ~~Low~~ | ~~S~~ | ~~Documentation~~ |
+| ~~11~~ done — adopted | ~~Record the "hero claims last" rule into my workflow (personal lesson, logged here as the record)~~ | ~~Medium~~ | ~~S~~ | ~~Process~~ |
+| 12 **→ ROADMAP theme 5 (envelope fuel)** | If go-codec ever adds envelope checksums: steal ChecksumFlag bit pattern (ROADMAP fuel) | Medium | M | Feature |
+| 13 **→ ROADMAP theme 5 (HPKE watch via the deep-dive)** | Compare COSE_Encrypt0 vs HPKE framing when ltx #77 lands (ROADMAP watch) | Low | M | Documentation |
+| ~~14~~ done — 2026-10-16 (this pass) | ~~Cross-reference prior docs/status reports for open loops in a follow-up session~~ | ~~Low~~ | ~~S~~ | ~~Process~~ |
 
 Not listed: anything requiring research into go-codec itself — this session touched
 only `docs/` outputs, and the tree was otherwise clean.
 
 ## g) Questions I cannot answer myself
 
-1. **HARVEST now or entomb?** Should the report's opportunity table (f/1) actually
+~~1. **HARVEST now or entomb?** Should the report's opportunity table (f/1) actually~~ done — answered 2026-10-16 (harvested)
    land in TODO_LIST.md/ROADMAP.md now, or is this review a one-shot that stays in
    docs/research? I can run docs-health HARVEST, but whether the ltx-derived items
    deserve backlog slots is a priority call only you can make.
-2. **Is the go-cqrs-lite ↔ LiteStream+LTX evaluation wanted at all?** The report's
+2. **Is the go-cqrs-lite ↔ LiteStream+LTX evaluation wanted at all?** The report's **→ ROADMAP theme 5 (operator pick-up call)**
    strongest forward-looking claim is that SQLite-backed engines get
    backup/replication via LiteStream. Whether that direction interests you (vs.
    the existing storage module's own story) is a cross-repo product decision I
    can't derive from this repo.
-3. **ADR appetite:** do you want the compression-vs-signing invariant as a formal
+3. **ADR appetite:** do you want the compression-vs-signing invariant as a formal **→ ROADMAP theme 5 (candidate listed; formalize on demand)**
    `docs/adr/0002-*.md` now (S effort), or is a note inside the COSE docs enough?
    Formalizing now costs little but presumes the envelope layer evolves; your
    call on ceremony level.

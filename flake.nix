@@ -60,7 +60,7 @@
               root = ./.;
               fileset = lib.fileset.gitTracked ./.;
             };
-            vendorHash = "sha256-7pFCWJ08X8LPn0epi3bVqSlLV5/fy+Yw33NJXL5IZNo=";
+            vendorHash = "sha256-NV3zt3W4s0hfSmnXzxM2QqFCZ8//AXMPvwaL9z327OI=";
           };
 
           # erraudit runner: fetches the pinned version from source at run time.

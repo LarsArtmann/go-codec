@@ -91,7 +91,7 @@ verified.
 
 | # | Task                                                                                                                                 | Why not started      |
 | - | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
-| 1 | ~~Execute the release: create `v0.1.1` tag and GitHub Release~~ resolved — superseded: v0.2.0/v0.3.0 released (`9094137`, `4cd0b45`) | ~~Blocked~~ resolved |
+| ~~1~~ | ~~Execute the release: create `v0.1.1` tag and GitHub Release~~ resolved — superseded: v0.2.0/v0.3.0 released (`9094137`, `4cd0b45`) | ~~Blocked~~ resolved |
 
 ---
 

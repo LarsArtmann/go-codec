@@ -301,3 +301,56 @@ jobs:
             bench-compare.txt
           retention-days: 90
           if-no-files-found: ignore
+
+  summary:
+    name: Gate Summary
+    needs:
+      - test
+      - lint
+      - error-audit
+      - workflow-lint
+      - secret-scan
+      - mermaid
+      - vulncheck
+      - fuzz
+      - bench
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Render per-gate results into the job summary
+        env:
+          R_TEST: ${{ needs.test.result }}
+          R_LINT: ${{ needs.lint.result }}
+          R_ERROR_AUDIT: ${{ needs.error-audit.result }}
+          R_WORKFLOW_LINT: ${{ needs.workflow-lint.result }}
+          R_SECRET_SCAN: ${{ needs.secret-scan.result }}
+          R_MERMAID: ${{ needs.mermaid.result }}
+          R_VULNCHECK: ${{ needs.vulncheck.result }}
+          R_FUZZ: ${{ needs.fuzz.result }}
+          R_BENCH: ${{ needs.bench.result }}
+        run: |
+          {
+            echo "## CI gate summary"
+            echo ""
+            echo "| Gate | Result |"
+            echo "| --- | --- |"
+            echo "| Test (v1 + v2 matrix) | $R_TEST |"
+            echo "| Lint (v1 + v2 matrix) | $R_LINT |"
+            echo "| Error Audit (erraudit) | $R_ERROR_AUDIT |"
+            echo "| Workflow Lint (actionlint) | $R_WORKFLOW_LINT |"
+            echo "| Secret Scan (gitleaks) | $R_SECRET_SCAN |"
+            echo "| Docs Diagram Render (mermaid) | $R_MERMAID |"
+            echo "| Vulnerability Scan (govulncheck) | $R_VULNCHECK |"
+            echo "| Fuzz (schedule/dispatch only) | $R_FUZZ |"
+            echo "| Benchmarks (schedule/dispatch only) | $R_BENCH |"
+            echo ""
+            echo "skipped = gate did not run for this event (fuzz/bench run on schedule and workflow_dispatch only; error-audit waits for the ERRAUDIT_PAT secret)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          fail=0
+          for r in "$R_TEST" "$R_LINT" "$R_VULNCHECK" "$R_WORKFLOW_LINT" "$R_SECRET_SCAN" "$R_MERMAID"; do
+            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then fail=1; fi
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "One or more always-on gates failed - see the table above." >&2
+            exit 1
+          fi

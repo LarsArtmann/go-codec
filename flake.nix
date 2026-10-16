@@ -188,7 +188,7 @@
               program = "${errauditApp}/bin/erraudit";
             };
 
-            # Parity with the CI test job: run all four drift tripwires in the
+            # Parity with the CI test job: run all five drift tripwires in the
             # same order the v1 leg of .github/workflows/ci.yml runs them.
             tripwires = mkApp "tripwires" [ goPkg ] ''
               set -euo pipefail
@@ -196,7 +196,8 @@
               bash scripts/check-go-version.sh
               bash scripts/check-error-codes.sh
               bash scripts/check-erraudit-version.sh
-              echo "tripwires: all four checks passed"
+              bash scripts/check-golangci-pin.sh
+              echo "tripwires: all five checks passed"
             '';
 
             # Quiet-machine gate for baseline-grade benchmark runs (see the
@@ -204,6 +205,13 @@
             # wait_quiet acceptance logic without waiting for real quiet.
             bench-gate = mkApp "bench-gate" [ goPkg ] ''
               exec bash scripts/bench-gate.sh "$@"
+            '';
+
+            # One-argument toolchain bump: writes go.mod, .go-version and
+            # .golangci.yml from the same full-patch string (ADR-0003), then
+            # runs the tripwire as the verification of record.
+            write-go-version = mkApp "write-go-version" [ goPkg ] ''
+              exec bash scripts/write-go-version.sh "$@"
             '';
 
             clean = mkApp "clean" [ goPkg pkgs.trash-cli ] ''

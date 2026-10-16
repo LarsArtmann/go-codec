@@ -20,7 +20,7 @@ nix run .#test       # run tests in BOTH JSON modes (v1 and v2)
 nix run .#test-race  # race-test both modes
 nix run .#lint       # lint both modes
 nix run .#build      # build both modes
-nix run .#tripwires  # all four repo-consistency check scripts
+nix run .#tripwires  # all five repo-consistency check scripts
 ```
 
 Without Nix, use the plain Go toolchain (Go 1.27.2+; see the section below for
@@ -50,6 +50,7 @@ bash scripts/check-go-version.sh          # go.mod / .go-version / .golangci.yml
 bash scripts/check-features-planned.sh    # FEATURES.md PLANNED symbols must not resolve via go doc
 bash scripts/check-error-codes.sh         # errors.go <-> docs/error-codes.md registry sync
 bash scripts/check-erraudit-version.sh    # erraudit pin agrees between ci.yml and flake.nix
+bash scripts/check-golangci-pin.sh        # golangci-lint ci.yml pin is >= the known-good floor
 ```
 
 `check-features-planned.sh` needs the Go toolchain on PATH; the other three
@@ -63,7 +64,7 @@ GOEXPERIMENT=jsonv2 go test ./...    # v2 (opt-in)
 
 ## Pre-commit Tripwire Hooks
 
-The same four checks can run automatically before every commit:
+The same five checks can run automatically before every commit:
 
 ```bash
 git config core.hooksPath .githooks

@@ -37,4 +37,7 @@ run scripts/check-error-codes.sh \
 run scripts/check-erraudit-version.sh \
 	"the erraudit pin drifted between .github/workflows/ci.yml and flake.nix; bump both to the same version"
 
-echo "pre-commit: all four tripwires passed"
+run scripts/check-golangci-pin.sh \
+	"the golangci-lint pin in ci.yml is below the known-good floor; raise the pin (and the floor in scripts/check-golangci-pin.sh) together"
+
+echo "pre-commit: all five tripwires passed"

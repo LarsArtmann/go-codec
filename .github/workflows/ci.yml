@@ -46,6 +46,9 @@ jobs:
       - name: erraudit pin consistency check (ci.yml and flake.nix must agree)
         if: matrix.json-mode == 'v1'
         run: bash scripts/check-erraudit-version.sh
+      - name: golangci-lint pin floor check (pin must be >= known-good floor)
+        if: matrix.json-mode == 'v1'
+        run: bash scripts/check-golangci-pin.sh
 
   lint:
     name: Lint (JSON ${{ matrix.json-mode }})

@@ -56,7 +56,7 @@ bash scripts/check-go-version.sh          # tripwire: go.mod/.go-version/.golang
 bash scripts/check-error-codes.sh         # tripwire: errors.go ↔ docs/error-codes.md in sync
 bash scripts/check-features-planned.sh    # tripwire: PLANNED symbols must not exist yet
 bash scripts/check-erraudit-version.sh    # tripwire: erraudit pin agrees ci.yml ↔ flake.nix
-nix run .#tripwires                       # all four tripwires, CI order, one command
+nix run .#tripwires                       # all five tripwires, CI order, one command
 ```
 
 With flake.nix (preferred in LarsArtmann projects):

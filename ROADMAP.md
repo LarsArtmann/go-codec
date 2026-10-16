@@ -123,9 +123,9 @@ Raw ideas:
 - Envelope design fuel from the ltx invariants: a never-zero distinguished bit
   pattern and a checksum flag bit for the envelope header, if the envelope
   layer ever evolves (steal `ChecksumFlag` bit semantics, not the format)
-- Compression-vs-signing invariant note (ADR-0002 candidate): pin the
-  compress-then-sign ordering contract before any compression feature lands,
-  so signing safety is decided at design time, not discovered at incident time
+- Compression-vs-signing invariant (ADR-0002, written 2026-10-16 as a
+  Proposed candidate): compress-then-sign ordering pinned before any
+  compression feature lands; see docs/adr/0002-compress-then-sign.md
 
 ### 6. Error-contract maturity
 

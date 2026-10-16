@@ -9,15 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- Nothing yet.
+- **Releases backfilled for v0.1.0, v0.2.0 and v0.3.1** from their CHANGELOG
+  sections (`--latest=false`; v0.3.2 stays Latest). Closes the tags-without-
+  releases gap the v0.3.0/v0.3.2 releases had left behind.
+- **Scheduled self-relative benchmark gate** (`bench` job, weekly cron +
+  workflow_dispatch): runs the v1 suite (count=10), uploads a 90-day artifact,
+  and compares against the PREVIOUS run's artifact via `bench-compare.py`
+  (wide 0.33..3.0 bounds; GOMAXPROCS-normalized). Self-relative on the same
+  runner class — cross-machine ns/op against the local baseline would be
+  dishonest; the chain seeds itself on the first run.
+- **Per-gate job summary** (`summary` job): renders every gate's result into
+  `$GITHUB_STEP_SUMMARY` as a table (skipped gates labeled) and fails when an
+  always-on gate fails.
+- **docs-health rotation pass**: the 2026-10-16 06:35 report annotated (39
+  verdicts) and archived with a manifest row; its §f harvested (TODO_LIST #24
+  new; ROADMAP theme 7 gains the strike-depth and formatter-spot-check ideas).
 
 ### Fixed
 
-- Nothing yet.
-
-### Changed
-
-- Nothing yet.
+- **The archived status/planning corpus now passes `check-rows` 32/32**
+  (was 16/32 flagged): 544 partially-struck rows repaired with verdicts
+  preserved byte-for-byte (new docs-health `repair-partial` tool), 15
+  genuinely-open rows given fresh verdicts verified against the current repo
+  (fuzz runs → ci.yml fuzz job; govulncheck+gitleaks present; flake.lock
+  exists; Codec godoc Examples shipped; the v0.1.0-era project-discovery-sdk
+  check declined as stale; registration-API routed to ROADMAP theme 1), and
+  the v0.3.0 report's TOP-50 brainstorm table ledger-exempted. Tool fix
+  riding along: check-rows now recognizes GFM single-dash separator rows
+  (previously misclassified as phantom CLEAN-row failures).
 
 ## [v0.3.2] — 2026-10-16
 

@@ -174,6 +174,10 @@ live here so they are findable in one place instead of re-litigated per pass:
 - Full-chain integration test: encode → envelope → detect → decode
 - Depth-cap case through the full `TranscodeToJSON` path
 - `DecodeEnvelopeOrLegacy` unwrapped-error guarantee in the rapid suite
+- docs-health tooling feedback: strike-depth decision for multi-line items
+  (extend annotate.go or canonize first-line-only — 10-16 06:35 report §d-6);
+  archive-corpus spot check after any future dprint/treefmt pass over `docs/`
+  (the formatter-mangle class the repair tooling exists for)
 
 ## Non-goals
 

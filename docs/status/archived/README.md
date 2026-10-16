@@ -18,6 +18,7 @@ model.
 | `2026-10-05_08-29_baseline-closeout-brutal-self-review.md`       | ANNOTATE       | 28 verdicts: close-out complete; bench-gate wiring/artifact-pointer/blind-spot items routed (TODO_LIST #15) or done 2026-10-16           |
 | `2026-10-10_05-30_ltx-review-session-status.md`                  | ANNOTATE       | 32 verdicts: HARVEST executed into ROADMAP themes 5/7; report fixes (nav, fuzz finding) applied; ltx-repo reading declined as out of scope |
 | `2026-10-16_04-53_release-readiness-tripwire-drift-status.md`    | ANNOTATE       | 55 verdicts: verification items executed this pass (incl. the CI lint-panic fix); release decision routed TODO_LIST #14                   |
+| `2026-10-16_06-35_ci-lint-panic-fix-docs-health-audit-archive-pass.md` | ANNOTATE | 39 verdicts (2026-10-16 execution pass): §b/§c/§f items 1-13 and 17-24/26/28-29/32-33 + §g answered — v0.3.2 shipped, hooks/ADR/guards/bench-job landed, corpus normalized; operator-gated items remain TODO #1/#2/#3/#10 |
 | `…/planning/2026-08-14_20-16-superb-quality-plan.d2/.svg/.html`  | ARCHIVE        | T1-T11 all executed per the archived 20-47/20-58 execution reports; diagram trio has no unmarked items                                    |
 
 Older entries (pre-2026-09-26) were archived by the 2026-09-26 pass; that

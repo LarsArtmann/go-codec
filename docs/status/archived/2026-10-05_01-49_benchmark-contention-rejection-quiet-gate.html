@@ -936,8 +936,9 @@
         <h2 id="partial"><span class="num">02</span>Partially Done &mdash; items 4+7</h2>
         <div class="card card-warning">
           <h4>Benchmark re-baseline: gated, autonomous, resumable</h4>
-          <p>Gate <code>/tmp/codec-bench-gate2.sh</code> (detached, PID tracked in
-          <code>/tmp/wq-codec-bench.log</code>) waits for a real quiet window, then runs both modes
+          <p>Gate <code>/tmp/codec-bench-gate2.sh</code> (detached; log at
+          <code>/tmp/wq-codec-bench.log</code> &mdash; note: the log holds no PID, and the stale
+          <code>/tmp/gate2.pid</code> from a killed iteration was removed 2026-10-05) waits for a real quiet window, then runs both modes
           with three protections: (1) entry requires 1-min load &lt; 8 with zero build storms, or
           load &lt; 5, sustained 90s; (2) a RawCodec_Encode canary (mean &lt; 25n) early-aborts a
           polluted attempt ~2 min in; (3) a 20s peak-load watch aborts at load &ge; 12 and final

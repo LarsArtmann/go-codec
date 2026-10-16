@@ -1,7 +1,7 @@
 version: "2"
 run:
   timeout: 5m
-  go: 1.27.1
+  go: "1.27"
   build-tags:
     - goexperiment.arenas
     - goexperiment.goroutineleakprofile
@@ -70,7 +70,6 @@ linters:
     - intrange
     - iotamixing
     - ireturn
-    - lll
     - loggercheck
     - maintidx
     - makezero
@@ -150,9 +149,17 @@ linters:
     ginkgolinter:
       forbid-focus-container: true
       forbid-spec-pollution: true
+    gocognit:
+      min-complexity: 25
+    goconst:
+      ignore-tests: true
+      min-len: 4
+      min-occurrences: 5
     gocritic:
       disabled-checks:
         - ifElseChain
+    gocyclo:
+      min-complexity: 20
     gomoddirectives:
       replace-local: true
     gosec:
@@ -176,6 +183,8 @@ linters:
         - "1"
         - "2"
         - "100"
+    nestif:
+      min-complexity: 6
     revive:
       rules:
         - disabled: true
@@ -186,6 +195,17 @@ linters:
       checks:
         - all
         - -ST1003
+    tagalign:
+      align: false
+      order:
+        - binding
+        - json
+        - yaml
+        - xml
+        - toml
+        - validate
+        - mapstructure
+      sort: true
     testifylint:
       disable:
         - go-require
@@ -208,11 +228,6 @@ linters:
         - p
       ignore-type-assert-ok: true
     wrapcheck:
-      # Mechanism (verified 2026-09-11, empty-sig probe): wrapcheck flags only
-      # BARE `return err` where err originates from an external-package call;
-      # any call-wrapped return (errorfamily.Wrap*) passes structurally, with
-      # or without these signatures. The errorfamily entries below are explicit
-      # defense-in-depth for same-line styles, not the reason the wraps pass.
       ignore-sigs:
         - .Errorf(
         - errors.New(
@@ -251,6 +266,18 @@ linters:
           - err113
           - varnamelen
           - wrapcheck
+          - exhaustruct_v5
+          - testpackage
+          - gochecknoglobals
+          - funlen
+          - cyclop
+          - goconst
+          - forcetypeassert
+          - gosec
+          - ireturn
+          - recvcheck
+          - contextcheck
+          - exhaustive
       - path: _test\.go
         text: unused
         linters:

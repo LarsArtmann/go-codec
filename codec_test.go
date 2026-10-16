@@ -640,8 +640,8 @@ func TestCBORCodec_StructTags(t *testing.T) {
 	c := codec.CBORCodec{}
 
 	type tagged struct {
-		Name string `cbor:"name" json:"name"`
-		Age  int    `cbor:"age"  json:"age"`
+		Name string `json:"name" cbor:"name"`
+		Age  int    `json:"age"  cbor:"age"`
 	}
 
 	original := tagged{Name: testBob, Age: 25}

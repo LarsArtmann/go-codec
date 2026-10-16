@@ -1,4 +1,3 @@
-//nolint:testpackage // tests internal helpers
 package codec
 
 // Shared test fixtures used across multiple test files. Extracting these as

@@ -254,3 +254,50 @@ jobs:
           name: fuzz-corpus-${{ matrix.json-mode }}
           path: testdata/fuzz
           retention-days: 7
+
+  bench:
+    name: Benchmarks (self-relative regression gate)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Run benchmark suite (v1 mode, count=10)
+        run: env -u GOEXPERIMENT go test -run '^$' -bench . -benchmem -count=10 -timeout 40m | tee bench-current.txt
+      - name: Fetch previous successful bench artifact
+        id: prev
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "found=false" >> "$GITHUB_OUTPUT"
+          prev_ids=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?event=schedule&status=success&per_page=10" --jq '.workflow_runs[].id' || true)
+          for id in $prev_ids; do
+            if [ "$id" = "${{ github.run_id }}" ]; then continue; fi
+            if gh run download "$id" -n bench-results -O bench-previous.txt 2>/dev/null && [ -s bench-previous.txt ]; then
+              echo "found=true" >> "$GITHUB_OUTPUT"
+              echo "baseline: artifact bench-results from run $id"
+              break
+            fi
+          done
+      - name: Compare against previous run (self-relative)
+        if: steps.prev.outputs.found == 'true'
+        run: |
+          python3 scripts/bench-compare.py bench-previous.txt bench-current.txt | tee bench-compare.txt
+      - name: First-run note (seeds the comparison chain)
+        if: steps.prev.outputs.found != 'true'
+        run: echo "no previous bench artifact found - this run seeds the self-relative chain; the next scheduled run compares against it"
+      - name: Upload benchmark artifact
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bench-results
+          path: |
+            bench-current.txt
+            bench-compare.txt
+          retention-days: 90
+          if-no-files-found: ignore

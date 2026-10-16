@@ -107,32 +107,32 @@
 
 ## b) PARTIALLY DONE 🟡
 
-1. **`docs/DOMAIN_LANGUAGE.md` not verified.** I never opened it this session.
+~~1. **`docs/DOMAIN_LANGUAGE.md` not verified.** I never opened it this session.~~ done — terms verified against code in the 2026-10-16 pass
    The verify-checklist requires checking each term against code. A prior pass
    fixed its helper count, but today's renames/fixes were all doc-side, so
    drift risk is low — still, it is an unchecked doc. Not fixed in-pass.
-2. **CONTRIBUTING.md freshness only half-verified.** I read the first 60 lines
+~~2. **CONTRIBUTING.md freshness only half-verified.** I read the first 60 lines~~ done — fuzzing section confirmed present 2026-10-16
    (commands, dual-build, snapshot flow — all current) but did not scroll to
    the fuzzing section whose existence the 00-49 verdict asserts.
-3. **Some `done at` citations are era-grade, not commit-grade.** Where batch-2
+~~3. **Some `done at` citations are era-grade, not commit-grade.** Where batch-2~~ **Won't implement — accepted as repo precedent (disclosed era-grade form).**
    work landed in noise auto-commits, I cited the diff-filter/pickaxe-derived
    creation commit (e.g. registry `dee6efc`, tripwire `7eaf7d2`, mermaid job
    `e23b0cc`) or an honest "`f04d158` era"/"batch 2" form. A handful could be
    off by one adjacent noise commit.
-4. **§b/§c/§e narrative sections left unannotated in several archived files.**
+~~4. **§b/§c/§e narrative sections left unannotated in several archived files.**~~ **Won't implement — accepted as repo precedent (narrative context).**
    The skill says resolve every numbered item; repo precedent (and the earlier
    passes I verified) treats those as narrative context. Where they contained
    actionable numbered recommendations (e.g. `12-42` §e, `13-55` §e), I
    resolved them; where they were retrospective lessons, I left them. A strict
    reading would annotate more.
-5. **`doc.go # Errors` cross-links routed instead of added.** 12-02 #14 asked
+~~5. **`doc.go # Errors` cross-links routed instead of added.** 12-02 #14 asked~~ done — added to doc.go # Errors in the 2026-10-16 pass
    for the same error-codes.md/ADR links I added to README — 2 lines in
    `doc.go`. I marked it `← open — nice-to-have` instead of fixing on sight.
    Inconsistent with how I handled the README half.
-6. **AGENTS.md grew to 16.2 KB** — just above the 15 KB sweet-spot ceiling
+6. **AGENTS.md grew to 16.2 KB** — just above the 15 KB sweet-spot ceiling **→ TODO_LIST #20 (AGENTS trim pass)**
    (verify-checklist target 5–15 KB, flag at 30 KB). The new bullet and
    tripwire commands are worth their bytes, but a trim pass is due.
-7. **Commit attribution for this pass itself.** The daemon swept the whole
+7. **Commit attribution for this pass itself.** The daemon swept the whole **→ TODO_LIST #3 (daemon/commit policy)**
    annotation+archive run into `chore: auto-commit 48 changed file(s)` and the
    living-doc rebuild into a second scoop. I knew the AGENTS.md rule
    ("hand-make one descriptive commit for any human-meaningful change before
@@ -141,18 +141,18 @@
 
 ## c) NOT STARTED ⬜
 
-1. **`nix flake check --all-systems`** (09-17 §f-35) — needs aarch64/darwin
+1. **`nix flake check --all-systems`** (09-17 §f-35) — needs aarch64/darwin **→ ROADMAP theme 5 (multi-arch builders)**
    builders; only the x86 leg re-ran green.
-2. **Re-running the 10-run benchstat baseline** (TODO_LIST #4) — the gate for
+~~2. **Re-running the 10-run benchstat baseline** (TODO_LIST #4) — the gate for~~ done — 2026-10-05 — v1+v2 baseline recorded, doc rewritten
    it was verified green, the benchmark itself not run.
-3. **Any CI change** (action digests, permissions block, dependabot
+~~3. **Any CI change** (action digests, permissions block, dependabot~~ done — 2026-10-04 — digests verified no-op, permissions, dependabot, cache, release.yml
    github-actions, setup-go cache, tag-push workflow) — all harvested into
    TODO_LIST, none executed. ci.yml was not touched this session.
-4. **doc.go `# Errors` links** (see b-5) — not done.
-5. **Upstream erraudit issue drafts** (TODO_LIST #2) — still gated on user
+~~4. **doc.go `# Errors` links** (see b-5) — not done.~~ done — added in the 2026-10-16 pass
+5. **Upstream erraudit issue drafts** (TODO_LIST #2) — still gated on user **→ TODO_LIST #2 (still operator-gated)**
    instruction; nothing drafted.
-6. **AGENTS.md trim pass** (b-6) — not started.
-7. **A full `check-rows.py` audit of the archived corpus** (see d-1) — the
+6. **AGENTS.md trim pass** (b-6) — not started. **→ TODO_LIST #20**
+~~7. **A full `check-rows.py` audit of the archived corpus** (see d-1) — the~~ done — ran 2026-10-16: 13/21 files PARTIAL (cell strikes only) — routed to TODO_LIST #21
    tool was never run over the 26 archived files.
 
 ## d) TOTALLY FUCKED UP 💥
@@ -196,30 +196,30 @@
 
 ## e) WHAT WE SHOULD IMPROVE
 
-1. **Use the docs-health asset scripts, not hand-rolled greps.**
+~~1. **Use the docs-health asset scripts, not hand-rolled greps.**~~ done — annotate.go repair/check-rows used throughout the 2026-10-16 pass
    `annotate-rows.py` / `annotate-prose.py` (atomic, section-scoped,
    dry-runnable) and `check-rows.py` (uniformity gate) exist precisely for
    this pass shape. Next annotation pass: dry-run the scripts first, batch
    edits through them, and gate the archive on `check-rows.py` exit 0 —
    the ad-hoc greps stay only as a smoke check.
-2. **Hand-make the descriptive commit BEFORE the daemon wakes.** For large
+~~2. **Hand-make the descriptive commit BEFORE the daemon wakes.** For large~~ **Won't implement — harness forbids commits without explicit operator instruction.**
    doc passes: stage + commit with a real message immediately after the last
    edit, don't pause to write the report first. The daemon's capture window
    is minutes.
-3. **Never claim a doc was verified that wasn't opened.** The health-report
+~~3. **Never claim a doc was verified that wasn't opened.** The health-report~~ done — adopted — 2026-10-16 pass marks unvisited docs explicitly
    table needs an explicit "not visited" state. Silent zeros are how
    DOMAIN_LANGUAGE.md slipped through.
-4. **Fix-on-sight applies to 2-line doc.go edits too.** When the same fix is
+~~4. **Fix-on-sight applies to 2-line doc.go edits too.** When the same fix is~~ done — doc.go links fixed on sight in the 2026-10-16 pass
    already being made in README, doing it in doc.go is cheaper than routing
    it.
-5. **Check-then-cite commit hashes.** Where attribution is era-grade, prefer
+~~5. **Check-then-cite commit hashes.** Where attribution is era-grade, prefer~~ done — adopted as standing discipline
    the honest "batch 2" form over a plausible-but-unverified hash; where a
    precise hash matters, run the pickaxe/diff-filter query at annotation time
    (I did this for most, not all).
-6. **AGENTS.md diet.** 16.2 KB and growing each pass; candidate cuts: the
+6. **AGENTS.md diet.** 16.2 KB and growing each pass; candidate cuts: the **→ TODO_LIST #20**
    v2-NDJSON gotcha could compress, and gotcha rows citing one-time incidents
    can shrink once their lesson is institutionalized in CI.
-7. **Keep `docs/status/` empty-by-default.** With everything archived, the
+~~7. **Keep `docs/status/` empty-by-default.** With everything archived, the~~ done — 2026-10-16 pass archives all 8 open reports
    next status report should be harvested + archived by the NEXT docs-health
    pass promptly — the rotation only works if archiving is routine, not a
    6-week backlog event.
@@ -231,113 +231,113 @@ noticed this session. Ranked roughly by impact.
 
 **P0 — user-gated (everything else orbits these)**
 
-1. Ratify the `go.mod` 1.26.7 revert (or order a deliberate 1.27.1 bump) — see §g-1.
-2. ERRAUDIT_PAT secret vs publishing erraudit (TODO_LIST #1; gates CI gate
+~~1. Ratify the `go.mod` 1.26.7 revert (or order a deliberate 1.27.1 bump) — see §g-1.~~ done — superseded — deliberate 1.27.1 bump landed 2026-10-04 (CHANGELOG Changed)
+2. ERRAUDIT_PAT secret vs publishing erraudit (TODO_LIST #1; gates CI gate **→ TODO_LIST #1**
    activation, hermetic nix erraudit, upstream filings).
 3. Auto-commit daemon policy: scoops vs split; exclude `go.work`/`go.work.sum`
    from daemon commits; go.work guard (TODO_LIST #3; 09-17 §f-3/44).
-4. Backfill (or explicitly skip) GitHub Releases for v0.1.0/v0.2.0 (TODO_LIST #8).
-5. Decide nix cache backend (FlakeHub vs rate-limited GHA) — go-cqrs-lite
+4. Backfill (or explicitly skip) GitHub Releases for v0.1.0/v0.2.0 (TODO_LIST #8). **→ TODO_LIST #8**
+5. Decide nix cache backend (FlakeHub vs rate-limited GHA) — go-cqrs-lite **→ sibling side (go-cqrs-lite infra)**
    infra, user call (09-17 §f-10).
-6. File or explicitly defer the two upstream erraudit issues (TODO_LIST #2).
+6. File or explicitly defer the two upstream erraudit issues (TODO_LIST #2). **→ TODO_LIST #2**
 
 **P1 — correctness & trust**
 
-7. Re-run the 10-run benchstat baseline (v1) + record the v2-mode baseline;
+~~7. Re-run the 10-run benchstat baseline (v1) + record the v2-mode baseline;~~ done — 2026-10-05 — 10-run dual-mode benchstat, doc rewritten
    re-date `docs/benchmark-baseline.md` (TODO_LIST #4; toolchain 1.26.5→1.26.7
    - simplified v1 marshal since 2026-08-15).
-8. Run `check-rows.py` over all 26 archived files; fix any PARTIAL table rows
+~~8. Run `check-rows.py` over all 26 archived files; fix any PARTIAL table rows~~ done — ran 2026-10-16 — 13/21 PARTIAL flagged, routed to TODO_LIST #21
    it flags (this pass's gap, see d-1).
-9. Refresh pinned action digests to Node-24-runtime versions + least-privilege
+~~9. Refresh pinned action digests to Node-24-runtime versions + least-privilege~~ done — 2026-10-04 — verified latest/node24, permissions block added
    `permissions:` block in ci.yml (TODO_LIST #5).
-10. Verify DOMAIN_LANGUAGE.md freshness against code (this pass's skip, b-1).
-11. Verify CONTRIBUTING.md fuzzing section exists as the archived verdict
+~~10. Verify DOMAIN_LANGUAGE.md freshness against code (this pass's skip, b-1).~~ done — verified in the 2026-10-16 pass
+~~11. Verify CONTRIBUTING.md fuzzing section exists as the archived verdict~~ done — verified in the 2026-10-16 pass
     claims (b-2).
-12. Add `doc.go # Errors` cross-links to error-codes.md + ADR (b-5).
-13. Watch go-cqrs-lite CI post-nix-cache-quota-reset; re-triage red legs as
+~~12. Add `doc.go # Errors` cross-links to error-codes.md + ADR (b-5).~~ done — added in the 2026-10-16 pass
+13. Watch go-cqrs-lite CI post-nix-cache-quota-reset; re-triage red legs as **→ sibling side (go-cqrs-lite CI watch)**
     infra vs real (sibling-side, 09-17 §f-42).
-14. Zero the go-cqrs-lite erraudit baseline — 253 findings, 22 modules
+14. Zero the go-cqrs-lite erraudit baseline — 253 findings, 22 modules **→ sibling TODO_LIST (go-cqrs-lite erraudit zeroing)**
     (sibling TODO_LIST).
 15. Verify the erraudit CI job end-to-end once the secret lands (fork run).
 
 **P2 — CI hygiene & automation**
 
-16. dependabot `github-actions` ecosystem entry (TODO_LIST #6).
-17. setup-go `cache: true` for the go install-heavy jobs (TODO_LIST #6).
-18. Commit `scripts/bench-compare.py`; decide raw-benchmark-output retention
+~~16. dependabot `github-actions` ecosystem entry (TODO_LIST #6).~~ done — 2026-10-04 (dependabot.yml github-actions entry)
+~~17. setup-go `cache: true` for the go install-heavy jobs (TODO_LIST #6).~~ done — 2026-10-04 (cache: true intent-pinned)
+~~18. Commit `scripts/bench-compare.py`; decide raw-benchmark-output retention~~ done — 2026-10-05 — created, unit-tested, real-output-verified
     (TODO_LIST #7).
-19. Tag-push release workflow (TODO_LIST #9).
-20. `.#tripwires` nix app running all four check scripts (TODO_LIST #11).
-21. Mermaid job: actions/cache for the npx chrome download (12-02 #22 tail).
-22. `nix flake check --all-systems` in CI or on a multi-arch builder (c-1).
-23. Deliberate Go 1.27 bump: all five sources + nixpkgs check + full gates
+~~19. Tag-push release workflow (TODO_LIST #9).~~ done — 2026-10-04 (release.yml; still unexecuted — see TODO_LIST #16)
+~~20. `.#tripwires` nix app running all four check scripts (TODO_LIST #11).~~ done — 2026-10-04 (nix run .#tripwires)
+21. Mermaid job: actions/cache for the npx chrome download (12-02 #22 tail). **→ TODO_LIST #17 (verified still missing 2026-10-16)**
+22. `nix flake check --all-systems` in CI or on a multi-arch builder (c-1). **→ ROADMAP theme 5 (multi-arch builders)**
+~~23. Deliberate Go 1.27 bump: all five sources + nixpkgs check + full gates~~ done — 2026-10-04 — all five sources to 1.27.1; tripwire hardening 2026-10-16
     (TODO_LIST #12).
-24. Hand-make descriptive commits for docs passes before the daemon scoops
+~~24. Hand-make descriptive commits for docs passes before the daemon scoops~~ **Won't implement — harness forbids commits without explicit operator instruction.**
     (process; e-2; potentially rebase the two noise commits from this pass).
 
 **P3 — documentation**
 
-25. CONTRIBUTING/AGENTS note: ERRAUDIT_PAT-style secrets for sibling
+25. CONTRIBUTING/AGENTS note: ERRAUDIT_PAT-style secrets for sibling **→ TODO_LIST #10**
     contributors (TODO_LIST #10).
-26. AGENTS.md trim pass back under ~15 KB (b-6).
-27. go-directive floor policy note in README or an ADR (09-17 §f-23 → ROADMAP).
-28. Annotate + archive this report's successor promptly (keep `docs/status/`
+26. AGENTS.md trim pass back under ~15 KB (b-6). **→ TODO_LIST #20**
+~~27. go-directive floor policy note in README or an ADR (09-17 §f-23 → ROADMAP).~~ done — covered by TODO_LIST #18 (go-version policy ADR)
+~~28. Annotate + archive this report's successor promptly (keep `docs/status/`~~ done — this 2026-10-16 pass annotates and archives all 8 open reports
     rotating; e-7).
-29. Sibling docs sweep for invalidated `codec: message: cause` examples
+29. Sibling docs sweep for invalidated `codec: message: cause` examples **→ sibling side (go-cqrs-lite docs sweep)**
     (go-cqrs-lite-side, 09-17 §f-26).
-30. go-cqrs-lite CHANGELOG/TODO_LIST: record the v0.3.0 wave narrative
+30. go-cqrs-lite CHANGELOG/TODO_LIST: record the v0.3.0 wave narrative **→ sibling side (go-cqrs-lite CHANGELOG)**
     (sibling-side, 09-17 §f-12).
 
 **P4 — tests & tooling (nice-to-have tier; demand-gated)**
 
-31. Full-chain integration test: encode → envelope → detect → decode
+31. Full-chain integration test: encode → envelope → detect → decode **→ ROADMAP theme 7 (demand-gated backlog)**
     (archived 18-24 §f-47).
-32. Depth-cap case through the full `TranscodeToJSON` path (18-24 §f-46).
+32. Depth-cap case through the full `TranscodeToJSON` path (18-24 §f-46). **→ ROADMAP theme 7**
 33. `DecodeEnvelopeOrLegacy` unwrapped-error guarantee in the rapid suite
     (12-02 #25).
-34. `FuzzEncodePooled` (12-42 #13).
-35. Empty-JSON-stream and `io.PipeWriter` streaming tests (12-42 #41/43).
-36. Property test for `EncodePooled` with rapid-generated payloads (12-42 #38).
-37. Registry generation tooling: emit `docs/error-codes.md` from source
+34. `FuzzEncodePooled` (12-42 #13). **→ ROADMAP theme 7**
+35. Empty-JSON-stream and `io.PipeWriter` streaming tests (12-42 #41/43). **→ ROADMAP theme 7**
+36. Property test for `EncodePooled` with rapid-generated payloads (12-42 #38). **→ ROADMAP theme 7**
+37. Registry generation tooling: emit `docs/error-codes.md` from source **→ ROADMAP theme 7 (demand-gated backlog)**
     (12-02 #28 → ROADMAP).
-38. Per-code FAMILY comparison in the error-codes tripwire (12-02 #29 → ROADMAP).
-39. `ErrorContext()` keys as godoc constants (08-27 #44 → ROADMAP).
-40. `//nolint` inventory quality sweep + prune wrapcheck nolints made
+38. Per-code FAMILY comparison in the error-codes tripwire (12-02 #29 → ROADMAP). **→ ROADMAP theme 6 (existing row)**
+39. `ErrorContext()` keys as godoc constants (08-27 #44 → ROADMAP). **→ ROADMAP theme 6 (existing row)**
+40. `//nolint` inventory quality sweep + prune wrapcheck nolints made **→ ROADMAP theme 6 (existing row)**
     redundant by ignore-sigs (08-27 #36/37 → ROADMAP).
-41. Snapshot test of rendered `[family:code]` strings — or an explicit ADR
+41. Snapshot test of rendered `[family:code]` strings — or an explicit ADR **→ ROADMAP theme 6 (existing row)**
     rejection (08-27 #25 → ROADMAP).
 
 **P5 — ecosystem (ROADMAP themes)**
 
-42. Sibling `signing` accepts `DeterministicCodec` (ROADMAP t5; the marker's
+42. Sibling `signing` accepts `DeterministicCodec` (ROADMAP t5; the marker's **→ ROADMAP theme 5 (existing row)**
     value is unrealized until consumed).
-43. Siblings reuse `CBOREncMode()`/`CBORDecMode()` (ROADMAP t5).
-44. Retire the `codec/v4` shim; extract `event/v4` if dep trees matter
+43. Siblings reuse `CBOREncMode()`/`CBORDecMode()` (ROADMAP t5). **→ ROADMAP theme 5 (existing row)**
+44. Retire the `codec/v4` shim; extract `event/v4` if dep trees matter **→ ROADMAP theme 5 (existing row)**
     (ROADMAP t5; sibling-side).
-45. `go.work`-free consumer simulation in CI (ROADMAP t5).
+45. `go.work`-free consumer simulation in CI (ROADMAP t5). **→ ROADMAP theme 5 (existing row)**
 46. Release-notes generation from `git log` + make-less release checklist
     script (ROADMAP t5).
-47. API-stability guarantee doc, paired with the v1.0.0 discussion (ROADMAP t5).
-48. Worked end-to-end example consuming go-codec from go-cqrs-lite (ROADMAP t5).
-49. Adoption sweep: other LarsArtmann repos requiring go-codec (ROADMAP t5).
-50. Website/docs site via `website-launch` (ROADMAP t5; last priority).
+47. API-stability guarantee doc, paired with the v1.0.0 discussion (ROADMAP t5). **→ ROADMAP theme 5 (existing row)**
+48. Worked end-to-end example consuming go-codec from go-cqrs-lite (ROADMAP t5). **→ ROADMAP theme 5 (existing row)**
+49. Adoption sweep: other LarsArtmann repos requiring go-codec (ROADMAP t5). **→ ROADMAP theme 5 (existing row)**
+50. Website/docs site via `website-launch` (ROADMAP t5; last priority). **→ ROADMAP theme 5 (existing row)**
 
 ## g) Questions I cannot figure out myself (max 3)
 
-1. **Was the `go.mod` → 1.27.1 bump yours?** I found it landed via auto-commit
+~~1. **Was the `go.mod` → 1.27.1 bump yours?** I found it landed via auto-commit~~ done — superseded — the deliberate 1.27.1 bump landed 2026-10-04
    `ed85a26` (Sep 17, packaged with TODO_LIST reformatting) while every other
    version declaration said 1.26.7, the local toolchain is go1.26.7, and the
    flake pins `go_1_26` — so I reverted it to make the tripwire green. If
    1.27.1 was intentional, I'll redo it properly (all five sources + nixpkgs
    check + full gates, TODO_LIST #12 style). Which is it?
-2. **Commit history for this pass:** the annotation sweep sits in two daemon
+2. **Commit history for this pass:** the annotation sweep sits in two daemon **→ TODO_LIST #3 (operator-only)**
    noise commits (`dd67160`, `a993c5f`) that are local-only until you push.
    Want me to hand-craft one descriptive commit now (interactive-rebase-free:
    soft-reset the two and recommit with a real message), or is
    daemon-scoop-and-move-on your standing preference? Same answer governs
    future docs passes (and whether `go.work`/`go.work.sum` should be daemon-
    excluded, which also caused the gutted-go.work incident in go-cqrs-lite).
-3. **Terminal state for the ~15 "open nice-to-have" deferrals** (fuzz
+~~3. **Terminal state for the ~15 "open nice-to-have" deferrals** (fuzz~~ done — resolved 2026-10-16 — consolidated into ROADMAP theme 7
    EncodePooled, NDJSON goldens, io.Pipe/empty-stream tests, StreamCodec/
    EncodeStream ideas, concurrent-pool test, …): they're dispositioned in the
    archived reports as "no consumer demand" without a living-doc destination.

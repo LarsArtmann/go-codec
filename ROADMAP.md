@@ -115,6 +115,8 @@ Raw ideas:
   stdlib IR until bumped — a floor/agreement check against the devShell version
   would catch the next stdlib-IR incompatibility before CI goes red
 - CI job-summary step posting per-gate statuses for at-a-glance red detection
+- `nix flake check --all-systems` in CI or on a multi-arch builder (needs
+  aarch64/darwin builders; only the x86_64 leg is exercised today)
 - SQLite backup/replication angle (cross-repo, research-derived): evaluate
   LiteStream + LTX for the go-cqrs-lite SQLite engines — ltx deep-dive verdict
   and evidence: `docs/research/2026-10-10_ltx-deep-dive.html`

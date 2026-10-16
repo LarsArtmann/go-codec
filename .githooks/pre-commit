@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# Pre-commit tripwires: run the repository's four drift checks before a
+# commit can land. Fast-fail with a fix hint per check. These are the same
+# scripts CI runs (v1 leg); the hook just moves the failure from push time
+# to commit time.
+#
+# One-time opt-in per clone:
+#   git config core.hooksPath .githooks
+# Bypass (at your own peril — CI will still catch it):
+#   git commit --no-verify
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+run() {
+	local script="$1" hint="$2"
+	if ! bash "$script"; then
+		echo "" >&2
+		echo "pre-commit: BLOCKED by $script" >&2
+		echo "  fix: $hint" >&2
+		echo "  (fix the drift and stage it, or commit --no-verify to bypass locally)" >&2
+		exit 1
+	fi
+}
+
+run scripts/check-go-version.sh \
+	"go.mod, .go-version and .golangci.yml run.go must carry the identical full-patch Go version; update all three together (or generate with the version tooling)"
+
+run scripts/check-features-planned.sh \
+	"a FEATURES.md PLANNED symbol now resolves via go doc; either implement-and-move or rename the symbol"
+
+run scripts/check-error-codes.sh \
+	"errors.go and docs/error-codes.md drifted; register every new codec.* code in the docs table (both directions are checked)"
+
+run scripts/check-erraudit-version.sh \
+	"the erraudit pin drifted between .github/workflows/ci.yml and flake.nix; bump both to the same version"
+
+echo "pre-commit: all four tripwires passed"

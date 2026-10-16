@@ -23,7 +23,8 @@ nix run .#build      # build both modes
 nix run .#tripwires  # all four repo-consistency check scripts
 ```
 
-Without Nix, use the plain Go toolchain (Go 1.27.1+):
+Without Nix, use the plain Go toolchain (Go 1.27.2+; see the section below for
+the repository checks without Nix):
 
 ```bash
 # Build (v1 JSON is the default)
@@ -38,6 +39,41 @@ GOEXPERIMENT=jsonv2 go test ./... -race
 golangci-lint run ./...
 golangci-lint run --build-tags goexperiment.jsonv2 ./...
 ```
+
+## Repository Checks Without Nix
+
+The four consistency tripwires are plain bash — no Nix required. Run them
+before submitting (CI runs the same scripts on every push, v1 leg):
+
+```bash
+bash scripts/check-go-version.sh          # go.mod / .go-version / .golangci.yml agree on one full-patch version
+bash scripts/check-features-planned.sh    # FEATURES.md PLANNED symbols must not resolve via go doc
+bash scripts/check-error-codes.sh         # errors.go <-> docs/error-codes.md registry sync
+bash scripts/check-erraudit-version.sh    # erraudit pin agrees between ci.yml and flake.nix
+```
+
+`check-features-planned.sh` needs the Go toolchain on PATH; the other three
+are pure text checks. Pin the JSON mode for any `go`-driven work — an ambient
+`GOEXPERIMENT=jsonv2` silently flips plain invocations to v2:
+
+```bash
+env -u GOEXPERIMENT go test ./...    # v1 (the true default)
+GOEXPERIMENT=jsonv2 go test ./...    # v2 (opt-in)
+```
+
+## Pre-commit Tripwire Hooks
+
+The same four checks can run automatically before every commit:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+`.githooks/pre-commit` fast-fails on the first drift with a fix hint. Opt in
+once per clone. Bypass with `git commit --no-verify` when you must (CI still
+enforces everything on push). If commits stop running hooks entirely, check
+that `.githooks/` exists in your checkout — `core.hooksPath` pointing at a
+missing directory fails silently.
 
 ## Dual JSON Build
 

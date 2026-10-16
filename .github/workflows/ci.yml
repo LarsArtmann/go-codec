@@ -275,7 +275,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "found=false" >> "$GITHUB_OUTPUT"
-          prev_ids=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?event=schedule&status=success&per_page=10" --jq '.workflow_runs[].id' || true)
+          # Any successful run of this workflow may carry the bench-results
+          # artifact (the job runs on schedule AND workflow_dispatch, so the
+          # seeding run may be either); missing artifacts are skipped.
+          prev_ids=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?status=success&per_page=15" --jq '.workflow_runs[].id' || true)
           for id in $prev_ids; do
             if [ "$id" = "${{ github.run_id }}" ]; then continue; fi
             if gh run download "$id" -n bench-results -O bench-previous.txt 2>/dev/null && [ -s bench-previous.txt ]; then

@@ -277,11 +277,18 @@ jobs:
           echo "found=false" >> "$GITHUB_OUTPUT"
           # Any successful run of this workflow may carry the bench-results
           # artifact (the job runs on schedule AND workflow_dispatch, so the
-          # seeding run may be either); missing artifacts are skipped.
-          prev_ids=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?status=success&per_page=15" --jq '.workflow_runs[].id' || true)
+          # seeding run may be either); missing artifacts are skipped. Look
+          # back 30 runs: docs-only pushes succeed without a bench job and
+          # must not scroll the seeding run out of the window.
+          prev_ids=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?status=success&per_page=30" --jq '.workflow_runs[].id' || true)
           for id in $prev_ids; do
             if [ "$id" = "${{ github.run_id }}" ]; then continue; fi
-            if gh run download "$id" -n bench-results -O bench-previous.txt 2>/dev/null && [ -s bench-previous.txt ]; then
+            # gh run download has no -O flag; it extracts the artifact into a
+            # directory (an unknown flag used to exit 1 silently behind
+            # 2>/dev/null and make every candidate look artifact-less).
+            prevdir=$(mktemp -d)
+            if gh run download "$id" -n bench-results -D "$prevdir" 2>/dev/null && [ -s "$prevdir/bench-current.txt" ]; then
+              cp "$prevdir/bench-current.txt" bench-previous.txt
               echo "found=true" >> "$GITHUB_OUTPUT"
               echo "baseline: artifact bench-results from run $id"
               break

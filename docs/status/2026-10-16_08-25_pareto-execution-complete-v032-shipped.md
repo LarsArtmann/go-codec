@@ -31,14 +31,14 @@ releases v0.1.0/v0.2.0/v0.3.1 were backfilled. The 06:35 report was rotated
 (39 verdicts → archived + manifest). **Final state: master pushed at
 `80bd82e`, every CI run green, tripwires 5/5, all 27 plan items dispositioned.**
 
-| Quick stats | |
-| --- | --- |
-| Plan items executed | M2–M26 except operator-gated (M1 was already done — actually was NOT: CI was red again) |
-| CI runs this session | 12+ triggered, ALL green at session end |
-| Releases | v0.3.2 shipped live · v0.1.0/v0.2.0/v0.3.1 backfilled (`--latest=false`) |
-| TODO_LIST | 14 rows → 5 (11 closed into CHANGELOG, 1 new) |
-| New tooling | `write-go-version`, `check-golangci-pin`, `repair-partial` (docs-health skill), pre-commit hook |
-| ADRs | 0003 Accepted (go-version contract) · 0002 Proposed (compress-then-sign) |
+| Quick stats          |                                                                                                 |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| Plan items executed  | M2–M26 except operator-gated (M1 was already done — actually was NOT: CI was red again)         |
+| CI runs this session | 12+ triggered, ALL green at session end                                                         |
+| Releases             | v0.3.2 shipped live · v0.1.0/v0.2.0/v0.3.1 backfilled (`--latest=false`)                        |
+| TODO_LIST            | 14 rows → 5 (11 closed into CHANGELOG, 1 new)                                                   |
+| New tooling          | `write-go-version`, `check-golangci-pin`, `repair-partial` (docs-health skill), pre-commit hook |
+| ADRs                 | 0003 Accepted (go-version contract) · 0002 Proposed (compress-then-sign)                        |
 
 ## a) DONE — the ship thread (P0/P1, the 1%→64%)
 
@@ -168,23 +168,23 @@ releases v0.1.0/v0.2.0/v0.3.1 were backfilled. The 06:35 report was rotated
 
 ## c) VERIFICATION LEDGER (all fresh, this session)
 
-| Gate | Result |
-| --- | --- |
-| Five tripwires (`nix run .#tripwires`) | PASS (final + at every commit) |
-| Dual-mode build/test (go1.27.2) | ok both modes; `nix flake check` all checks passed |
-| Dual-mode golangci-lint | 0 issues both modes |
-| erraudit v0.7.0 smoke (3 CI invocations) | zero findings |
-| actionlint / shellcheck | clean on every workflow/script touched |
-| release.yml live run (tag v0.3.2) | success (38854807936) |
-| CI on the tag (full matrix) | success (38854807927) |
-| Dispatch fuzz v1+v2 | success |
-| Dispatch bench seed | success, `bench-results` artifact 7,906 bytes |
-| Summary job first live run | success (38860410413) |
-| Pre-commit hook negative test | commit BLOCKED with fix hint (scratch clone) |
-| `go mod verify` (both repos) | clean |
-| check-rows archived corpus | 32/32 complete, exit 0 |
-| GitHub Release semantics | v0.3.2 = Latest; four other tags released |
-| Proxy | serves v0.3.2 (`go list -m`), scratch cold go-get + run OK |
+| Gate                                     | Result                                                     |
+| ---------------------------------------- | ---------------------------------------------------------- |
+| Five tripwires (`nix run .#tripwires`)   | PASS (final + at every commit)                             |
+| Dual-mode build/test (go1.27.2)          | ok both modes; `nix flake check` all checks passed         |
+| Dual-mode golangci-lint                  | 0 issues both modes                                        |
+| erraudit v0.7.0 smoke (3 CI invocations) | zero findings                                              |
+| actionlint / shellcheck                  | clean on every workflow/script touched                     |
+| release.yml live run (tag v0.3.2)        | success (38854807936)                                      |
+| CI on the tag (full matrix)              | success (38854807927)                                      |
+| Dispatch fuzz v1+v2                      | success                                                    |
+| Dispatch bench seed                      | success, `bench-results` artifact 7,906 bytes              |
+| Summary job first live run               | success (38860410413)                                      |
+| Pre-commit hook negative test            | commit BLOCKED with fix hint (scratch clone)               |
+| `go mod verify` (both repos)             | clean                                                      |
+| check-rows archived corpus               | 32/32 complete, exit 0                                     |
+| GitHub Release semantics                 | v0.3.2 = Latest; four other tags released                  |
+| Proxy                                    | serves v0.3.2 (`go list -m`), scratch cold go-get + run OK |
 
 ## d) TOTALLY FUCKED UP
 
@@ -272,11 +272,11 @@ Sunday's cron: a workflow_dispatch (run 38864642165) was fired at 09:01 to
 exercise the compare chain against the seeded artifact immediately — outcome
 recorded in CHANGELOG [Unreleased] and any successor report.
 
-*Verification sources: fresh CLI runs this session — five tripwires,
+_Verification sources: fresh CLI runs this session — five tripwires,
 dual-mode build/test/lint on go1.27.2, `nix flake check` (job log), actionlint,
 shellcheck, `go mod verify` on both repos, the scratch go-get round-trip,
 `gh run` logs for every CI claim (38853654809, 38854028654, 38854057247,
 38854403846, 38854629170, 38854807927, 38854807936, 38859475364, 38860315047,
 38860410413), the GitHub Releases API, and the proxy via `go list -m`. No
 benchmarks were run locally (loadavg 15–86 all session); the only benchmark
-output produced is the CI runner's seeded artifact.*
+output produced is the CI runner's seeded artifact._

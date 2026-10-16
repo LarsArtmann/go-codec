@@ -45,6 +45,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **CHANGELOG compare links repaired**: v0.3.1 and v0.3.2 had no reference
   links (section headings rendered as broken links) and [Unreleased] still
   diffed against v0.3.0.
+- **Bench gate compare path actually works now**: the fetch step called
+  `gh run download -O`, a flag that does not exist, and the error was
+  swallowed by `2>/dev/null` — every run silently re-seeded instead of
+  comparing. Exposed by the first live exercise of the path (dispatch
+  38864642165); the step now extracts the artifact into a temp dir and
+  looks back 30 runs so docs-only pushes cannot scroll the baseline out.
 
 ## [v0.3.2] — 2026-10-16
 

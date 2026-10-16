@@ -29,63 +29,72 @@ func BenchmarkStreamingJSONV2_DecoderComparison(b *testing.B) {
 	}
 
 	data := buf.Bytes()
-	lines := splitNonEmptyLines(data)
 
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	b.Run("jsontext.Decoder", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for b.Loop() {
-			dec := codec.NewJSONDecoder(bytes.NewReader(data))
-
-			var count int
-
-			for {
-				var evt realisticOrder
-
-				if err := dec.Decode(&evt); err != nil {
-					break
-				}
-
-				count++
-			}
-
-			if count != len(batch) {
-				b.Fatalf("decoded %d values, want %d", count, len(batch))
-			}
-		}
+		benchJSONDecoderStream(b, data, len(batch))
 	})
 
 	b.Run("json.UnmarshalRead_per_line", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-
-		for b.Loop() {
-			var count int
-
-			for _, line := range lines {
-				var evt realisticOrder
-
-				err := json.UnmarshalRead(
-					bytes.NewReader(line),
-					&evt,
-					json.MatchCaseInsensitiveNames(true),
-				)
-				if err != nil {
-					b.Fatal(err)
-				}
-
-				count++
-			}
-
-			if count != len(batch) {
-				b.Fatalf("decoded %d values, want %d", count, len(batch))
-			}
-		}
+		benchUnmarshalReadPerLine(b, splitNonEmptyLines(data), len(batch))
 	})
+}
+
+func benchJSONDecoderStream(b *testing.B, data []byte, want int) {
+	b.Helper()
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		dec := codec.NewJSONDecoder(bytes.NewReader(data))
+
+		var count int
+
+		for {
+			var evt realisticOrder
+
+			if err := dec.Decode(&evt); err != nil {
+				break
+			}
+
+			count++
+		}
+
+		if count != want {
+			b.Fatalf("decoded %d values, want %d", count, want)
+		}
+	}
+}
+
+func benchUnmarshalReadPerLine(b *testing.B, lines [][]byte, want int) {
+	b.Helper()
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		var count int
+
+		for _, line := range lines {
+			var evt realisticOrder
+
+			err := json.UnmarshalRead(
+				bytes.NewReader(line),
+				&evt,
+				json.MatchCaseInsensitiveNames(true),
+			)
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			count++
+		}
+
+		if count != want {
+			b.Fatalf("decoded %d values, want %d", count, want)
+		}
+	}
 }
 
 func splitNonEmptyLines(data []byte) [][]byte {

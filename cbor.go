@@ -43,8 +43,18 @@ var canonicalEncMode = sync.OnceValue(func() cbor.EncMode { //nolint:gochecknogl
 // canonicalDecMode is computed once via sync.OnceValue. DupMapKeyEnforcedAPF
 // is a valid constant, so DecMode() cannot fail.
 var canonicalDecMode = sync.OnceValue(func() cbor.DecMode { //nolint:gochecknoglobals // process-wide singleton
-	//nolint:exhaustruct // only DupMapKey is intentional; all other fields use library defaults
-	opts := cbor.DecOptions{DupMapKey: cbor.DupMapKeyEnforcedAPF}
+	// TextUnmarshalerTextString: branded-ID types (go-branded-id's cbid.ID
+	// pattern) implement encoding.TextUnmarshaler, and fxamacker defaults to
+	// TextUnmarshalerNone — so a CBOR TEXT string (the wire shape ID fields
+	// had before branded types landed) fails to decode into them. The mode
+	// makes both wire generations readable: text strings ride UnmarshalText,
+	// byte strings keep the native BinaryUnmarshaler path. Encode stays
+	// untouched — this is a decode-compatibility fix only.
+	//nolint:exhaustruct // only intentional fields; library defaults for the rest
+	opts := cbor.DecOptions{
+		DupMapKey:       cbor.DupMapKeyEnforcedAPF,
+		TextUnmarshaler: cbor.TextUnmarshalerTextString,
+	}
 
 	mode, err := opts.DecMode()
 	if err != nil {

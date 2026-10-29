@@ -52,9 +52,14 @@ var compactEncMode = sync.OnceValue(func() cbor.EncMode { //nolint:gochecknoglob
 })
 
 var compactDecMode = sync.OnceValue(func() cbor.DecMode { //nolint:gochecknoglobals // process-wide singleton
-	opts := cbor.DecOptions{ //nolint:exhaustruct // only strict-mode fields needed
+	// TextUnmarshalerTextString mirrors canonicalDecMode: branded-ID types
+	// (encoding.TextUnmarshaler) must decode from CBOR text strings — the
+	// wire shape ID fields carried before branded types landed.
+	//nolint:exhaustruct // only strict/compat-mode fields needed
+	opts := cbor.DecOptions{
 		DupMapKey:         cbor.DupMapKeyEnforcedAPF,
 		ExtraReturnErrors: cbor.ExtraDecErrorUnknownField,
+		TextUnmarshaler:   cbor.TextUnmarshalerTextString,
 	}
 
 	mode, err := opts.DecMode()

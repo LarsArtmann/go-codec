@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [v0.3.3] — 2026-10-29
+
+Codec-correctness release. **No breaking changes; encode output is
+byte-identical to v0.3.2** — the only behavioral change is on DECODE, and it
+is purely additive (data that failed to decode before now decodes).
+
+### Added
+
 - **Releases backfilled for v0.1.0, v0.2.0 and v0.3.1** from their CHANGELOG
   sections (`--latest=false`; v0.3.2 stays Latest). Closes the tags-without-
   releases gap the v0.3.0/v0.3.2 releases had left behind.
@@ -27,6 +41,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **CBOR decode accepts text strings for `encoding.TextUnmarshaler` types**
+  (canonical + compact DecModes gained `TextUnmarshalerTextString`):
+  branded-ID types (the go-branded-id `cbid.ID` pattern) implement
+  `UnmarshalText`, but fxamacker defaults to `TextUnmarshalerNone` — so a
+  CBOR TEXT string (the wire shape ID fields carried before branded types
+  landed) failed to decode into them, breaking journal replay on the first
+  real pre-branding payload (`cbor: cannot unmarshal UTF-8 text string into
+  ... id.ID[...]`). Byte strings keep the native `BinaryUnmarshaler` path, so
+  both wire generations decode; encode output is unchanged. Regression tests
+  cover both codecs and both wire shapes.
 - **The archived status/planning corpus now passes `check-rows` 32/32**
   (was 16/32 flagged): 544 partially-struck rows repaired with verdicts
   preserved byte-for-byte (new docs-health `repair-partial` tool), 15
@@ -37,9 +61,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   the v0.3.0 report's TOP-50 brainstorm table ledger-exempted. Tool fix
   riding along: check-rows now recognizes GFM single-dash separator rows
   (previously misclassified as phantom CLEAN-row failures).
-- **Go 1.27.2 version contract restored** after an automated config sweep
-  rewrote go.mod/.golangci.yml to 2-part versions (which the tripwire rejects
-  by design), went red on every push, and rode along an unreviewed `lll`
+- **Go 1.27.2 version contract restored (AGAIN — the sweep regressed it a
+  second time on 2026-10-29)** after an automated config sweep rewrote
+  go.mod/.golangci.yml to 2-part versions (which the tripwire rejects by
+  design), went red on every push, and rode along an unreviewed `lll`
   linter enablement and an actions/cache v4.3.0 → v6.1.0 major bump. The
   reviewed pins are restored; pure formatting from the sweep is kept.
 - **CHANGELOG compare links repaired**: v0.3.1 and v0.3.2 had no reference
@@ -665,7 +690,8 @@ serialization, tag at `3f8ac9d`.
   (matching the original cqrs-lite source), which Go allows for multi-return
   functions used as statements
 
-[Unreleased]: https://github.com/larsartmann/go-codec/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/larsartmann/go-codec/compare/v0.3.3...HEAD
+[v0.3.3]: https://github.com/larsartmann/go-codec/compare/v0.3.2...v0.3.3
 [v0.3.2]: https://github.com/larsartmann/go-codec/compare/v0.3.1...v0.3.2
 [v0.3.1]: https://github.com/larsartmann/go-codec/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/larsartmann/go-codec/compare/v0.2.0...v0.3.0

@@ -3,8 +3,8 @@ module github.com/larsartmann/go-codec
 go 1.27
 
 require (
-	github.com/fxamacker/cbor/v2 v2.9.6
-	github.com/gkampitakis/go-snaps v0.5.24
+	github.com/fxamacker/cbor/v2 v2.10.0
+	github.com/gkampitakis/go-snaps v0.5.25
 	github.com/larsartmann/go-error-family v0.12.0
 	github.com/onsi/gomega v1.44.0
 	pgregory.net/rapid v1.3.0

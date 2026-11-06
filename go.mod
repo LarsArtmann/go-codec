@@ -3,8 +3,8 @@ module github.com/larsartmann/go-codec
 go 1.27
 
 require (
-	github.com/fxamacker/cbor/v2 v2.9.6
-	github.com/gkampitakis/go-snaps v0.5.24
+	github.com/fxamacker/cbor/v2 v2.10.0
+	github.com/gkampitakis/go-snaps v0.5.25
 	github.com/larsartmann/go-error-family v0.12.0
 	github.com/onsi/gomega v1.44.0
 	pgregory.net/rapid v1.3.0
@@ -22,9 +22,9 @@ require (
 	github.com/tidwall/gjson v1.20.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.2 // indirect
-	github.com/tidwall/sjson v1.2.5 // indirect
+	github.com/tidwall/sjson v1.2.6 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/net v0.61.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
+	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 )

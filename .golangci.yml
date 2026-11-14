@@ -252,6 +252,11 @@ linters:
         - .WithMessage(
         - .WithMessagef(
         - .WithStack(
+        # go-error-family constructors ARE the classified, wrapped errors
+        # (fleet convention, mr-sync 2026-11); v2.15's wrapcheck otherwise
+        # flags them as unwrapped externals. Matches the import path, so
+        # every errorfamily API function is covered.
+        - go-error-family.
   exclusions:
     generated: lax
     presets:
